@@ -29,7 +29,13 @@ Este proyecto es una aplicación para la gestión y análisis de calificaciones,
 ### Backend
 1. Instala las dependencias:
    ```sh
+
    cd backend
+   python -m venv venv
+   # En Windows:
+   venv\Scripts\activate
+   # En Linux/Mac:
+   # source venv/bin/activate
    pip install -r requirements.txt
    ```
 2. Ejecuta el backend:
