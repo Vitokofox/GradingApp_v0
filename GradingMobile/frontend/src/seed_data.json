@@ -1,0 +1,133 @@
+{
+    "shifts": [
+        {
+            "id": "shift_1",
+            "name": "Turno A",
+            "category": "shift"
+        },
+        {
+            "id": "shift_2",
+            "name": "Turno B",
+            "category": "shift"
+        },
+        {
+            "id": "shift_3",
+            "name": "Turno C",
+            "category": "shift"
+        }
+    ],
+    "journeys": [
+        {
+            "id": "journey_1",
+            "name": "Diurna",
+            "category": "journey"
+        },
+        {
+            "id": "journey_2",
+            "name": "Vespertina",
+            "category": "journey"
+        },
+        {
+            "id": "journey_3",
+            "name": "Nocturna",
+            "category": "journey"
+        }
+    ],
+    "areas": [
+        {
+            "id": "area_1",
+            "name": "Area 1",
+            "category": "area"
+        },
+        {
+            "id": "area_2",
+            "name": "Area 2",
+            "category": "area"
+        }
+    ],
+    "machines": [
+        {
+            "id": "machine_1",
+            "name": "Lijadora 1",
+            "category": "machine"
+        },
+        {
+            "id": "machine_2",
+            "name": "Lijadora 2",
+            "category": "machine"
+        }
+    ],
+    "origins": [
+        {
+            "id": "origin_1",
+            "name": "Linea 1",
+            "category": "origin"
+        },
+        {
+            "id": "origin_2",
+            "name": "Linea 2",
+            "category": "origin"
+        }
+    ],
+    "states": [
+        {
+            "id": "state_1",
+            "name": "Humedo",
+            "category": "state"
+        },
+        {
+            "id": "state_2",
+            "name": "Seco",
+            "category": "state"
+        }
+    ],
+    "terminations": [
+        {
+            "id": "term_1",
+            "name": "Lijado",
+            "category": "termination"
+        },
+        {
+            "id": "term_2",
+            "name": "Rustico",
+            "category": "termination"
+        }
+    ],
+    "supervisors": [
+        {
+            "id": "sup_1",
+            "name": "Supervisor Local",
+            "category": "supervisor"
+        }
+    ],
+    "markets": [
+        {
+            "id": 1,
+            "name": "Nacional"
+        },
+        {
+            "id": 2,
+            "name": "Exportacion"
+        }
+    ],
+    "products": [
+        {
+            "id": 1,
+            "name": "Producto Generico"
+        }
+    ],
+    "defects": [
+        {
+            "id": 1,
+            "name": "Nudo"
+        },
+        {
+            "id": 2,
+            "name": "Grieta"
+        },
+        {
+            "id": 3,
+            "name": "Mancha"
+        }
+    ]
+}

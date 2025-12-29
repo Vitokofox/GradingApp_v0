@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">GradingApp</string>
+    <string name="title_activity_main">GradingApp</string>
+    <string name="package_name">com.grading.app</string>
+    <string name="custom_url_scheme">com.grading.app</string>
+</resources>
