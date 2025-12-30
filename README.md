@@ -1,72 +1,97 @@
-# GradingWebApp
+# GradingWebApp - Sistema de Gestión de Calidad
 
-Este proyecto es una aplicación para la gestión y análisis de calificaciones, compuesta por módulos de backend, frontend y móvil.
+![Version](https://img.shields.io/badge/version-0.1-blue.svg)
+![Status](https://img.shields.io/badge/status-active-success.svg)
 
-## Estructura del proyecto
+Este proyecto es una aplicación integral para la gestión, registro y análisis de calidad en procesos de clasificación de madera. Incluye módulos para inspecciones en línea, producto terminado, tipificación de rechazos y estudios comparativos con escáner (Finscan).
 
-- **backend/**: Lógica del servidor, scripts de análisis, base de datos y rutas API.
-  - `main.py`: Punto de entrada del backend.
-  - `database/`: Modelos y gestión de la base de datos.
-  - `routers/`: Rutas para autenticación, exportaciones, datos maestros, registro, escaneo y usuarios.
-  - `requirements.txt`: Dependencias de Python.
-- **frontend/**: Aplicación web desarrollada con React y Vite.
-  - `src/`: Componentes, páginas y lógica de la interfaz.
-  - `public/`: Archivos estáticos.
-  - `package.json`: Dependencias de Node.js.
-- **GradingMobile/**: Versión móvil con estructura similar a backend/frontend.
-- **scripts y archivos raíz**:
-  - `.bat` y `.py`: Scripts para iniciar, detener y analizar la aplicación.
-  - `EXCEL GRADING - Cepillado 2025.xlsm`: Archivo Excel utilizado en el análisis.
+Esta versión (0.1) introduce una **renovación visual completa**, migrando de Tailwind CSS a un sistema de diseño personalizado (`gradingapp-theme.css`) para ofrecer una interfaz profesional, consistente y optimizada.
 
-## Requisitos previos
+## Características Principales
 
-- Python 3.8+
-- Node.js 16+
-- npm o yarn
+*   **Inspecciones de Calidad**:
+    *   **Grado en Línea**: Registro en tiempo real de piezas y defectos.
+    *   **Producto Terminado**: Auditoría final de paquetes listos.
+    *   **Tipificación de Rechazo**: Análisis detallado de material rechazado.
+*   **Estudios Finscan**: Módulo avanzado para comparar la clasificación manual (Inspector) vs automatizada (Escáner).
+*   **Reportes Detallados**:
+    *   Generación de informes con gráficos de distribución de grados y pareto de defectos.
+    *   Diseño optimizado para impresión ("paper-view").
+*   **Gestión de Datos Maestros**: Panel administrativo para configurar Mercados, Productos, Defectos, Áreas, Máquinas, Turnos, etc.
+*   **Seguridad**: Autenticación de usuarios basada en tokens JWT con roles (Admin/User).
 
-## Instalación y ejecución
+## Estructura del Proyecto
+
+*   **backend/**: API RESTful construida con **FastAPI** (Python).
+    *   Gestión de base de datos SQLite con SQLAlchemy.
+    *   Sistema de autenticación y autorización.
+*   **frontend/**: SPA moderna construida con **React + Vite**.
+    *   **Diseño**: Sistema de diseño propio (`gradingapp-theme.css`) con variables CSS, utilidades semánticas y soporte para modo oscuro (preparado).
+    *   **Componentes**: Arquitectura modular con `layout` persistente y componentes reutilizables.
+*   **GradingMobile/**: (En desarrollo) Versión adaptada para dispositivos móviles.
+
+## Requisitos Previos
+
+*   **Python 3.10+**
+*   **Node.js 18+**
+*   **Git**
+
+## Instalación y Ejecución Rápida
+
+El proyecto incluye scripts automatizados para Windows.
+
+1.  **Instalación Inicial**:
+    Ejecuta el script para instalar todas las dependencias (Backend y Frontend).
+    ```cmd
+    instalar_dependencias.bat
+    ```
+
+2.  **Iniciar la Aplicación**:
+    Inicia tanto el servidor backend como el cliente frontend.
+    ```cmd
+    run_app.bat
+    ```
+    *   Frontend: [http://localhost:5173](http://localhost:5173)
+    *   Backend API Docs: [http://localhost:8000/docs](http://localhost:8000/docs)
+
+3.  **Detener la Aplicación**:
+    ```cmd
+    Detener_App.bat
+    ```
+
+## Ejecución Manual
 
 ### Backend
-1. Instala las dependencias:
-   ```sh
-
-   cd backend
-   python -m venv venv
-   # En Windows:
-   venv\Scripts\activate
-   # En Linux/Mac:
-   # source venv/bin/activate
-   pip install -r requirements.txt
-   ```
-2. Ejecuta el backend:
-   ```sh
-   python main.py
-   ```
-   O usa el script:
-   ```sh
-   ..\run_app.bat
-   ```
+```bash
+cd backend
+# Activar entorno virtual (crear si no existe: python -m venv venv)
+venv\Scripts\activate
+pip install -r requirements.txt
+python main.py
+```
+El backend correrá en el puerto **8000**.
 
 ### Frontend
-1. Instala las dependencias:
-   ```sh
-   cd frontend
-   npm install
-   ```
-2. Ejecuta la aplicación web:
-   ```sh
-   npm run dev
-   ```
-   Accede a la interfaz en [http://localhost:5173](http://localhost:5173)
+```bash
+cd frontend
+npm install
+npm run dev
+```
+El frontend correrá en el puerto **5173** por defecto.
 
-### Móvil
-1. Sigue los pasos de instalación en `GradingMobile/README.md`.
+## Configuración
 
-## Scripts útiles
-- `instalar_dependencias.bat`: Instala dependencias automáticamente.
-- `run_app.bat`: Inicia la aplicación.
-- `Detener_App.bat`: Detiene la aplicación.
-- `analyze_excel.py`: Analiza el archivo Excel.
+*   **Variables de Entorno**:
+    *   Backend: Revisar `backend/.env` para configuración de CORS, SECRET_KEY, y base de datos.
+    *   Frontend: Configurado para conectar a `http://127.0.0.1:8000` por defecto.
 
-## Contacto y soporte
-Para dudas o soporte, contacta al equipo de desarrollo.
+## Historial de Cambios Recientes (v0.1)
+
+*   **Refactorización UI**: Eliminación completa de Tailwind CSS. Implementación de `gradingapp-theme.css` global.
+*   **Mejoras en Reportes**: Nuevas vistas de impresión para reportes de inspección y estudios.
+*   **Correcciones**: Solución a problemas de CORS y conexión en entornos locales Windows.
+*   **Login**: Flujo de autenticación mejorado con feedback visual de errores.
+
+## Soporte
+
+Para dudas técnicas o reporte de fallos, contactar al equipo de desarrollo del Departamento de Mejora Continua.
