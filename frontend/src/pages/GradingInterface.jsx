@@ -281,57 +281,62 @@ export default function GradingInterface() {
         .filter(Boolean); // Eliminar nulos
 
 
-    if (!inspection) return <div className="text-white p-8">Cargando contexto de inspección...</div>;
+    if (!inspection) return <div className="ga-page u-center u-muted">Cargando contexto de inspección...</div>;
 
     return (
-        <div className="flex h-screen bg-slate-900 text-white overflow-hidden relative">
+        <div className="ga-app" style={{ height: '100vh', overflow: 'hidden', flexDirection: 'row' }}>
+
             {/* Modal de Finalización */}
             <AnimatePresence>
                 {showFinishModal && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4"
-                    >
+                    <div className="ga-modal-backdrop">
                         <motion.div
                             initial={{ scale: 0.9, y: 20 }}
                             animate={{ scale: 1, y: 0 }}
-                            className="bg-slate-800 border border-emerald-500/50 rounded-3xl p-8 max-w-md w-full text-center shadow-2xl shadow-emerald-900/50"
+                            className="ga-modal"
                         >
-                            <div className="mx-auto w-24 h-24 bg-emerald-500/20 rounded-full flex items-center justify-center mb-6 ring-4 ring-emerald-500/10">
-                                <CheckCircle className="w-12 h-12 text-emerald-400" />
-                            </div>
-                            <h2 className="text-4xl font-bold text-white mb-2">¡Completado!</h2>
-                            <p className="text-slate-300 mb-8 text-lg">Has alcanzado el objetivo de <span className="text-emerald-400 font-bold">{inspection.pieces_inspected}</span> piezas.</p>
-
-                            <div className="bg-slate-900/50 p-4 rounded-xl mb-6 text-left">
-                                <h3 className="text-sm font-bold text-slate-400 uppercase mb-2">Resumen Final</h3>
-                                <div className="space-y-2 max-h-48 overflow-y-auto custom-scrollbar pr-2">
-                                    {Object.values(stats).filter(s => s.total > 0).map((s, idx) => (
-                                        <div key={idx} className="flex justify-between text-sm">
-                                            <span className="text-slate-300">{s.name}</span>
-                                            <span className="font-mono font-bold text-white">{s.total}</span>
-                                        </div>
-                                    ))}
+                            <div className="ga-modal__header" style={{ justifyContent: 'center', flexDirection: 'column', alignItems: 'center', border: 'none', paddingBottom: 0 }}>
+                                <div style={{
+                                    width: '80px', height: '80px', borderRadius: '50%',
+                                    background: 'var(--ga-success)', color: 'white',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    marginBottom: '1rem'
+                                }}>
+                                    <CheckCircle size={48} />
                                 </div>
-                                <div className="border-t border-slate-700 mt-3 pt-2 flex justify-between text-sm font-bold">
-                                    <span className="text-slate-400">Total Inspeccionado</span>
-                                    <span className="text-white">{totalInspected} / {inspection.pieces_inspected}</span>
+                                <h2 className="ga-card__title" style={{ fontSize: '2rem' }}>¡Completado!</h2>
+                            </div>
+
+                            <div className="ga-modal__content u-center">
+                                <p className="u-muted u-mb-4" style={{ fontSize: '1.25rem' }}>
+                                    Objetivo alcanzado: <span className="u-bold" style={{ color: 'var(--ga-success)' }}>{inspection.pieces_inspected}</span> piezas.
+                                </p>
+
+                                <div className="ga-card" style={{ textAlign: 'left', maxHeight: '200px', overflowY: 'auto' }}>
+                                    <div className="ga-card__header u-bold u-muted" style={{ fontSize: '0.875rem' }}>RESUMEN</div>
+                                    <div className="ga-card__body">
+                                        {Object.values(stats).filter(s => s.total > 0).map((s, idx) => (
+                                            <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.25rem 0' }}>
+                                                <span>{s.name}</span>
+                                                <span className="u-bold">{s.total}</span>
+                                            </div>
+                                        ))}
+                                    </div>
                                 </div>
 
                                 {remainingPieces > 0 && baseGrade && (
-                                    <div className="mt-4 bg-emerald-900/30 border border-emerald-500/30 p-3 rounded-lg">
-                                        <label className="flex items-center gap-3 cursor-pointer">
+                                    <div className="ga-alert ga-alert--info u-mt-4" style={{ textAlign: 'left' }}>
+                                        <label style={{ display: 'flex', gap: '0.75rem', cursor: 'pointer' }}>
                                             <input
                                                 type="checkbox"
                                                 checked={autoFill}
                                                 onChange={e => setAutoFill(e.target.checked)}
-                                                className="w-5 h-5 text-emerald-500 rounded focus:ring-emerald-500 bg-slate-800 border-slate-600"
+                                                style={{ width: '20px', height: '20px' }}
                                             />
-                                            <div className="text-left">
-                                                <div className="text-sm font-bold text-emerald-200">Completar Automáticamente</div>
-                                                <div className="text-xs text-emerald-400/80">
-                                                    Asignar {remainingPieces} piezas restantes a <span className="font-bold">{baseGrade.name}</span>
+                                            <div>
+                                                <div className="u-bold">Completar Automáticamente</div>
+                                                <div style={{ fontSize: '0.875rem', opacity: 0.8 }}>
+                                                    Asignar {remainingPieces} restantes a {baseGrade.name}
                                                 </div>
                                             </div>
                                         </label>
@@ -339,71 +344,77 @@ export default function GradingInterface() {
                                 )}
                             </div>
 
-                            <div className="flex flex-col gap-4">
-                                <button
-                                    onClick={handleFinish}
-                                    className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold text-lg transition-colors flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/20"
-                                >
-                                    <CheckCircle className="w-6 h-6" /> Confirmar y Finalizar
+                            <div className="ga-modal__footer" style={{ flexDirection: 'column', gap: '0.5rem' }}>
+                                <button onClick={handleFinish} className="ga-btn ga-btn--primary ga-btn--lg" style={{ width: '100%', justifyContent: 'center' }}>
+                                    Confirmar y Finalizar
                                 </button>
-                                <button
-                                    onClick={() => setShowFinishModal(false)} // Fix: Allow closing modal to continue
-                                    className="w-full py-4 bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-xl font-bold text-lg transition-colors flex items-center justify-center gap-2"
-                                >
-                                    <RotateCcw className="w-6 h-6" /> Volver / Corregir
+                                <button onClick={() => setShowFinishModal(false)} className="ga-btn ga-btn--outline" style={{ width: '100%', justifyContent: 'center' }}>
+                                    Volver / Corregir
                                 </button>
                             </div>
                         </motion.div>
-                    </motion.div>
+                    </div>
                 )}
             </AnimatePresence>
 
-            {/* Panel Izquierdo: Contexto y Estadísticas */}
-            <div className="w-80 bg-slate-800 border-r border-slate-700 flex flex-col">
-                <div className="p-6 border-b border-slate-700">
-                    <h2 className="text-xl font-bold text-emerald-400 mb-1">{inspection.product_name}</h2>
-                    <p className="text-slate-400 text-sm mb-4">Lote: {inspection.lot || 'N/A'}</p>
+            {/* Sidebar (Ahora usa ga-sidebar) */}
+            <div className="ga-sidebar" style={{ width: '320px', borderRight: '1px solid var(--ga-border)', background: 'var(--ga-surface)' }}>
+                <div style={{ paddingBottom: '1rem', borderBottom: '1px solid var(--ga-border)' }}>
+                    <h2 className="ga-card__title u-truncate" title={inspection.product_name} style={{ color: 'var(--ga-primary)' }}>
+                        {inspection.product_name}
+                    </h2>
+                    <p className="u-muted" style={{ fontSize: '0.875rem' }}>Lote: {inspection.lot || 'N/A'}</p>
 
-                    <div className="bg-slate-900/50 p-4 rounded-lg border border-slate-700">
-                        <div className="flex justify-between items-end mb-2">
-                            <span className="text-slate-400 text-xs uppercase font-bold">Avance</span>
-                            <span className="text-2xl font-bold text-white">{totalInspected} <span className="text-sm text-slate-500">/ {inspection.pieces_inspected}</span></span>
-                        </div>
-                        <div className="w-full bg-slate-700 h-2 rounded-full overflow-hidden">
-                            <div
-                                className="bg-emerald-500 h-full transition-all duration-500"
-                                style={{ width: `${Math.min(100, (totalInspected / inspection.pieces_inspected) * 100)}%` }}
-                            />
+                    <div className="ga-card u-mt-4" style={{ background: 'var(--ga-bg)', border: 'none' }}>
+                        <div className="ga-card__body" style={{ padding: '0.75rem' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '0.5rem' }}>
+                                <span className="u-bold u-muted" style={{ fontSize: '0.75rem' }}>AVANCE</span>
+                                <span className="u-bold" style={{ fontSize: '1.25rem' }}>
+                                    {totalInspected} <span className="u-muted" style={{ fontSize: '0.875rem' }}>/ {inspection.pieces_inspected}</span>
+                                </span>
+                            </div>
+                            <div style={{ width: '100%', height: '8px', background: 'rgba(0,0,0,0.1)', borderRadius: '4px', overflow: 'hidden' }}>
+                                <div style={{
+                                    width: `${Math.min(100, (totalInspected / inspection.pieces_inspected) * 100)}%`,
+                                    height: '100%',
+                                    background: 'var(--ga-success)',
+                                    transition: 'width 0.5s'
+                                }} />
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                    <h3 className="text-xs font-bold text-slate-500 uppercase">Resumen en Tiempo Real</h3>
-                    {grades.map(g => (
-                        <div key={g.id} className="bg-slate-900/30 p-3 rounded border border-slate-800 flex justify-between items-center">
-                            <div className="flex items-center gap-2">
-                                <span className={`w-2 h-2 rounded-full ${g.grade_rank === 1 ? 'bg-emerald-500' : g.grade_rank === 2 ? 'bg-yellow-500' : 'bg-red-500'}`}></span>
-                                <span className="font-medium text-sm">{g.name}</span>
-                            </div>
-                            <span className="font-mono font-bold text-lg">{stats[g.id]?.total || 0}</span>
+                <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '1rem', paddingTop: '1rem' }}>
+                    <div>
+                        <h3 className="u-bold u-muted u-mb-2" style={{ fontSize: '0.75rem' }}>RESUMEN TIEMPO REAL</h3>
+                        <div className="ga-stack">
+                            {grades.map(g => (
+                                <div key={g.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem', background: 'var(--ga-bg)', borderRadius: '4px' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                        <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: g.grade_rank === 1 ? 'var(--ga-success)' : g.grade_rank === 2 ? 'var(--ga-warning)' : 'var(--ga-danger)' }} />
+                                        <span style={{ fontSize: '0.875rem' }}>{g.name}</span>
+                                    </div>
+                                    <span className="u-bold">{stats[g.id]?.total || 0}</span>
+                                </div>
+                            ))}
                         </div>
-                    ))}
+                    </div>
 
-                    <div className="mt-8">
-                        <h3 className="text-xs font-bold text-slate-500 uppercase mb-2">Últimos Eventos</h3>
-                        <div className="space-y-1">
+                    <div>
+                        <h3 className="u-bold u-muted u-mb-2" style={{ fontSize: '0.75rem' }}>ÚLTIMOS EVENTOS</h3>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                             <AnimatePresence>
                                 {countLog.map((log, i) => (
                                     <motion.div
                                         key={i}
                                         initial={{ opacity: 0, x: -10 }}
                                         animate={{ opacity: 1, x: 0 }}
-                                        className="text-xs py-1 px-2 border-l-2 border-slate-600 text-slate-400"
+                                        style={{ fontSize: '0.75rem', padding: '4px 8px', borderLeft: '2px solid var(--ga-border)' }}
                                     >
-                                        <span className="text-slate-300 font-semibold">{log.gradeName}</span>
-                                        {log.defectName !== 'Clean' && <span className="text-red-400 ml-1">({log.defectName})</span>}
-                                        <span className="float-right opacity-50">{log.time.toLocaleTimeString()}</span>
+                                        <span className="u-bold">{log.gradeName}</span>
+                                        {log.defectName !== 'Clean' && <span style={{ color: 'var(--ga-danger)', marginLeft: '4px' }}>({log.defectName})</span>}
+                                        <span style={{ float: 'right', opacity: 0.5 }}>{log.time.toLocaleTimeString()}</span>
                                     </motion.div>
                                 ))}
                             </AnimatePresence>
@@ -412,111 +423,118 @@ export default function GradingInterface() {
                 </div>
             </div>
 
-            {/* Panel Principal: Acciones de Clasificación */}
-            <div className="flex-1 flex flex-col relative">
-                {/* Encabezado */}
-                <div className="h-16 border-b border-slate-800 flex items-center justify-between px-8 bg-slate-900/95 backdrop-blur z-10">
-                    <h1 className="text-2xl font-bold flex items-center gap-2">
-                        <Activity className="w-6 h-6 text-purple-500" />
-                        Interfaz de Clasificación
-                    </h1>
+            {/* Main Content */}
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'var(--ga-bg)' }}>
+                {/* Topbar Personalizada */}
+                <div className="ga-topbar" style={{ background: 'var(--ga-surface)', color: 'var(--ga-text)', borderBottom: '1px solid var(--ga-border)', padding: '0.5rem 1.5rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                        <Activity className="u-muted" />
+                        <h1 className="ga-topbar-title" style={{ fontSize: '1.125rem' }}>Interfaz de Clasificación</h1>
+                    </div>
 
-                    {/* Barra de Búsqueda */}
-                    <div className="flex-1 max-w-md mx-8 relative">
-                        <Search className="absolute left-3 top-2.5 w-5 h-5 text-slate-500" />
+                    <div style={{ flex: 1, maxWidth: '400px', margin: '0 2rem', position: 'relative' }}>
+                        <Search style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--ga-muted)' }} size={16} />
                         <input
                             type="text"
                             placeholder="Buscar defecto..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full bg-slate-800 border border-slate-700 rounded-full py-2 pl-10 pr-4 text-slate-200 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all placeholder:text-slate-600"
+                            className="ga-control"
+                            style={{ paddingLeft: '2.5rem', borderRadius: '99px' }}
                             autoFocus
                         />
                     </div>
 
-                    <div className="flex gap-3">
+                    <div className="u-flex u-gap-2">
                         {countLog.length > 0 && (
-                            <button
-                                onClick={handleUndo}
-                                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2"
-                            >
-                                <RotateCcw className="w-4 h-4" /> Deshacer
+                            <button onClick={handleUndo} className="ga-btn ga-btn--outline ga-btn--sm" title="Deshacer último">
+                                <RotateCcw size={16} /> <span style={{ marginLeft: '4px' }}>Deshacer</span>
                             </button>
                         )}
-                        <button
-                            onClick={handleSaveInspection}
-                            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-sm font-semibold transition-colors flex items-center gap-2"
-                        >
-                            <Save className="w-4 h-4" /> Guardar
+                        <button onClick={handleSaveInspection} className="ga-btn ga-btn--primary ga-btn--sm">
+                            <Save size={16} /> <span style={{ marginLeft: '4px' }}>Guardar</span>
                         </button>
-                        <button
-                            onClick={() => setShowFinishModal(true)}
-                            className="px-4 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-sm font-semibold transition-colors"
-                        >
+                        <button onClick={() => setShowFinishModal(true)} className="ga-btn ga-btn--outline ga-btn--sm">
                             Pausar / Finalizar
                         </button>
                     </div>
                 </div>
 
+                {/* Grid de Clasificación */}
+                <div style={{ flex: 1, padding: '2rem', overflowY: 'auto' }}>
+                    <div className="ga-grid" style={{ gridTemplateColumns: 'minmax(300px, 1fr) 2fr', gap: '2rem', height: '100%' }}>
 
-                {/* Área de Acción */}
-                <div className="flex-1 p-8 grid grid-cols-2 gap-8 relative min-h-0">
-                    {/* Columna 1: El Botón "Perfecto" (Objetivo Grande) */}
-                    {baseGrade && !selectedGrade && (
-                        <motion.button
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.95 }}
-                            onClick={() => handleGrading(baseGrade)}
-                            className="bg-gradient-to-br from-emerald-600 to-emerald-800 rounded-3xl shadow-2xl flex flex-col items-center justify-center border-4 border-emerald-500/30 group"
-                        >
-                            <CheckCircle className="w-32 h-32 text-emerald-200 mb-4 drop-shadow-lg group-hover:scale-110 transition-transform" />
-                            <span className="text-4xl font-bold text-white drop-shadow-md">{baseGrade.name}</span>
-                            <span className="text-emerald-200 mt-2 text-lg">Sin Defectos</span>
-                        </motion.button>
-                    )}
-
-                    {/* Columna 2: Los "Degradados" (Cascadas) - Defectos en Línea para Velocidad */}
-                    <div className="grid grid-cols-1 gap-6 overflow-y-auto h-full pr-2 pb-10">
-                        {downgradeGrades.map(grade => (
-                            <div key={grade.id} className="bg-slate-800 border border-slate-700 rounded-2xl p-4 flex flex-col gap-4">
-                                {/* Header */}
-                                <div className="flex items-center gap-3 border-b border-slate-700/50 pb-2">
-                                    <div className="w-10 h-10 rounded-full bg-slate-900 border border-slate-700 flex items-center justify-center font-bold text-lg text-slate-300">
-                                        {grade.grade_rank}
-                                    </div>
-                                    <h3 className="text-xl font-bold text-slate-200">{grade.name}</h3>
-                                </div>
-
-                                {/* Acciones */}
-                                {grade.defects && grade.defects.length > 0 ? (
-                                    <div className="grid grid-cols-3 gap-3">
-                                        {grade.defects.map(defect => (
-                                            <motion.button
-                                                key={defect.id}
-                                                whileHover={{ scale: 1.05 }}
-                                                whileTap={{ scale: 0.95 }}
-                                                onClick={() => handleGrading(grade, defect)}
-                                                className="bg-slate-900 border border-slate-700 hover:border-purple-500 hover:bg-slate-800 text-slate-300 py-3 rounded-xl text-sm font-bold transition-all shadow-sm flex flex-col items-center gap-1"
-                                            >
-                                                <span>{defect.name}</span>
-                                            </motion.button>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <motion.button
-                                        whileHover={{ scale: 1.02 }}
-                                        whileTap={{ scale: 0.98 }}
-                                        onClick={() => handleGrading(grade)}
-                                        className="w-full py-4 bg-slate-700 hover:bg-slate-600 text-white rounded-xl font-bold transition-colors"
-                                    >
-                                        Confirmar {grade.name}
-                                    </motion.button>
-                                )}
+                        {/* Columna 1: Principal (OK) */}
+                        {baseGrade && !selectedGrade && (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', height: '100%' }}>
+                                <motion.button
+                                    whileHover={{ scale: 1.02 }}
+                                    whileTap={{ scale: 0.98 }}
+                                    onClick={() => handleGrading(baseGrade)}
+                                    className="ga-card"
+                                    style={{
+                                        flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                                        background: 'linear-gradient(135deg, var(--ga-success) 0%, #1B5E20 100%)',
+                                        color: 'white', border: 'none', cursor: 'pointer'
+                                    }}
+                                >
+                                    <CheckCircle size={80} style={{ marginBottom: '1rem', opacity: 0.9 }} />
+                                    <span style={{ fontSize: '2.5rem', fontWeight: 'bold' }}>{baseGrade.name}</span>
+                                    <span style={{ fontSize: '1.25rem', opacity: 0.9 }}>Sin Defectos</span>
+                                </motion.button>
                             </div>
-                        ))}
+                        )}
+
+                        {/* Columna 2: Defectos */}
+                        <div className="ga-stack" style={{ height: '100%', overflowY: 'auto', paddingRight: '0.5rem' }}>
+                            {downgradeGrades.map(grade => (
+                                <div key={grade.id} className="ga-card">
+                                    <div className="ga-card__header" style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: 'rgba(0,0,0,0.02)' }}>
+                                        <div className="ga-badge" style={{
+                                            background: grade.grade_rank === 2 ? 'var(--ga-warning)' : 'var(--ga-danger)',
+                                            color: 'white', border: 'none', width: '32px', height: '32px', fontSize: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center'
+                                        }}>
+                                            {grade.grade_rank}
+                                        </div>
+                                        <h3 className="ga-card__title">{grade.name}</h3>
+                                    </div>
+
+                                    <div className="ga-card__body">
+                                        {grade.defects && grade.defects.length > 0 ? (
+                                            <div className="ga-grid ga-grid--3" style={{ gap: '0.75rem' }}>
+                                                {grade.defects.map(defect => (
+                                                    <motion.button
+                                                        key={defect.id}
+                                                        whileHover={{ scale: 1.02 }}
+                                                        whileTap={{ scale: 0.95 }}
+                                                        onClick={() => handleGrading(grade, defect)}
+                                                        className="ga-btn ga-btn--outline"
+                                                        style={{
+                                                            height: 'auto', minHeight: '60px', whiteSpace: 'normal',
+                                                            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center',
+                                                            background: 'var(--ga-surface)', color: 'var(--ga-text)', borderColor: 'var(--ga-border)'
+                                                        }}
+                                                    >
+                                                        {defect.name}
+                                                    </motion.button>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <motion.button
+                                                whileHover={{ scale: 1.02 }}
+                                                whileTap={{ scale: 0.98 }}
+                                                onClick={() => handleGrading(grade)}
+                                                className="ga-btn ga-btn--outline"
+                                                style={{ width: '100%', padding: '1.5rem', justifyContent: 'center', fontWeight: 'bold' }}
+                                            >
+                                                Confirmar {grade.name}
+                                            </motion.button>
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     </div>
-
-
                 </div>
             </div>
         </div>

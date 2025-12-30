@@ -7,15 +7,23 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from database import models, database
 from routers import registry, auth, users, master_data, scanner, exports
+from config import settings
+from loguru import logger
+import sys
+
+# Configure Logging
+logger.remove()
+logger.add(sys.stderr, level=settings.LOG_LEVEL)
+logger.add(settings.LOG_FILE, rotation=settings.LOG_ROTATION, level=settings.LOG_LEVEL, compression="zip")
 
 models.Base.metadata.create_all(bind=database.engine)
 
 app = FastAPI(title="Grading App Backend")
 
-# Configuración CORS (Permitir todo para desarrollo)
+# Configuración CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=settings.CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

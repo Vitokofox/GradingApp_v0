@@ -13,50 +13,52 @@ const Layout = ({ children }) => {
     };
 
     return (
-        <div className="min-h-screen bg-slate-900 text-slate-100">
+        <div className="ga-app">
             {/* Navbar */}
-            <nav className="fixed top-0 w-full z-50 bg-slate-900/80 backdrop-blur-md border-b border-slate-700/50">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex items-center justify-between h-16">
-                        <div className="flex items-center gap-8">
-                            <Link to="/" className="text-xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
+            <nav className="ga-topbar" style={{ position: 'fixed', top: 0, width: '100%', zIndex: 50 }}>
+                <div className="ga-container">
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '64px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
+                            <Link to="/" className="u-bold" style={{ fontSize: '1.25rem', color: 'var(--color-white)' }}>
                                 Grading App
                             </Link>
 
-                            <div className="hidden md:flex items-center gap-4">
-                                <Link to="/" className="text-sm font-medium text-slate-300 hover:text-white transition-colors">
-                                    Inspección
-                                </Link>
-                                <Link to="/inspections" className="text-sm font-medium text-slate-300 hover:text-white transition-colors">
-                                    Historial
-                                </Link>
-                                {user?.level === 'admin' && (
-                                    <Link to="/admin" className="text-sm font-medium text-slate-300 hover:text-white transition-colors">
-                                        Panel Admin
+                            <div className="u-flex u-gap-4">
+                                <div style={{ display: 'flex', gap: '1rem' }}>
+                                    <Link to="/" className="u-text-sm u-bold" style={{ color: 'rgba(255,255,255,0.8)' }}>
+                                        Inspección
                                     </Link>
-                                )}
+                                    <Link to="/inspections" className="u-text-sm u-bold" style={{ color: 'rgba(255,255,255,0.8)' }}>
+                                        Historial
+                                    </Link>
+                                    {user?.level === 'admin' && (
+                                        <Link to="/admin" className="u-text-sm u-bold" style={{ color: 'rgba(255,255,255,0.8)' }}>
+                                            Panel Admin
+                                        </Link>
+                                    )}
+                                </div>
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-4">
-                            <div className="flex items-center gap-2 text-sm text-slate-400 bg-slate-800/50 px-3 py-1.5 rounded-full border border-slate-700/50">
-                                {user?.level === 'admin' ? <Shield className="w-4 h-4 text-purple-400" /> : <UserIcon className="w-4 h-4 text-blue-400" />}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                            <div className="ga-badge ga-badge--muted" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(255,255,255,0.1)', color: 'white', border: '1px solid rgba(255,255,255,0.2)' }}>
+                                {user?.level === 'admin' ? <Shield size={16} /> : <UserIcon size={16} />}
                                 <span>{user?.first_name} {user?.last_name}</span>
                             </div>
 
                             <button
                                 onClick={handleLogout}
-                                className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-all"
+                                style={{ padding: '0.5rem', color: 'rgba(255,255,255,0.6)', background: 'transparent', border: 'none', cursor: 'pointer' }}
                                 title="Cerrar Sesión"
                             >
-                                <LogOut className="w-5 h-5" />
+                                <LogOut size={20} />
                             </button>
                         </div>
                     </div>
                 </div>
             </nav>
 
-            <main className="pt-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+            <main className="ga-page" style={{ paddingTop: '80px' }}>
                 {children}
             </main>
         </div>

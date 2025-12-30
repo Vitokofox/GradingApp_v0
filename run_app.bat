@@ -2,7 +2,7 @@
 echo Starting Grading Web App...
 
 :: Start Backend
-start "Grading Backend" cmd /k "cd backend && venv\Scripts\python -m uvicorn main:app --reload --host 0.0.0.0 --port 5000"
+start "Grading Backend" cmd /k "cd backend && venv\Scripts\python -m uvicorn main:app --reload --host 0.0.0.0 --port 8000"
 
 :: Start Frontend
 start "Grading Frontend" cmd /k "cd frontend && npm run dev"

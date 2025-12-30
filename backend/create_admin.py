@@ -1,5 +1,6 @@
 from database import database, models
-from routers.auth import get_password_hash
+from database import database, models
+from services.auth_service import auth_service
 from sqlalchemy.orm import Session
 
 # Crear sesión manualmente
@@ -15,7 +16,7 @@ def create_admin_user():
         print(f"El usuario '{username}' ya existe.")
         return
 
-    hashed_password = get_password_hash(password)
+    hashed_password = auth_service.get_password_hash(password)
     
     admin_user = models.User(
         username=username,

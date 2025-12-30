@@ -134,15 +134,15 @@ export default function InspectionForm({ type, title }) {
     // Ayudante para Selects
     const renderSelect = (label, name, options, icon = null, optionsLabelKey = 'name') => (
         <div>
-            <label className="block text-xs font-semibold uppercase text-slate-500 mb-1 flex items-center gap-1">
-                {icon && <span className="text-slate-400">{icon}</span>}
+            <label className="ga-label" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                {icon && <span className="u-muted">{icon}</span>}
                 {label}
             </label>
             <select
                 name={name}
                 value={formData[name]}
                 onChange={handleChange}
-                className="w-full p-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm focus:ring-1 focus:ring-emerald-500 outline-none"
+                className="ga-control"
             >
                 <option value="">Seleccionar...</option>
                 {options.map(opt => (
@@ -154,8 +154,8 @@ export default function InspectionForm({ type, title }) {
 
     const renderInput = (label, name, type = "text", icon = null, placeholder = '') => (
         <div>
-            <label className="block text-xs font-semibold uppercase text-slate-500 mb-1 flex items-center gap-1">
-                {icon && <span className="text-slate-400">{icon}</span>}
+            <label className="ga-label" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                {icon && <span className="u-muted">{icon}</span>}
                 {label}
             </label>
             <input
@@ -163,116 +163,118 @@ export default function InspectionForm({ type, title }) {
                 name={name}
                 value={formData[name]}
                 onChange={handleChange}
-                className="w-full p-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm focus:ring-1 focus:ring-emerald-500 outline-none"
+                className="ga-control"
                 placeholder={placeholder}
             />
         </div>
     );
 
     return (
-        <div className="max-w-5xl mx-auto">
+        <div style={{ maxWidth: '1024px', margin: '0 auto' }}>
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-slate-800/50 backdrop-blur-md border border-slate-700 rounded-2xl p-8 shadow-2xl"
+                className="ga-card"
             >
-                <div className="flex justify-between items-center mb-8 border-b border-slate-700 pb-4">
-                    <h2 className="text-2xl font-bold text-white flex items-center gap-3">
-                        <span className="p-2 bg-emerald-500/20 text-emerald-400 rounded-lg">
-                            <Briefcase className="w-6 h-6" />
+                <div className="ga-card__header">
+                    <h2 className="ga-card__title" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                        <span className="ga-badge ga-badge--muted">
+                            <Briefcase size={20} />
                         </span>
                         {title} - Nueva Inspección
                     </h2>
-                    <div className="bg-slate-900 px-4 py-2 rounded-lg text-slate-400 text-sm font-mono">
-                        ID: <span className="text-emerald-400 font-bold">AUTO</span>
+                    <div className="ga-badge ga-badge--ok">
+                        ID: AUTO
                     </div>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-6">
-                    {/* Sección 1: Información Básica */}
-                    <div className="bg-slate-900/30 p-4 rounded-xl border border-slate-800/50">
-                        <h3 className="text-sm font-bold text-slate-300 mb-4 uppercase flex items-center gap-2">
-                            I. Datos Generales
-                        </h3>
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                            {renderInput("Fecha Inspección", "date", "date", <Calendar className="w-3 h-3" />)}
-                            {renderInput("Fecha Producción", "production_date", "date", <Calendar className="w-3 h-3" />)}
-                            {renderSelect("Turno", "shift", shifts, <Clock className="w-3 h-3" />)}
-                            {renderSelect("Jornada", "journey", journeys, <Clock className="w-3 h-3" />)}
+                <div className="ga-card__body">
+                    <form onSubmit={handleSubmit} className="ga-stack">
+                        {/* Sección 1: Información Básica */}
+                        <div className="ga-card" style={{ background: 'var(--ga-bg)', padding: '1rem' }}>
+                            <h3 className="u-bold u-muted u-mb-4" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', textTransform: 'uppercase' }}>
+                                I. Datos Generales
+                            </h3>
+                            <div className="ga-grid ga-grid--3">
+                                {renderInput("Fecha Inspección", "date", "date", <Calendar size={14} />)}
+                                {renderInput("Fecha Producción", "production_date", "date", <Calendar size={14} />)}
+                                {renderSelect("Turno", "shift", shifts, <Clock size={14} />)}
+                                {renderSelect("Jornada", "journey", journeys, <Clock size={14} />)}
 
-                            {renderSelect("Supervisor", "supervisor", supervisors, <User className="w-3 h-3" />)}
+                                {renderSelect("Supervisor", "supervisor", supervisors, <User size={14} />)}
 
-                            <div className="md:col-span-2">
-                                <label className="block text-xs font-semibold uppercase text-slate-500 mb-1 flex items-center gap-1">
-                                    <User className="w-3 h-3 text-slate-400" /> Responsable
-                                </label>
-                                <input
-                                    value={formData.responsible}
-                                    name="responsible"
-                                    onChange={handleChange}
-                                    className="w-full p-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm focus:ring-1 focus:ring-emerald-500 outline-none"
-                                />
+                                <div style={{ gridColumn: 'span 2' }}>
+                                    <label className="ga-label" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                                        <User size={14} className="u-muted" /> Responsable
+                                    </label>
+                                    <input
+                                        value={formData.responsible}
+                                        name="responsible"
+                                        onChange={handleChange}
+                                        className="ga-control"
+                                        readOnly
+                                    />
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    {/* Sección 2: Ubicación y Contexto */}
-                    <div className="bg-slate-900/30 p-4 rounded-xl border border-slate-800/50">
-                        <h3 className="text-sm font-bold text-slate-300 mb-4 uppercase flex items-center gap-2">
-                            II. Ubicación y Origen
-                        </h3>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            {renderSelect("Área", "area", areas, <MapPin className="w-3 h-3" />)}
-                            {renderSelect("Máquina", "machine", machines, <Settings className="w-3 h-3" />)}
-                            {renderSelect("Origen", "origin", origins, <MapPin className="w-3 h-3" />)}
-                        </div>
-                    </div>
-
-                    {/* Sección 3: Detalles del Material (El núcleo) */}
-                    <div className="bg-slate-900/30 p-4 rounded-xl border border-slate-800/50">
-                        <h3 className="text-sm font-bold text-slate-300 mb-4 uppercase flex items-center gap-2">
-                            III. Detalles del Material
-                        </h3>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            {renderSelect("Mercado", "market_id", markets, <Briefcase className="w-3 h-3" />, 'id')}
-
-                            {/* Selección de producto impulsa cascada en siguiente paso */}
-                            {renderSelect("Producto", "product_name", products, <Box className="w-3 h-3" />, 'name')}
-
-                            {renderInput("Lote", "lot", "text", <Tag className="w-3 h-3" />)}
-
-                            {renderSelect("Estado", "state", states, <Layout className="w-3 h-3" />)}
-                            {renderSelect("Terminación", "termination", terminations, <Layout className="w-3 h-3" />)}
+                        {/* Sección 2: Ubicación y Contexto */}
+                        <div className="ga-card" style={{ background: 'var(--ga-bg)', padding: '1rem' }}>
+                            <h3 className="u-bold u-muted u-mb-4" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', textTransform: 'uppercase' }}>
+                                II. Ubicación y Origen
+                            </h3>
+                            <div className="ga-grid ga-grid--3">
+                                {renderSelect("Área", "area", areas, <MapPin size={14} />)}
+                                {renderSelect("Máquina", "machine", machines, <Settings size={14} />)}
+                                {renderSelect("Origen", "origin", origins, <MapPin size={14} />)}
+                            </div>
                         </div>
 
-                        <div className="grid grid-cols-3 gap-4 mt-4">
-                            {renderInput("Espesor (mm)", "thickness", "number", <Hash className="w-3 h-3" />)}
-                            {renderInput("Ancho (mm)", "width", "number", <Hash className="w-3 h-3" />)}
-                            {renderInput("Largo (mm)", "length", "number", <Hash className="w-3 h-3" />)}
+                        {/* Sección 3: Detalles del Material */}
+                        <div className="ga-card" style={{ background: 'var(--ga-bg)', padding: '1rem' }}>
+                            <h3 className="u-bold u-muted u-mb-4" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', textTransform: 'uppercase' }}>
+                                III. Detalles del Material
+                            </h3>
+                            <div className="ga-grid ga-grid--3">
+                                {renderSelect("Mercado", "market_id", markets, <Briefcase size={14} />, 'id')}
+                                {renderSelect("Producto", "product_name", products, <Box size={14} />, 'name')}
+                                {renderInput("Lote", "lot", "text", <Tag size={14} />)}
+                                {renderSelect("Estado", "state", states, <Layout size={14} />)}
+                                {renderSelect("Terminación", "termination", terminations, <Layout size={14} />)}
+                            </div>
+
+                            <div className="ga-grid ga-grid--3" style={{ marginTop: '1rem' }}>
+                                {renderInput("Espesor (mm)", "thickness", "number", <Hash size={14} />)}
+                                {renderInput("Ancho (mm)", "width", "number", <Hash size={14} />)}
+                                {renderInput("Largo (mm)", "length", "number", <Hash size={14} />)}
+                            </div>
                         </div>
-                    </div>
 
-                    {/* Sección 4: Inicio del Proceso */}
-                    <div className="bg-emerald-900/10 p-4 rounded-xl border border-emerald-500/20">
-                        <h3 className="text-sm font-bold text-emerald-400 mb-4 uppercase flex items-center gap-2">
-                            IV. Configuración de Muestra
-                        </h3>
-                        <div className="grid grid-cols-1 gap-4">
-                            {renderInput("Cantidad de Piezas a Inspeccionar", "pieces_inspected", "number", <Hash className="w-3 h-3" />)}
+                        {/* Sección 4: Configuración */}
+                        <div className="ga-alert ga-alert--success">
+                            <div className="ga-stack" style={{ width: '100%' }}>
+                                <h3 className="u-bold" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', textTransform: 'uppercase', color: 'var(--ga-success)' }}>
+                                    IV. Configuración de Muestra
+                                </h3>
+                                <div className="ga-grid" style={{ gridTemplateColumns: '1fr' }}>
+                                    {renderInput("Cantidad de Piezas a Inspeccionar", "pieces_inspected", "number", <Hash size={14} />)}
+                                </div>
+                            </div>
                         </div>
-                    </div>
 
-                    <motion.button
-                        whileHover={{ scale: 1.01 }}
-                        whileTap={{ scale: 0.99 }}
-                        type="submit"
-                        className="w-full py-4 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl font-bold text-lg shadow-lg shadow-emerald-900/50 flex items-center justify-center gap-2"
-                    >
-                        <PlayCircle className="w-6 h-6" />
-                        Iniciar Proceso de Inspección
-                    </motion.button>
+                        <motion.button
+                            whileHover={{ scale: 1.01 }}
+                            whileTap={{ scale: 0.99 }}
+                            type="submit"
+                            className="ga-btn ga-btn--primary"
+                            style={{ width: '100%', justifyContent: 'center', gap: '0.5rem', padding: '1rem', marginTop: '1rem' }}
+                        >
+                            <PlayCircle size={20} />
+                            Iniciar Proceso de Inspección
+                        </motion.button>
 
-                </form>
+                    </form>
+                </div>
             </motion.div>
         </div>
     );

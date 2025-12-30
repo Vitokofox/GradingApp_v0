@@ -48,14 +48,14 @@ if __name__ == "__main__":
     # --- Ensure Admin User Exists ---
     try:
         from database import database, models
-        from routers.auth import get_password_hash
+        from services.auth_service import auth_service
         
         db = database.SessionLocal()
         username = "admin"
         existing_user = db.query(models.User).filter(models.User.username == username).first()
         if not existing_user:
             print(f"Creating default admin user: {username}")
-            hashed_password = get_password_hash("admin")
+            hashed_password = auth_service.get_password_hash("admin")
             admin_user = models.User(
                 username=username,
                 password_hash=hashed_password,

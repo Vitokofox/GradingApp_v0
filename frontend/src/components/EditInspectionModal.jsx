@@ -1,6 +1,7 @@
+
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Save, AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react';
+import { X, Save, AlertTriangle, ChevronDown, ChevronUp, Edit } from 'lucide-react';
 import { updateInspection, getInspectionResults, updateInspectionResult } from '../api';
 
 export default function EditInspectionModal({ isOpen, onClose, inspection, onUpdate }) {
@@ -93,163 +94,130 @@ export default function EditInspectionModal({ isOpen, onClose, inspection, onUpd
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+                style={{
+                    position: 'fixed',
+                    inset: 0,
+                    zIndex: 50,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: 'rgba(0,0,0,0.6)',
+                    backdropFilter: 'blur(4px)',
+                    padding: '1rem'
+                }}
             >
                 <motion.div
-                    initial={{ scale: 0.95 }}
-                    animate={{ scale: 1 }}
-                    exit={{ scale: 0.95 }}
-                    className="bg-slate-800 border border-slate-700 rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden"
+                    initial={{ scale: 0.95, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.95, opacity: 0 }}
+                    className="ga-card"
+                    style={{
+                        width: '100%',
+                        maxWidth: '900px',
+                        maxHeight: '90vh',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        overflow: 'hidden',
+                        padding: 0
+                    }}
                 >
-                    <div className="flex justify-between items-center p-6 border-b border-slate-700 bg-slate-900/50 flex-none">
-                        <h2 className="text-xl font-bold text-white">Editar Inspección #{inspection?.id}</h2>
-                        <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors">
-                            <X className="w-6 h-6" />
+                    <div className="ga-card__header" style={{ flex: '0 0 auto' }}>
+                        <h2 className="ga-card__title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <Edit size={20} className="u-accent" />
+                            Editar Inspección #{inspection?.id}
+                        </h2>
+                        <button onClick={onClose} className="ga-btn ga-btn--text u-muted">
+                            <X size={24} />
                         </button>
                     </div>
 
-                    <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-8">
+                    <div className="custom-scrollbar" style={{ flex: '1 1 auto', overflowY: 'auto', padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                         {error && (
-                            <div className="bg-red-500/20 text-red-300 p-3 rounded flex items-center gap-2">
-                                <AlertTriangle className="w-4 h-4" /> {error}
+                            <div className="ga-alert ga-alert--error">
+                                <AlertTriangle size={16} /> {error}
                             </div>
                         )}
 
-                        <form onSubmit={handleSubmit} className="space-y-4">
-                            <h3 className="text-lg font-bold text-emerald-400 border-b border-slate-700 pb-2">Información General</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                <div>
-                                    <label className="block text-slate-400 text-sm font-bold mb-1">Producto</label>
-                                    <input
-                                        type="text"
-                                        value={formData.product_name}
-                                        onChange={e => setFormData({ ...formData, product_name: e.target.value })}
-                                        className="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white focus:border-emerald-500 outline-none transition-colors"
-                                        required
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-slate-400 text-sm font-bold mb-1">Fecha</label>
-                                    <input
-                                        type="date"
-                                        value={formData.date}
-                                        onChange={e => setFormData({ ...formData, date: e.target.value })}
-                                        className="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white focus:border-emerald-500 outline-none transition-colors"
-                                        required
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-slate-400 text-sm font-bold mb-1">Lote</label>
-                                    <input
-                                        type="text"
-                                        value={formData.lot}
-                                        onChange={e => setFormData({ ...formData, lot: e.target.value })}
-                                        className="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white focus:border-emerald-500 outline-none transition-colors"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-slate-400 text-sm font-bold mb-1">Responsable</label>
-                                    <input
-                                        type="text"
-                                        value={formData.responsible}
-                                        onChange={e => setFormData({ ...formData, responsible: e.target.value })}
-                                        className="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white focus:border-emerald-500 outline-none transition-colors"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-slate-400 text-sm font-bold mb-1">Supervisor</label>
-                                    <input
-                                        type="text"
-                                        value={formData.supervisor}
-                                        onChange={e => setFormData({ ...formData, supervisor: e.target.value })}
-                                        className="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white focus:border-emerald-500 outline-none transition-colors"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-slate-400 text-sm font-bold mb-1">Turno</label>
-                                    <input
-                                        type="text"
-                                        value={formData.shift}
-                                        onChange={e => setFormData({ ...formData, shift: e.target.value })}
-                                        className="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white focus:border-emerald-500 outline-none transition-colors"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-slate-400 text-sm font-bold mb-1">Jornada</label>
-                                    <input
-                                        type="text"
-                                        value={formData.journey}
-                                        onChange={e => setFormData({ ...formData, journey: e.target.value })}
-                                        className="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white focus:border-emerald-500 outline-none transition-colors"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-slate-400 text-sm font-bold mb-1">Area</label>
-                                    <input
-                                        type="text"
-                                        value={formData.area}
-                                        onChange={e => setFormData({ ...formData, area: e.target.value })}
-                                        className="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white focus:border-emerald-500 outline-none transition-colors"
-                                    />
-                                </div>
+                        <form onSubmit={handleSubmit} className="ga-stack">
+                            <h3 className="u-bold u-muted u-uppercase" style={{ fontSize: '0.875rem', borderBottom: '1px solid var(--ga-border)', paddingBottom: '0.5rem' }}>
+                                Información General
+                            </h3>
+
+                            <div className="ga-grid ga-grid--3">
+                                <InputField label="Producto" value={formData.product_name} onChange={v => setFormData({ ...formData, product_name: v })} required />
+                                <InputField label="Fecha" value={formData.date} onChange={v => setFormData({ ...formData, date: v })} type="date" required />
+                                <InputField label="Lote" value={formData.lot} onChange={v => setFormData({ ...formData, lot: v })} />
+                                <InputField label="Responsable" value={formData.responsible} onChange={v => setFormData({ ...formData, responsible: v })} />
+                                <InputField label="Supervisor" value={formData.supervisor} onChange={v => setFormData({ ...formData, supervisor: v })} />
+                                <InputField label="Turno" value={formData.shift} onChange={v => setFormData({ ...formData, shift: v })} />
+                                <InputField label="Jornada" value={formData.journey} onChange={v => setFormData({ ...formData, journey: v })} />
+                                <InputField label="Area" value={formData.area} onChange={v => setFormData({ ...formData, area: v })} />
                             </div>
-                            <div className="flex justify-end pt-2">
+
+                            <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '1rem' }}>
                                 <button
                                     type="submit"
                                     disabled={loading}
-                                    className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-semibold flex items-center gap-2 transition-colors disabled:opacity-50"
+                                    className="ga-btn ga-btn--primary"
                                 >
-                                    {loading ? 'Guardando...' : <><Save className="w-4 h-4" /> Guardar Encabezado</>}
+                                    {loading ? 'Guardando...' : <><Save size={16} style={{ marginRight: '0.5rem' }} /> Guardar Encabezado</>}
                                 </button>
                             </div>
                         </form>
 
-                        <div className="space-y-4">
-                            <div className="flex justify-between items-center border-b border-slate-700 pb-2">
-                                <h3 className="text-lg font-bold text-purple-400">Resultados y Conteos</h3>
-                                <button onClick={() => setExpandedResults(!expandedResults)} className="text-slate-400 hover:text-white">
-                                    {expandedResults ? <ChevronUp /> : <ChevronDown />}
+                        <div className="ga-stack">
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--ga-border)', paddingBottom: '0.5rem' }}>
+                                <h3 className="u-bold u-uppercase" style={{ fontSize: '0.875rem', color: 'var(--ga-info)' }}>Resultados y Conteos</h3>
+                                <button onClick={() => setExpandedResults(!expandedResults)} className="ga-btn ga-btn--text u-muted">
+                                    {expandedResults ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
                                 </button>
                             </div>
 
-                            {loadingResults ? <div className="text-center text-slate-500">Cargando resultados...</div> : (
-                                <div className="grid grid-cols-1 gap-2">
-                                    {results.map(r => (
-                                        <div key={r.id} className="bg-slate-900/50 p-3 rounded flex items-center justify-between border border-slate-700">
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-24 text-sm font-bold text-slate-300">{r.grade?.name}</div>
-                                                <div className="text-sm text-slate-400">{r.defect?.name || 'Sin Defecto (Base)'}</div>
+                            {expandedResults && (
+                                loadingResults ? <div className="u-center u-muted">Cargando resultados...</div> : (
+                                    <div className="ga-stack" style={{ gap: '0.5rem' }}>
+                                        {results.map(r => (
+                                            <div key={r.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.75rem', background: 'var(--ga-bg)', borderRadius: 'var(--ga-radius-sm)', border: '1px solid var(--ga-border)' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                                    <div style={{ width: '100px', fontWeight: 'bold', fontSize: '0.875rem' }}>{r.grade?.name}</div>
+                                                    <div style={{ fontSize: '0.875rem', color: 'var(--ga-muted)' }}>{r.defect?.name || 'Sin Defecto (Base)'}</div>
+                                                </div>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                    <input
+                                                        type="number"
+                                                        value={r.pieces_count}
+                                                        onChange={(e) => handleResultChange(r.id, e.target.value)}
+                                                        className="ga-control"
+                                                        style={{
+                                                            width: '80px',
+                                                            textAlign: 'center',
+                                                            borderColor: r.isDirty ? 'var(--ga-warning)' : undefined
+                                                        }}
+                                                    />
+                                                    {r.isDirty && (
+                                                        <button
+                                                            onClick={() => saveResult(r)}
+                                                            className="ga-btn ga-btn--warning ga-btn--sm"
+                                                            title="Guardar cambio"
+                                                        >
+                                                            <Save size={14} />
+                                                        </button>
+                                                    )}
+                                                </div>
                                             </div>
-                                            <div className="flex items-center gap-2">
-                                                <input
-                                                    type="number"
-                                                    value={r.pieces_count}
-                                                    onChange={(e) => handleResultChange(r.id, e.target.value)}
-                                                    className={`w-20 bg-slate-800 border ${r.isDirty ? 'border-yellow-500 ring-1 ring-yellow-500' : 'border-slate-600'} rounded p-1 text-white text-center text-sm`}
-                                                />
-                                                {r.isDirty && (
-                                                    <button
-                                                        onClick={() => saveResult(r)}
-                                                        className="p-1 bg-yellow-600 hover:bg-yellow-500 text-white rounded transition-colors"
-                                                        title="Guardar cambio"
-                                                    >
-                                                        <Save className="w-4 h-4" />
-                                                    </button>
-                                                )}
-                                            </div>
-                                        </div>
-                                    ))}
-                                    {results.length === 0 && <div className="text-slate-500 text-sm">No hay resultados registrados.</div>}
-                                </div>
+                                        ))}
+                                        {results.length === 0 && <div className="u-center u-muted u-italic">No hay resultados registrados.</div>}
+                                    </div>
+                                )
                             )}
                         </div>
                     </div>
 
-                    <div className="p-4 border-t border-slate-700 bg-slate-900/50 flex justify-end">
+                    <div className="ga-card__body" style={{ background: 'var(--ga-bg)', borderTop: '1px solid var(--ga-border)', display: 'flex', justifyContent: 'flex-end', flex: '0 0 auto', padding: '1rem' }}>
                         <button
                             type="button"
                             onClick={onClose}
-                            className="px-6 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-semibold transition-colors"
+                            className="ga-btn ga-btn--secondary"
                         >
                             Cerrar
                         </button>
@@ -257,5 +225,20 @@ export default function EditInspectionModal({ isOpen, onClose, inspection, onUpd
                 </motion.div>
             </motion.div>
         </AnimatePresence>
+    );
+}
+
+function InputField({ label, value, onChange, type = "text", required = false }) {
+    return (
+        <div>
+            <label className="ga-label">{label}</label>
+            <input
+                type={type}
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+                className="ga-control"
+                required={required}
+            />
+        </div>
     );
 }

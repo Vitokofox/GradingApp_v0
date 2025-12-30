@@ -7,8 +7,8 @@ export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    // Configure axios base URL - assumption, adjust if needed
-    axios.defaults.baseURL = 'http://localhost:8000';
+    // Configure axios base URL - using 127.0.0.1 to avoid potential localhost resolution issues on Windows
+    axios.defaults.baseURL = 'http://127.0.0.1:8000';
 
     useEffect(() => {
         const token = localStorage.getItem('token');

@@ -1,11 +1,10 @@
-
 import React, { useEffect, useState } from 'react';
 import { getUsers, createUser, updateUser, deleteUser } from '../api';
 import { useAuth } from '../context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import {
-    Users, Shield, UserPlus, Edit2, Trash2, X, Check, Search, Filter, Settings
+    Shield, UserPlus, Edit2, Trash2, X, Search, Settings, User, Briefcase, Award
 } from 'lucide-react';
 
 const AdminDashboard = () => {
@@ -73,11 +72,9 @@ const AdminDashboard = () => {
         e.preventDefault();
         try {
             if (editingUser) {
-                // Update
                 const updated = await updateUser(editingUser.id, formData);
                 setUsers(users.map(u => u.id === updated.id ? updated : u));
             } else {
-                // Create
                 const created = await createUser(formData);
                 setUsers([...users, created]);
             }
@@ -97,124 +94,142 @@ const AdminDashboard = () => {
     const canChangePermissions = currentUser?.level === 'admin';
 
     return (
-        <div className="p-6 max-w-7xl mx-auto">
+        <div className="ga-page">
             {/* Header */}
-            <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
-                <div>
-                    <h1 className="text-3xl font-bold text-white flex items-center gap-3">
-                        <Shield className="w-8 h-8 text-purple-500" />
-                        Gestión de Usuarios
-                    </h1>
-                    <p className="text-slate-400 mt-1">Administra accesos y permisos del personal</p>
-                </div>
-                <div className="flex gap-3">
-                    <Link to="/admin/config">
-                        <motion.button
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            className="px-6 py-3 bg-slate-800 border border-slate-700 text-white rounded-xl shadow-lg flex items-center gap-2 font-semibold hover:bg-slate-700"
-                        >
-                            <Settings className="w-5 h-5" />
-                            Configuración
-                        </motion.button>
-                    </Link>
-                    {canAdd && (
-                        <motion.button
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            onClick={() => openModal()}
-                            className="px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl shadow-lg flex items-center gap-2 font-semibold"
-                        >
-                            <UserPlus className="w-5 h-5" />
-                            Agregar Usuario
-                        </motion.button>
-                    )}
+            <div className="ga-card u-mb-4">
+                <div className="ga-card__body" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+                    <div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <Shield className="u-muted" size={24} />
+                            <h1 className="ga-card__title">Gestión de Usuarios</h1>
+                        </div>
+                        <p className="u-muted" style={{ margin: '0.25rem 0 0 2rem' }}>Administra accesos y permisos del personal</p>
+                    </div>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                        <Link to="/admin/config">
+                            <motion.button
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                className="ga-btn ga-btn--outline"
+                            >
+                                <Settings size={18} style={{ marginRight: '0.5rem' }} />
+                                Configuración
+                            </motion.button>
+                        </Link>
+                        {canAdd && (
+                            <motion.button
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() => openModal()}
+                                className="ga-btn ga-btn--primary"
+                            >
+                                <UserPlus size={18} style={{ marginRight: '0.5rem' }} />
+                                Agregar Usuario
+                            </motion.button>
+                        )}
+                    </div>
                 </div>
             </div>
 
             {/* Search Bar */}
-            <div className="mb-6 relative">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 w-5 h-5" />
+            <div className="u-mb-4" style={{ position: 'relative' }}>
+                <Search className="u-muted" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} size={18} />
                 <input
                     type="text"
                     placeholder="Buscar por nombre, usuario o cargo..."
                     onChange={handleSearch}
-                    className="w-full pl-12 pr-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:ring-2 focus:ring-purple-500 outline-none"
+                    className="ga-control"
+                    style={{ paddingLeft: '2.5rem' }}
                 />
             </div>
 
             {/* Table */}
-            <div className="bg-slate-800/50 backdrop-blur-md rounded-xl border border-slate-700/50 overflow-hidden shadow-xl">
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left text-slate-300">
-                        <thead className="bg-slate-900/50 text-slate-400 uppercase text-xs font-semibold tracking-wider">
+            <div className="ga-card">
+                <div className="ga-table-wrap">
+                    <table className="ga-table">
+                        <thead>
                             <tr>
-                                <th className="px-6 py-4">Usuario</th>
-                                <th className="px-6 py-4">Cargo</th>
-                                <th className="px-6 py-4">Nivel</th>
-                                <th className="px-6 py-4">Proceso</th>
-                                <th className="px-6 py-4 text-right">Acciones</th>
+                                <th>Usuario</th>
+                                <th>Cargo</th>
+                                <th>Nivel / Rol</th>
+                                <th>Proceso Destino</th>
+                                <th className="u-right">Acciones</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-700/50">
+                        <tbody>
                             {filteredUsers.map((u) => (
                                 <motion.tr
                                     key={u.id}
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
-                                    className="hover:bg-slate-700/30 transition-colors"
                                 >
-                                    <td className="px-6 py-4">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500/20 to-blue-500/20 border border-purple-500/30 flex items-center justify-center text-purple-400 font-bold text-xs">
-                                                {u.first_name[0]}{u.last_name[0]}
+                                    <td>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                            <div style={{
+                                                width: '32px', height: '32px', borderRadius: '50%',
+                                                backgroundColor: 'var(--ga-bg)', color: 'var(--ga-primary)',
+                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                fontWeight: 'bold', fontSize: '12px', border: '1px solid var(--ga-border)'
+                                            }}>
+                                                {u.first_name?.[0]}{u.last_name?.[0]}
                                             </div>
                                             <div>
-                                                <div className="font-semibold text-white">{u.first_name} {u.last_name}</div>
-                                                <div className="text-xs text-slate-500">@{u.username}</div>
+                                                <div className="u-bold">{u.first_name} {u.last_name}</div>
+                                                <div className="u-muted" style={{ fontSize: '0.85em' }}>@{u.username}</div>
                                             </div>
                                         </div>
                                     </td>
-                                    <td className="px-6 py-4">{u.position}</td>
-                                    <td className="px-6 py-4">
-                                        <span className={`px-2 py-1 rounded-full text-xs font-medium border ${u.level === 'admin' ? 'bg-purple-500/10 text-purple-400 border-purple-500/20' :
-                                                u.level === 'assistant' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' :
-                                                    'bg-green-500/10 text-green-400 border-green-500/20'
+                                    <td>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                            <Briefcase size={14} className="u-muted" />
+                                            {u.position}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span className={`ga-badge ${u.level === 'admin' ? 'ga-badge--error' : // Using error color for high privilege visibility? Or custom. Theme has warn/ok/error.
+                                                u.level === 'assistant' ? 'ga-badge--warn' :
+                                                    'ga-badge--ok'
                                             }`}>
                                             {u.level === 'admin' ? 'Administrador' : u.level === 'assistant' ? 'Asistente' : 'Usuario'}
                                         </span>
                                     </td>
-                                    <td className="px-6 py-4">
-                                        <span className={`px-2 py-1 rounded-full text-xs font-medium border ${u.process_type === 'Verde' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
-                                                'bg-amber-500/10 text-amber-400 border-amber-500/20'
-                                            }`}>
+                                    <td>
+                                        <span className={`ga-badge ${u.process_type === 'Verde' ? 'ga-badge--ok' : 'ga-badge--warn'}`}>
                                             {u.process_type}
                                         </span>
                                     </td>
-                                    <td className="px-6 py-4 text-right">
-                                        <div className="flex items-center justify-end gap-2">
+                                    <td className="u-right">
+                                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
                                             {canEdit && (
                                                 <button
                                                     onClick={() => openModal(u)}
-                                                    className="p-2 text-blue-400 hover:bg-blue-500/10 rounded-lg transition-colors"
+                                                    className="ga-btn ga-btn--sm ga-btn--ghost"
                                                     title="Editar"
                                                 >
-                                                    <Edit2 className="w-4 h-4" />
+                                                    <Edit2 size={16} />
                                                 </button>
                                             )}
                                             {canDelete && (
                                                 <button
                                                     onClick={() => handleDelete(u.id)}
-                                                    className="p-2 text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+                                                    className="ga-btn ga-btn--sm ga-btn--ghost"
+                                                    style={{ color: 'var(--ga-danger)' }}
                                                     title="Eliminar"
                                                 >
-                                                    <Trash2 className="w-4 h-4" />
+                                                    <Trash2 size={16} />
                                                 </button>
                                             )}
                                         </div>
                                     </td>
                                 </motion.tr>
                             ))}
+                            {filteredUsers.length === 0 && (
+                                <tr>
+                                    <td colSpan="5" className="u-center u-muted" style={{ padding: '2rem' }}>
+                                        No se encontraron usuarios
+                                    </td>
+                                </tr>
+                            )}
                         </tbody>
                     </table>
                 </div>
@@ -223,63 +238,63 @@ const AdminDashboard = () => {
             {/* Modal */}
             <AnimatePresence>
                 {isModalOpen && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+                    <div className="ga-modal-backdrop">
                         <motion.div
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.95 }}
-                            className="bg-slate-800 border border-slate-700 rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden"
+                            className="ga-modal"
                         >
-                            <div className="p-6 border-b border-slate-700 bg-slate-900/50 flex justify-between items-center">
-                                <h2 className="text-xl font-bold text-white">
-                                    {editingUser ? 'Editar Usuario' : 'Nuevo Usuario'}
-                                </h2>
-                                <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-white">
-                                    <X className="w-6 h-6" />
+                            <div className="ga-modal__header">
+                                <span>{editingUser ? 'Editar Usuario' : 'Nuevo Usuario'}</span>
+                                <button onClick={() => setIsModalOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
+                                    <X size={24} />
                                 </button>
                             </div>
 
-                            <form onSubmit={handleSubmit} className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="space-y-4">
-                                    <div>
-                                        <label className="text-xs uppercase text-slate-500 font-semibold">Nombre</label>
-                                        <input className="w-full mt-1 p-3 bg-slate-900/50 border border-slate-700 rounded-lg text-white outline-none focus:border-purple-500"
-                                            name="first_name" value={formData.first_name} onChange={handleChange} required />
+                            <form onSubmit={handleSubmit}>
+                                <div className="ga-modal__content ga-stack">
+                                    <div className="ga-grid ga-grid--2">
+                                        <div>
+                                            <label className="ga-label">Nombre</label>
+                                            <input className="ga-control"
+                                                name="first_name" value={formData.first_name} onChange={handleChange} required />
+                                        </div>
+                                        <div>
+                                            <label className="ga-label">Apellido</label>
+                                            <input className="ga-control"
+                                                name="last_name" value={formData.last_name} onChange={handleChange} required />
+                                        </div>
                                     </div>
+
                                     <div>
-                                        <label className="text-xs uppercase text-slate-500 font-semibold">Apellido</label>
-                                        <input className="w-full mt-1 p-3 bg-slate-900/50 border border-slate-700 rounded-lg text-white outline-none focus:border-purple-500"
-                                            name="last_name" value={formData.last_name} onChange={handleChange} required />
-                                    </div>
-                                    <div>
-                                        <label className="text-xs uppercase text-slate-500 font-semibold">Cargo</label>
-                                        <input className="w-full mt-1 p-3 bg-slate-900/50 border border-slate-700 rounded-lg text-white outline-none focus:border-purple-500"
+                                        <label className="ga-label">Cargo</label>
+                                        <input className="ga-control"
                                             name="position" value={formData.position} onChange={handleChange} required />
                                     </div>
-                                </div>
 
-                                <div className="space-y-4">
                                     <div>
-                                        <label className="text-xs uppercase text-slate-500 font-semibold">Usuario</label>
-                                        <input className="w-full mt-1 p-3 bg-slate-900/50 border border-slate-700 rounded-lg text-white outline-none focus:border-purple-500"
+                                        <label className="ga-label">Usuario</label>
+                                        <input className="ga-control"
                                             name="username" value={formData.username} onChange={handleChange} required
-                                            readOnly={!!editingUser} // Prevent changing username on edit if desired, or allow it.
+                                            readOnly={!!editingUser}
                                         />
                                     </div>
+
                                     <div>
-                                        <label className="text-xs uppercase text-slate-500 font-semibold">
+                                        <label className="ga-label">
                                             {editingUser ? 'Nueva Contraseña (Opcional)' : 'Contraseña'}
                                         </label>
-                                        <input className="w-full mt-1 p-3 bg-slate-900/50 border border-slate-700 rounded-lg text-white outline-none focus:border-purple-500"
+                                        <input className="ga-control"
                                             type="password" name="password" value={formData.password} onChange={handleChange}
                                             required={!editingUser}
                                         />
                                     </div>
 
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <div className="ga-grid ga-grid--2">
                                         <div>
-                                            <label className="text-xs uppercase text-slate-500 font-semibold">Nivel</label>
-                                            <select className="w-full mt-1 p-3 bg-slate-900/50 border border-slate-700 rounded-lg text-white outline-none focus:border-purple-500"
+                                            <label className="ga-label">Nivel / Rol</label>
+                                            <select className="ga-select"
                                                 name="level" value={formData.level} onChange={handleChange} disabled={!canChangePermissions}>
                                                 <option value="user">Usuario</option>
                                                 <option value="assistant">Asistente</option>
@@ -287,8 +302,8 @@ const AdminDashboard = () => {
                                             </select>
                                         </div>
                                         <div>
-                                            <label className="text-xs uppercase text-slate-500 font-semibold">Proceso</label>
-                                            <select className="w-full mt-1 p-3 bg-slate-900/50 border border-slate-700 rounded-lg text-white outline-none focus:border-purple-500"
+                                            <label className="ga-label">Proceso</label>
+                                            <select className="ga-select"
                                                 name="process_type" value={formData.process_type} onChange={handleChange} disabled={!canChangePermissions}>
                                                 <option value="Verde">Verde</option>
                                                 <option value="Seco">Seco</option>
@@ -297,13 +312,11 @@ const AdminDashboard = () => {
                                     </div>
                                 </div>
 
-                                <div className="md:col-span-2 pt-4 border-t border-slate-700 flex justify-end gap-3">
-                                    <button type="button" onClick={() => setIsModalOpen(false)}
-                                        className="px-4 py-2 text-slate-400 hover:text-white transition-colors">
+                                <div className="ga-modal__footer">
+                                    <button type="button" onClick={() => setIsModalOpen(false)} className="ga-btn ga-btn--outline">
                                         Cancelar
                                     </button>
-                                    <button type="submit"
-                                        className="px-6 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg shadow-lg font-semibold hover:scale-105 transition-transform">
+                                    <button type="submit" className="ga-btn ga-btn--primary">
                                         {editingUser ? 'Guardar Cambios' : 'Crear Usuario'}
                                     </button>
                                 </div>

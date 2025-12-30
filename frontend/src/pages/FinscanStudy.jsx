@@ -7,7 +7,7 @@ import {
 } from '../api';
 import {
     Plus, Search, BarChart2, CheckCircle2, AlertTriangle, XCircle,
-    ArrowRight, Save, Database, Activity, RefreshCw
+    ArrowRight, Save, Database, Activity, RefreshCw, Printer
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -141,45 +141,44 @@ export default function FinscanStudy() {
     };
 
     return (
-        <div className="max-w-7xl mx-auto p-4 space-y-6">
-            <header className="flex justify-between items-center bg-slate-800/50 p-6 rounded-2xl border border-slate-700 backdrop-blur-md">
+        <div className="ga-page">
+            <header className="ga-card u-mb-6" style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', background: 'var(--ga-bg)', backdropFilter: 'blur(10px)' }}>
                 <div>
-                    <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent flex items-center gap-3">
-                        <Activity className="w-8 h-8 text-pink-400" />
+                    <h1 className="ga-card__title" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '1.75rem' }}>
+                        <Activity className="text-pink-400" size={32} />
                         Estudio Finscan
                     </h1>
-                    <p className="text-slate-400 mt-1">Comparativa de clasificación: Scanner vs Inspector</p>
+                    <p className="u-muted">Comparativa de clasificación: Scanner vs Inspector</p>
                 </div>
-                <div className="flex justify-end gap-4 print:hidden">
+                <div className="u-flex u-gap-2 print:hidden">
                     {view === 'active' && (
                         <button
                             onClick={() => window.print()}
-                            className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-bold flex items-center gap-2"
+                            className="ga-btn ga-btn--outline"
                         >
-                            <span className="text-xl">🖨️</span> Imprimir / Reporte
+                            <Printer size={20} /> <span style={{ marginLeft: '0.5rem' }}>Imprimir</span>
                         </button>
                     )}
                     {view !== 'list' && (
-
-                        <button onClick={() => setView('list')} className="px-4 py-2 text-slate-300 hover:text-white transition-colors">
+                        <button onClick={() => setView('list')} className="ga-btn ga-btn--text">
                             Volver a Lista
                         </button>
                     )}
                     {view === 'active' && (
                         <button
                             onClick={() => setView('list')}
-                            className="px-6 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-bold flex items-center gap-2 shadow-lg shadow-emerald-900/20"
+                            className="ga-btn ga-btn--success"
+                            style={{ boxShadow: '0 4px 14px 0 rgba(0,0,0,0.3)' }}
                         >
-                            <CheckCircle2 className="w-5 h-5" /> Finalizar Estudio
+                            <CheckCircle2 size={20} /> <span style={{ marginLeft: '0.5rem' }}>Finalizar Estudio</span>
                         </button>
                     )}
                     {view === 'list' && (
-
                         <button
                             onClick={() => setView('create')}
-                            className="px-6 py-2 bg-pink-600 hover:bg-pink-500 text-white rounded-lg font-bold flex items-center gap-2 transition-all shadow-lg shadow-pink-900/20"
+                            className="ga-btn ga-btn--accent"
                         >
-                            <Plus className="w-5 h-5" /> Nuevo Estudio
+                            <Plus size={20} /> <span style={{ marginLeft: '0.5rem' }}>Nuevo Estudio</span>
                         </button>
                     )}
                 </div>
@@ -190,13 +189,13 @@ export default function FinscanStudy() {
                     <motion.div
                         key="list"
                         initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                        className="grid grid-cols-1 gap-4"
+                        className="ga-stack"
                     >
                         {studies.map(study => (
-                            <div key={study.id} className="bg-slate-800 p-6 rounded-xl border border-slate-700 flex justify-between items-center hover:bg-slate-750 transition-colors">
+                            <div key={study.id} className="ga-card" style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', transition: 'background-color 0.2s' }}>
                                 <div>
-                                    <h3 className="text-xl font-bold text-white">{study.product_name}</h3>
-                                    <div className="flex gap-4 text-sm text-slate-400 mt-2">
+                                    <h3 className="ga-card__title">{study.product_name}</h3>
+                                    <div className="u-flex u-gap-4 u-muted u-mt-2" style={{ fontSize: '0.875rem' }}>
                                         <span>📅 {new Date(study.date).toLocaleDateString()}</span>
                                         <span>👤 {study.responsible}</span>
                                         <span>🏭 {study.shift}</span>
@@ -204,14 +203,14 @@ export default function FinscanStudy() {
                                 </div>
                                 <button
                                     onClick={() => { setActiveStudy(study); setView('active'); }}
-                                    className="px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-white"
+                                    className="ga-btn ga-btn--outline ga-btn--sm"
                                 >
                                     Abrir
                                 </button>
                             </div>
                         ))}
                         {studies.length === 0 && (
-                            <div className="text-center py-20 text-slate-500">No hay estudios registrados</div>
+                            <div className="u-center u-muted u-p-8 u-italic">No hay estudios registrados</div>
                         )}
                     </motion.div>
                 )}
@@ -223,8 +222,6 @@ export default function FinscanStudy() {
                         user={user}
                         onCancel={() => setView('list')}
                     />
-
-
                 )}
 
                 {view === 'active' && activeStudy && (
@@ -238,7 +235,6 @@ export default function FinscanStudy() {
                         lastAdded={lastAdded}
                         masterData={{ lengths }}
                     />
-
                 )}
             </AnimatePresence>
         </div>
@@ -262,8 +258,6 @@ function StudyCreateForm({ onSubmit, masterData, user, onCancel }) {
         default_length: ''
     });
 
-
-
     const handleSubmit = (e) => {
         e.preventDefault();
         onSubmit(form);
@@ -272,43 +266,49 @@ function StudyCreateForm({ onSubmit, masterData, user, onCancel }) {
     return (
         <motion.div
             initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
-            className="bg-slate-800 p-8 rounded-2xl border border-slate-700 max-w-2xl mx-auto"
+            className="ga-card"
+            style={{ maxWidth: '700px', margin: '0 auto' }}
         >
-            <h2 className="text-2xl font-bold text-white mb-6">Configurar Nuevo Estudio</h2>
-            <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="bg-slate-900/50 p-4 rounded-xl border border-slate-700/50 mb-4">
-                    <h3 className="text-sm font-bold text-slate-400 uppercase mb-3">Datos Generales</h3>
-                    <div className="grid grid-cols-2 gap-4">
-                        <SelectField label="Mercado" name="market_id" value={form.market_id} onChange={(v) => setForm({ ...form, market_id: v })} options={masterData.markets} valueKey="id" />
-                        <SelectField label="Producto" name="product_name" value={form.product_name} onChange={(v) => setForm({ ...form, product_name: v })} options={masterData.products} valueKey="name" />
-                        <SelectField label="Turno" name="shift" value={form.shift} onChange={(v) => setForm({ ...form, shift: v })} options={masterData.shifts} valueKey="name" />
-                        <SelectField label="Area" name="area" value={form.area} onChange={(v) => setForm({ ...form, area: v })} options={masterData.areas} valueKey="name" />
-                        <SelectField label="Máquina" name="machine" value={form.machine} onChange={(v) => setForm({ ...form, machine: v })} options={masterData.machines} valueKey="name" />
-                        <SelectField label="Supervisor" name="supervisor" value={form.supervisor} onChange={(v) => setForm({ ...form, supervisor: v })} options={masterData.supervisors} valueKey="name" />
+            <div className="ga-card__header">
+                <h2 className="ga-card__title">Configurar Nuevo Estudio</h2>
+            </div>
+            <div className="ga-card__body">
+                <form onSubmit={handleSubmit} className="ga-stack">
+                    <div className="ga-card" style={{ background: 'var(--ga-bg)', padding: '1rem' }}>
+                        <h3 className="u-bold u-muted u-mb-4" style={{ fontSize: '0.875rem', textTransform: 'uppercase' }}>Datos Generales</h3>
+                        <div className="ga-grid ga-grid--2">
+                            <SelectField label="Mercado" name="market_id" value={form.market_id} onChange={(v) => setForm({ ...form, market_id: v })} options={masterData.markets} valueKey="id" />
+                            <SelectField label="Producto" name="product_name" value={form.product_name} onChange={(v) => setForm({ ...form, product_name: v })} options={masterData.products} valueKey="name" />
+                            <SelectField label="Turno" name="shift" value={form.shift} onChange={(v) => setForm({ ...form, shift: v })} options={masterData.shifts} valueKey="name" />
+                            <SelectField label="Area" name="area" value={form.area} onChange={(v) => setForm({ ...form, area: v })} options={masterData.areas} valueKey="name" />
+                            <SelectField label="Máquina" name="machine" value={form.machine} onChange={(v) => setForm({ ...form, machine: v })} options={masterData.machines} valueKey="name" />
+                            <SelectField label="Supervisor" name="supervisor" value={form.supervisor} onChange={(v) => setForm({ ...form, supervisor: v })} options={masterData.supervisors} valueKey="name" />
+                        </div>
                     </div>
-                </div>
 
-                <div className="bg-slate-900/50 p-4 rounded-xl border border-slate-700/50 mb-4">
-                    <h3 className="text-sm font-bold text-emerald-400 uppercase mb-3 flex items-center gap-2">
-                        <Database className="w-4 h-4" /> Dimensiones por Defecto (Opcional)
-                    </h3>
-                    <p className="text-xs text-slate-500 mb-3">Configura esto para acelerar la carga de piezas.</p>
-                    <div className="grid grid-cols-3 gap-4">
-                        <InputField label="Espesor (mm)" type="number" value={form.default_thickness} onChange={(v) => setForm({ ...form, default_thickness: v })} />
-                        <InputField label="Ancho (mm)" type="number" value={form.default_width} onChange={(v) => setForm({ ...form, default_width: v })} />
-                        <InputField label="Largo (mm)" type="number" value={form.default_length} onChange={(v) => setForm({ ...form, default_length: v })} />
+                    <div className="ga-card" style={{ background: 'var(--ga-bg)', padding: '1rem' }}>
+                        <h3 className="u-bold u-mb-2" style={{ fontSize: '0.875rem', textTransform: 'uppercase', color: 'var(--ga-success)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <Database size={16} /> Dimensiones por Defecto
+                        </h3>
+                        <p className="u-muted u-mb-4" style={{ fontSize: '0.75rem' }}>Configura esto para acelerar la carga de piezas.</p>
+                        <div className="ga-grid ga-grid--3">
+                            <InputField label="Espesor (mm)" type="number" value={form.default_thickness} onChange={(v) => setForm({ ...form, default_thickness: v })} />
+                            <InputField label="Ancho (mm)" type="number" value={form.default_width} onChange={(v) => setForm({ ...form, default_width: v })} />
+                            <InputField label="Largo (mm)" type="number" value={form.default_length} onChange={(v) => setForm({ ...form, default_length: v })} />
+                        </div>
                     </div>
-                </div>
 
-                <div>
-                    <label className="block text-sm text-slate-400 mb-1">Responsable</label>
-                    <input className="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white" value={form.responsible} onChange={(e) => setForm({ ...form, responsible: e.target.value })} />
-                </div>
-                <div className="flex justify-end gap-4 pt-4">
-                    <button type="button" onClick={onCancel} className="px-6 py-2 text-slate-400 hover:text-white">Cancelar</button>
-                    <button type="submit" className="px-6 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-bold">Crear Estudio</button>
-                </div>
-            </form>
+                    <div>
+                        <label className="ga-label">Responsable</label>
+                        <input className="ga-control" value={form.responsible} onChange={(e) => setForm({ ...form, responsible: e.target.value })} />
+                    </div>
+
+                    <div className="u-flex u-gap-4 u-mt-4" style={{ justifyContent: 'flex-end' }}>
+                        <button type="button" onClick={onCancel} className="ga-btn ga-btn--text">Cancelar</button>
+                        <button type="submit" className="ga-btn ga-btn--primary">Crear Estudio</button>
+                    </div>
+                </form>
+            </div>
         </motion.div>
     );
 }
@@ -316,11 +316,11 @@ function StudyCreateForm({ onSubmit, masterData, user, onCancel }) {
 function SelectField({ label, name, value, onChange, options, valueKey = 'id' }) {
     return (
         <div>
-            <label className="block text-sm text-slate-400 mb-1">{label}</label>
+            <label className="ga-label">{label}</label>
             <select
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
-                className="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white outline-none focus:ring-1 focus:ring-emerald-500"
+                className="ga-select"
             >
                 <option value="">Seleccionar...</option>
                 {options.map(o => (
@@ -334,70 +334,71 @@ function SelectField({ label, name, value, onChange, options, valueKey = 'id' })
 function InputField({ label, value, onChange, type = "text" }) {
     return (
         <div>
-            <label className="block text-sm text-slate-400 mb-1">{label}</label>
+            <label className="ga-label">{label}</label>
             <input
                 type={type}
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
-                className="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white outline-none focus:ring-1 focus:ring-emerald-500"
+                className="ga-control"
             />
         </div>
     );
 }
 
 function ActiveStudyView({ study, stats, grades, currentItem, setCurrentItem, onAddItem, lastAdded, masterData }) {
-
     // Sort items latest first
     const items = [...(study.items || [])].sort((a, b) => b.id - a.id);
 
     return (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="ga-stack">
             {/* Stats Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="ga-grid ga-grid--4">
                 <StatCard label="Piezas Evaluadas" value={stats?.pieces_evaluated || 0} icon={<Database className="text-blue-400" />} />
                 <StatCard label="Asertividad" value={((stats?.assertiveness || 0) * 100).toFixed(1) + '%'} icon={<CheckCircle2 className="text-emerald-400" />} color="bg-emerald-500/10 text-emerald-400" />
                 <StatCard label="Sobre Grado" value={stats?.pieces_over_grade || 0} subValue={((stats?.pieces_over_grade / (stats?.pieces_evaluated || 1)) * 100).toFixed(1) + '%'} icon={<AlertTriangle className="text-amber-400" />} color="bg-amber-500/10 text-amber-400" />
                 <StatCard label="Bajo Grado" value={stats?.pieces_under_grade || 0} subValue={((stats?.pieces_under_grade / (stats?.pieces_evaluated || 1)) * 100).toFixed(1) + '%'} icon={<XCircle className="text-red-400" />} color="bg-red-500/10 text-red-400" />
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="ga-grid" style={{ gridTemplateColumns: 'minmax(300px, 1fr) 2fr', gap: '1.5rem' }}>
                 {/* Input Section */}
-                <div className="lg:col-span-1 bg-slate-800 p-6 rounded-2xl border border-slate-700 h-fit print:hidden">
-                    <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-                        <Plus className="w-5 h-5 text-emerald-400" /> Ingreso de Pieza
-                    </h3>
+                <div className="ga-card print:hidden" style={{ height: 'fit-content' }}>
+                    <div className="ga-card__header">
+                        <h3 className="ga-card__title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <Plus className="text-emerald-400" size={20} /> Ingreso de Pieza
+                        </h3>
+                    </div>
 
-                    <div className="space-y-4">
-                        <div className="text-center font-mono text-4xl text-slate-500 mb-8 bg-slate-900/50 py-4 rounded-lg">
+                    <div className="ga-card__body ga-stack">
+                        <div className="u-center u-bold u-mono u-p-4" style={{ fontSize: '2rem', background: 'var(--ga-bg)', borderRadius: 'var(--ga-radius-md)' }}>
                             #{currentItem.item_number}
                         </div>
 
-                        <div className="space-y-2 mb-4">
-                            <label className="text-sm font-bold text-slate-400 uppercase">Dimensiones</label>
-                            <div className="grid grid-cols-2 gap-2">
+                        <div className="u-mb-2">
+                            <label className="ga-label u-uppercase">Dimensiones</label>
+                            <div className="ga-grid ga-grid--2">
                                 <input
                                     type="number" placeholder="Espesor"
-                                    className="p-2 bg-slate-900 border border-slate-700 rounded text-white text-center"
+                                    className="ga-control u-center"
                                     value={currentItem.thickness} onChange={e => setCurrentItem({ ...currentItem, thickness: e.target.value })}
                                 />
                                 <input
                                     type="number" placeholder="Ancho"
-                                    className="p-2 bg-slate-900 border border-slate-700 rounded text-white text-center"
+                                    className="ga-control u-center"
                                     value={currentItem.width} onChange={e => setCurrentItem({ ...currentItem, width: e.target.value })}
                                 />
                             </div>
                         </div>
 
-                        {/* Length Selection: Buttons if configured, else Input */}
-                        <div className="space-y-2 mb-4">
-                            <label className="text-sm font-bold text-slate-400 uppercase">Largo</label>
+                        <div className="u-mb-2">
+                            <label className="ga-label u-uppercase">Largo</label>
                             {masterData && masterData.lengths && masterData.lengths.length > 0 ? (
-                                <div className="grid grid-cols-3 gap-2">
+                                <div className="ga-grid ga-grid--3" style={{ gap: '0.5rem' }}>
                                     {masterData.lengths.map(l => (
                                         <button
                                             key={l.id}
                                             onClick={() => setCurrentItem({ ...currentItem, length: l.name })}
-                                            className={`p-3 rounded-lg text-sm font-bold transition-all ${parseFloat(currentItem.length) === parseFloat(l.name) ? 'bg-indigo-600 text-white ring-2 ring-indigo-300' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'}`}
+                                            className={`ga-btn ga-btn--sm ${parseFloat(currentItem.length) === parseFloat(l.name) ? 'ga-btn--primary' : 'ga-btn--outline'}`}
+                                            style={{ justifyContent: 'center' }}
                                         >
                                             {l.name}
                                         </button>
@@ -406,22 +407,22 @@ function ActiveStudyView({ study, stats, grades, currentItem, setCurrentItem, on
                             ) : (
                                 <input
                                     type="number"
-                                    className="w-full p-2 bg-slate-900 border border-slate-700 rounded text-white text-center"
+                                    className="ga-control u-center"
                                     placeholder="Largo mm"
                                     value={currentItem.length} onChange={e => setCurrentItem({ ...currentItem, length: e.target.value })}
                                 />
                             )}
                         </div>
 
-                        <div className="space-y-2">
-
-                            <label className="text-sm font-bold text-blue-400 uppercase">Clasificación Inspector</label>
-                            <div className="grid grid-cols-2 gap-2">
+                        <div className="u-mb-2">
+                            <label className="ga-label u-uppercase" style={{ color: 'var(--ga-info)' }}>Clasificación Inspector</label>
+                            <div className="ga-grid ga-grid--2" style={{ gap: '0.5rem' }}>
                                 {grades.map(g => (
                                     <button
                                         key={g.id}
                                         onClick={() => setCurrentItem({ ...currentItem, inspector_grade_id: g.id })}
-                                        className={`p-3 rounded-lg text-sm font-bold transition-all ${currentItem.inspector_grade_id === g.id ? 'bg-blue-600 text-white ring-2 ring-blue-300' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'}`}
+                                        className={`ga-btn ga-btn--sm ${currentItem.inspector_grade_id === g.id ? 'ga-btn--info' : 'ga-btn--outline'}`}
+                                        style={{ justifyContent: 'center' }}
                                     >
                                         {g.name}
                                     </button>
@@ -429,14 +430,15 @@ function ActiveStudyView({ study, stats, grades, currentItem, setCurrentItem, on
                             </div>
                         </div>
 
-                        <div className="space-y-2 pt-4 border-t border-slate-700">
-                            <label className="text-sm font-bold text-pink-400 uppercase">Clasificación Scanner</label>
-                            <div className="grid grid-cols-2 gap-2">
+                        <div className="u-pt-4" style={{ borderTop: '1px solid var(--ga-border)' }}>
+                            <label className="ga-label u-uppercase" style={{ color: 'var(--ga-accent)' }}>Clasificación Scanner</label>
+                            <div className="ga-grid ga-grid--2" style={{ gap: '0.5rem' }}>
                                 {grades.map(g => (
                                     <button
                                         key={g.id}
                                         onClick={() => setCurrentItem({ ...currentItem, scanner_grade_id: g.id })}
-                                        className={`p-3 rounded-lg text-sm font-bold transition-all ${currentItem.scanner_grade_id === g.id ? 'bg-pink-600 text-white ring-2 ring-pink-300' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'}`}
+                                        className={`ga-btn ga-btn--sm ${currentItem.scanner_grade_id === g.id ? 'ga-btn--accent' : 'ga-btn--outline'}`}
+                                        style={{ justifyContent: 'center' }}
                                     >
                                         {g.name}
                                     </button>
@@ -447,7 +449,8 @@ function ActiveStudyView({ study, stats, grades, currentItem, setCurrentItem, on
                         <button
                             onClick={onAddItem}
                             disabled={!currentItem.inspector_grade_id || !currentItem.scanner_grade_id}
-                            className="w-full py-4 mt-6 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold text-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                            className="ga-btn ga-btn--primary ga-btn--lg u-mt-4"
+                            style={{ width: '100%', justifyContent: 'center' }}
                         >
                             Registrar Pieza
                         </button>
@@ -455,46 +458,46 @@ function ActiveStudyView({ study, stats, grades, currentItem, setCurrentItem, on
                 </div>
 
                 {/* List Section */}
-                <div className="lg:col-span-2 print:col-span-3 bg-slate-900/50 p-6 rounded-2xl border border-slate-700">
-                    <h3 className="text-lg font-bold text-slate-300 mb-4">Registro Detallado</h3>
-                    <div className="overflow-hidden rounded-xl border border-slate-700">
-                        <table className="w-full text-slate-300">
-                            <thead className="bg-slate-800 text-slate-400 text-xs uppercase font-bold">
+                <div className="ga-card print:col-span-3">
+                    <div className="ga-card__header">
+                        <h3 className="ga-card__title">Registro Detallado</h3>
+                    </div>
+                    <div className="ga-table-container">
+                        <table className="ga-table">
+                            <thead>
                                 <tr>
-                                    <th className="p-3 text-left">#</th>
-                                    <th className="p-3 text-center">Dimensiones</th>
-                                    <th className="p-3 text-center">Inspector</th>
-                                    <th className="p-3 text-center">Scanner</th>
-                                    <th className="p-3 text-right">Resultado</th>
+                                    <th className="u-left">#</th>
+                                    <th className="u-center">Dimensiones</th>
+                                    <th className="u-center">Inspector</th>
+                                    <th className="u-center">Scanner</th>
+                                    <th className="u-right">Resultado</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-700 text-sm">
+                            <tbody>
                                 {items.map(item => {
-                                    const isMatch = item.inspector_grade_id === item.scanner_grade_id;
                                     const inspectorRank = item.inspector_grade?.grade_rank || 0;
                                     const scannerRank = item.scanner_grade?.grade_rank || 0;
                                     let status = "En Grado";
-                                    let statusColor = "text-emerald-400";
+                                    let statusColor = "var(--ga-success)";
 
-                                    if (scannerRank < inspectorRank) { status = "Sobre Grado"; statusColor = "text-amber-400"; }
-                                    if (scannerRank > inspectorRank) { status = "Bajo Grado"; statusColor = "text-red-400"; }
+                                    if (scannerRank < inspectorRank) { status = "Sobre Grado"; statusColor = "var(--ga-warning)"; }
+                                    if (scannerRank > inspectorRank) { status = "Bajo Grado"; statusColor = "var(--ga-danger)"; }
 
                                     return (
-                                        <tr key={item.id} className="hover:bg-slate-800/50 transition-colors">
-                                            <td className="p-3 font-mono text-slate-500">#{item.item_number}</td>
-                                            <td className="p-3 text-center text-slate-400 text-xs">
+                                        <tr key={item.id}>
+                                            <td className="u-mono u-muted">#{item.item_number}</td>
+                                            <td className="u-center u-muted" style={{ fontSize: '0.75rem' }}>
                                                 {item.thickness}x{item.width}x{item.length}
                                             </td>
-                                            <td className="p-3 text-center font-bold text-blue-300">{item.inspector_grade?.name}</td>
-                                            <td className="p-3 text-center font-bold text-pink-300">{item.scanner_grade?.name}</td>
-                                            <td className={`p-3 text-right font-bold ${statusColor}`}>{status}</td>
+                                            <td className="u-center u-bold" style={{ color: 'var(--ga-info)' }}>{item.inspector_grade?.name}</td>
+                                            <td className="u-center u-bold" style={{ color: 'var(--ga-accent)' }}>{item.scanner_grade?.name}</td>
+                                            <td className="u-right u-bold" style={{ color: statusColor }}>{status}</td>
                                         </tr>
                                     );
-
                                 })}
                                 {items.length === 0 && (
                                     <tr>
-                                        <td colSpan="5" className="p-8 text-center text-slate-500 italic">Esperando datos...</td>
+                                        <td colSpan="5" className="u-center u-muted u-italic u-p-6">Esperando datos...</td>
                                     </tr>
                                 )}
                             </tbody>
@@ -506,16 +509,16 @@ function ActiveStudyView({ study, stats, grades, currentItem, setCurrentItem, on
     );
 }
 
-function StatCard({ label, value, subValue, icon, color = "bg-slate-800 text-white" }) {
+function StatCard({ label, value, subValue, icon, color = "var(--ga-text)" }) {
     return (
-        <div className={`p-6 rounded-xl border border-slate-700/50 bg-slate-800 flex flex-col justify-between`}>
-            <div className="flex justify-between items-start mb-2">
-                <span className="text-slate-400 text-sm font-semibold uppercase">{label}</span>
-                <span className="p-2 bg-slate-900 rounded-lg">{icon}</span>
+        <div className="ga-card" style={{ padding: '1.5rem', height: '100%', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
+                <span className="u-uppercase u-bold u-muted" style={{ fontSize: '0.75rem' }}>{label}</span>
+                <span style={{ padding: '0.5rem', background: 'var(--ga-bg)', borderRadius: '8px' }}>{icon}</span>
             </div>
             <div>
-                <div className="text-3xl font-bold text-white">{value}</div>
-                {subValue && <div className="text-sm text-slate-500 mt-1">{subValue}</div>}
+                <div style={{ fontSize: '1.875rem', fontWeight: 'bold' }}>{value}</div>
+                {subValue && <div className="u-muted" style={{ fontSize: '0.875rem' }}>{subValue}</div>}
             </div>
         </div>
     );

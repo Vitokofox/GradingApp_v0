@@ -91,35 +91,38 @@ export default function InspectionsList() {
         });
 
     return (
-        <div className="p-8 max-w-7xl mx-auto h-[calc(100vh-64px)] overflow-hidden flex flex-col">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+        <div className="ga-page ga-stack">
+            {/* Header / Actions Bar */}
+            <div className="ga-card" style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
                 <div>
-                    <h1 className="text-3xl font-bold text-white flex items-center gap-2">
-                        <ClipboardList className="w-8 h-8 text-emerald-400" />
+                    <h1 className="ga-card__title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.5rem' }}>
+                        <span className="ga-badge ga-badge--ok">
+                            <ClipboardList size={24} />
+                        </span>
                         Historial de Inspecciones
                     </h1>
-                    <p className="text-slate-400">Registro completo de actividades realizadas</p>
+                    <p className="u-muted">Registro completo de actividades realizadas</p>
                 </div>
 
-                <div className="flex gap-2">
+                <div className="u-flex u-gap-2">
                     <button
                         onClick={() => setShowFilters(!showFilters)}
-                        className={`px-4 py-2 rounded-lg font-semibold flex items-center gap-2 transition-colors ${showFilters ? 'bg-purple-600 text-white' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}`}
+                        className={`ga-btn ${showFilters ? 'ga-btn--primary' : 'ga-btn--outline'}`}
                     >
-                        <Filter className="w-4 h-4" /> Filtros
+                        <Filter size={16} /> <span style={{ marginLeft: '0.5rem' }}>Filtros</span>
                     </button>
                     <button
                         onClick={handleDownload}
-                        className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-semibold flex items-center gap-2 transition-colors"
+                        className="ga-btn ga-btn--accent"
                     >
-                        <Download className="w-4 h-4" /> Exportar CSV
+                        <Download size={16} /> <span style={{ marginLeft: '0.5rem' }}>Exportar CSV</span>
                     </button>
                     <button
                         onClick={() => setSortOrder(prev => prev === 'desc' ? 'asc' : 'desc')}
-                        className="px-4 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 rounded-lg font-semibold flex items-center gap-2 transition-colors"
+                        className="ga-btn ga-btn--outline"
                         title={sortOrder === 'desc' ? "Más recientes primero" : "Más antiguos primero"}
                     >
-                        {sortOrder === 'desc' ? <ArrowDown className="w-4 h-4" /> : <ArrowUp className="w-4 h-4" />}
+                        {sortOrder === 'desc' ? <ArrowDown size={16} /> : <ArrowUp size={16} />}
                     </button>
                 </div>
             </div>
@@ -131,80 +134,92 @@ export default function InspectionsList() {
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: 'auto', opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
-                        className="bg-slate-800/50 border border-slate-700 rounded-xl p-4 mb-6 overflow-hidden"
+                        className="ga-card u-mb-4"
+                        style={{ overflow: 'hidden' }}
                     >
-                        <div className="flex flex-wrap items-end gap-4">
-                            <div>
-                                <label className="block text-xs uppercase text-slate-500 font-bold mb-1">Desde</label>
-                                <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="bg-slate-900 border border-slate-700 text-white p-2 rounded text-sm" />
-                            </div>
-                            <div>
-                                <label className="block text-xs uppercase text-slate-500 font-bold mb-1">Hasta</label>
-                                <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="bg-slate-900 border border-slate-700 text-white p-2 rounded text-sm" />
-                            </div>
-                            <div>
-                                <label className="block text-xs uppercase text-slate-500 font-bold mb-1">Tipo</label>
-                                <select value={typeFilter} onChange={e => setTypeFilter(e.target.value)} className="bg-slate-900 border border-slate-700 text-white p-2 rounded text-sm w-48">
-                                    <option value="all">Todos</option>
-                                    <option value="finished_product">Producto Terminado</option>
-                                    <option value="line_grading">Clasificación en Línea</option>
-                                    <option value="rejection_typing">Tipificación Rechazo</option>
-                                </select>
-                            </div>
-                            <div className="flex-1">
-                                <label className="block text-xs uppercase text-slate-500 font-bold mb-1">Buscar</label>
-                                <div className="relative">
-                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-                                    <input
-                                        type="text"
-                                        placeholder="Buscar por producto..."
-                                        value={searchTerm}
-                                        onChange={(e) => setSearchTerm(e.target.value)}
-                                        className="w-full pl-10 pr-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm focus:ring-1 focus:ring-emerald-500 outline-none"
-                                    />
+                        <div className="ga-card__body">
+                            <div className="ga-grid ga-grid--4" style={{ alignItems: 'end' }}>
+                                <div>
+                                    <label className="ga-label">Desde</label>
+                                    <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="ga-control" />
+                                </div>
+                                <div>
+                                    <label className="ga-label">Hasta</label>
+                                    <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="ga-control" />
+                                </div>
+                                <div>
+                                    <label className="ga-label">Tipo</label>
+                                    <select value={typeFilter} onChange={e => setTypeFilter(e.target.value)} className="ga-control">
+                                        <option value="all">Todos</option>
+                                        <option value="finished_product">Producto Terminado</option>
+                                        <option value="line_grading">Clasificación en Línea</option>
+                                        <option value="rejection_typing">Tipificación Rechazo</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="ga-label">Buscar</label>
+                                    <div style={{ position: 'relative' }}>
+                                        <Search size={16} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--ga-muted)' }} />
+                                        <input
+                                            type="text"
+                                            placeholder="Buscar por producto..."
+                                            value={searchTerm}
+                                            onChange={(e) => setSearchTerm(e.target.value)}
+                                            className="ga-control"
+                                            style={{ paddingLeft: '2.5rem' }}
+                                        />
+                                    </div>
+                                </div>
+                                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                                    <button
+                                        onClick={() => { setStartDate(''); setEndDate(''); setTypeFilter('all'); setSearchTerm(''); }}
+                                        className="ga-btn ga-btn--text u-muted"
+                                        title="Limpiar filtros"
+                                    >
+                                        <X size={20} />
+                                    </button>
                                 </div>
                             </div>
-                            <button onClick={() => { setStartDate(''); setEndDate(''); setTypeFilter('all'); setSearchTerm(''); }} className="p-2 text-slate-500 hover:text-white">
-                                <X className="w-5 h-5" />
-                            </button>
                         </div>
                     </motion.div>
                 )}
             </AnimatePresence>
 
-            <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 space-y-2">
+            {/* List */}
+            <div className="ga-stack" style={{ flex: 1, overflowY: 'auto' }}>
                 {filteredInspections.length > 0 ? (
                     filteredInspections.map((insp) => (
                         <motion.div
                             key={insp.id}
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="bg-slate-800/50 border border-slate-700/50 rounded-lg p-4 flex flex-col md:flex-row justify-between items-start md:items-center hover:bg-slate-800 transition-colors gap-4 group"
+                            className="ga-card"
+                            style={{
+                                flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: '1rem', flexWrap: 'wrap', gap: '1rem',
+                                borderLeft: `4px solid var(--ga-${insp.type === 'rejection_typing' ? 'danger' : insp.type === 'line_grading' ? 'primary' : 'success'})`
+                            }}
                         >
-                            <div>
-                                <div className="flex items-center gap-3">
-                                    <span className="font-mono text-slate-600 text-sm">#{insp.id}</span>
-                                    <h3 className="text-lg font-bold text-white">{insp.product_name}</h3>
-                                    <span className={`text-xs px-2 py-0.5 rounded-full border ${insp.type === 'rejection_typing' ? 'bg-red-500/20 border-red-500/50 text-red-300' :
-                                        insp.type === 'line_grading' ? 'bg-blue-500/20 border-blue-500/50 text-blue-300' :
-                                            'bg-emerald-500/20 border-emerald-500/50 text-emerald-300'
-                                        }`}>
+                            <div style={{ flex: 1, minWidth: '200px' }}>
+                                <div className="u-flex u-gap-2" style={{ alignItems: 'center', marginBottom: '0.5rem' }}>
+                                    <span className="ga-badge ga-badge--muted">#{insp.id}</span>
+                                    <h3 className="u-bold" style={{ fontSize: '1.125rem' }}>{insp.product_name}</h3>
+                                    <span className={`ga-badge ga-badge--${insp.type === 'rejection_typing' ? 'danger' : insp.type === 'line_grading' ? 'primary' : 'ok'}`}>
                                         {getTypeLabel(insp.type)}
                                     </span>
                                 </div>
-                                <div className="flex flex-wrap gap-4 mt-2 text-sm text-slate-400">
-                                    <span className="flex items-center gap-1"><Calendar className="w-4 h-4" /> {insp.date}</span>
-                                    <span className="bg-slate-900 px-2 py-0.5 rounded text-xs border border-slate-700">Lote: {insp.lot || 'N/A'}</span>
-                                    <span className="flex items-center gap-1"><User className="w-4 h-4" /> {insp.responsible || 'N/A'}</span>
+                                <div className="u-flex u-gap-4 u-muted" style={{ fontSize: '0.875rem', flexWrap: 'wrap' }}>
+                                    <span className="u-flex u-center-y u-gap-2"><Calendar size={14} /> {insp.date}</span>
+                                    <span style={{ padding: '2px 6px', background: 'var(--ga-bg)', borderRadius: '4px', border: '1px solid var(--ga-border)' }}>Lote: {insp.lot || 'N/A'}</span>
+                                    <span className="u-flex u-center-y u-gap-2"><User size={14} /> {insp.responsible || 'N/A'}</span>
                                 </div>
                             </div>
 
-                            <div className="flex items-center gap-6 w-full md:w-auto">
-                                <div className="text-right flex-1 md:flex-none">
-                                    <div className="text-xs text-slate-500 uppercase font-bold">Piezas</div>
-                                    <div className="text-xl font-mono text-emerald-400">{insp.pieces_inspected}</div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', flexWrap: 'wrap' }}>
+                                <div style={{ textAlign: 'right' }}>
+                                    <div className="u-text-xs u-bold u-muted u-uppercase">Piezas</div>
+                                    <div className="u-mono u-bold" style={{ fontSize: '1.25rem', color: 'var(--ga-success)' }}>{insp.pieces_inspected}</div>
                                 </div>
-                                <div className="flex gap-2">
+                                <div className="u-flex u-gap-2">
                                     <button
                                         onClick={() => {
                                             if (insp.type === 'line_grading') {
@@ -215,9 +230,9 @@ export default function InspectionsList() {
                                                 navigate(`/inspections/${insp.id}/report`);
                                             }
                                         }}
-                                        className="px-4 py-2 bg-slate-700 hover:bg-white hover:text-black rounded-lg transition-all flex items-center gap-2 text-sm font-semibold"
+                                        className="ga-btn ga-btn--outline ga-btn--sm"
                                     >
-                                        <Eye className="w-4 h-4" /> Ver
+                                        <Eye size={16} /> <span style={{ marginLeft: '0.5rem' }}>Ver</span>
                                     </button>
                                     {user && user.level === 'admin' && (
                                         <>
@@ -226,17 +241,18 @@ export default function InspectionsList() {
                                                     setSelectedInspection(insp);
                                                     setIsEditModalOpen(true);
                                                 }}
-                                                className="p-2 bg-slate-700 hover:bg-blue-600 text-slate-300 hover:text-white rounded-lg transition-colors"
+                                                className="ga-btn ga-btn--outline ga-btn--sm"
                                                 title="Editar (Solo Admin)"
                                             >
-                                                <Edit className="w-4 h-4" />
+                                                <Edit size={16} />
                                             </button>
                                             <button
                                                 onClick={() => handleDelete(insp.id)}
-                                                className="p-2 bg-slate-700 hover:bg-red-600 text-slate-300 hover:text-white rounded-lg transition-colors"
+                                                className="ga-btn ga-btn--primary ga-btn--sm"
                                                 title="Eliminar (Solo Admin)"
+                                                style={{ background: 'var(--ga-danger)', borderColor: 'var(--ga-danger)' }}
                                             >
-                                                <Trash2 className="w-4 h-4" />
+                                                <Trash2 size={16} />
                                             </button>
                                         </>
                                     )}
@@ -245,8 +261,8 @@ export default function InspectionsList() {
                         </motion.div>
                     ))
                 ) : (
-                    <div className="text-center py-12 text-slate-500">
-                        No se encontraron inspecciones que coincidan con los filtros.
+                    <div className="ga-card u-center u-p-6">
+                        <p className="u-muted">No se encontraron inspecciones que coincidan con los filtros.</p>
                     </div>
                 )}
             </div>

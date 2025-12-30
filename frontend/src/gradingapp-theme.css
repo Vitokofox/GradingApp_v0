@@ -1,0 +1,554 @@
+/* 
+ * Grading App Theme - Enterprise Design System 
+ * Replaces Tailwind CSS
+ */
+
+/* -------------------------------------------------------------------------- */
+/* 1. Reset + Base */
+/* -------------------------------------------------------------------------- */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+:root {
+  /* -------------------------------------------------------------------------- */
+  /* 2. Tokens (Variables) */
+  /* -------------------------------------------------------------------------- */
+  
+  /* Palette (Strict Corporate) */
+  --color-earth-gray: #696158;
+  --color-olive: #BFB800;
+  --color-orange: #EA7600;
+  --color-beige: #DFD1A7;
+  --color-white: #FFFFFF;
+  --color-black: #000000;
+  
+  /* Semantic Colors */
+  --ga-bg: #F5F5F0; /* Light derivation of beige/white */
+  --ga-surface: var(--color-white);
+  --ga-text: #2D2D2D; /* Soft black */
+  --ga-muted: #757575;
+  --ga-border: #E0E0E0;
+  
+  --ga-primary: var(--color-earth-gray);
+  --ga-primary-dark: #504942;
+  --ga-accent: var(--color-orange);
+  --ga-accent-dark: #C66200;
+  --ga-warning: var(--color-olive);
+  --ga-danger: #D32F2F; /* Material Red for critical errors */
+  --ga-success: #2E7D32; /* Material Green */
+
+  /* Radius */
+  --ga-radius-sm: 4px;
+  --ga-radius-md: 8px;
+  --ga-radius-lg: 12px;
+
+  /* Shadows */
+  --ga-shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+  --ga-shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+  --ga-shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+
+  /* Spacing */
+  --ga-space-1: 0.25rem; /* 4px */
+  --ga-space-2: 0.5rem;  /* 8px */
+  --ga-space-3: 0.75rem; /* 12px */
+  --ga-space-4: 1rem;    /* 16px */
+  --ga-space-5: 1.5rem;  /* 24px */
+  --ga-space-6: 2rem;    /* 32px */
+
+  /* Typography */
+  --ga-font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --ga-fs-sm: 0.875rem;
+  --ga-fs-md: 1rem;
+  --ga-fs-lg: 1.125rem;
+  --ga-fs-xl: 1.25rem;
+  --ga-fs-2xl: 1.5rem;
+}
+
+/* Base Elements */
+body {
+  margin: 0;
+  font-family: var(--ga-font);
+  background-color: var(--ga-bg);
+  color: var(--ga-text);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: var(--ga-accent);
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+button {
+  cursor: pointer;
+  font-family: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--ga-accent);
+  outline-offset: 2px;
+}
+
+/* -------------------------------------------------------------------------- */
+/* 3. Semantic Components */
+/* -------------------------------------------------------------------------- */
+
+/* --- Layout --- */
+.ga-app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.ga-page {
+  padding: var(--ga-space-4);
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.ga-container {
+  width: 100%;
+  margin-right: auto;
+  margin-left: auto;
+  padding-right: var(--ga-space-4);
+  padding-left: var(--ga-space-4);
+}
+
+.ga-grid {
+  display: grid;
+  gap: var(--ga-space-4);
+}
+
+.ga-grid--2 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+.ga-grid--3 { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
+
+.ga-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ga-space-3);
+  align-items: center;
+}
+
+.ga-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ga-space-3);
+}
+
+.ga-spacer {
+  flex-grow: 1;
+}
+
+/* --- Topbar / Sidebar --- */
+.ga-topbar {
+  background-color: var(--ga-primary);
+  color: var(--color-white);
+  padding: var(--ga-space-3) var(--ga-space-4);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: var(--ga-shadow-md);
+}
+
+.ga-topbar-title {
+  font-size: var(--ga-fs-lg);
+  font-weight: 600;
+  margin: 0;
+}
+
+.ga-sidebar {
+  background-color: var(--ga-surface);
+  border-right: 1px solid var(--ga-border);
+  width: 250px;
+  height: 100%;
+  padding: var(--ga-space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ga-space-2);
+}
+
+.ga-nav-item {
+  display: block;
+  padding: var(--ga-space-2) var(--ga-space-3);
+  border-radius: var(--ga-radius-sm);
+  color: var(--ga-text);
+  transition: background-color 0.2s;
+}
+
+.ga-nav-item:hover {
+  background-color: var(--ga-bg);
+  text-decoration: none;
+}
+
+.ga-nav-item--active {
+  background-color: var(--color-beige);
+  color: var(--ga-primary);
+  font-weight: 600;
+}
+
+/* --- Cards --- */
+.ga-card {
+  background-color: var(--ga-surface);
+  border: 1px solid var(--ga-border);
+  border-radius: var(--ga-radius-md);
+  box-shadow: var(--ga-shadow-sm);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.ga-card__header {
+  padding: var(--ga-space-3) var(--ga-space-4);
+  border-bottom: 1px solid var(--ga-border);
+  background-color: rgba(0,0,0,0.02);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.ga-card__title {
+  font-size: var(--ga-fs-lg);
+  font-weight: 600;
+  margin: 0;
+}
+
+.ga-card__body {
+  padding: var(--ga-space-4);
+  flex: 1;
+}
+
+.ga-card__footer {
+  padding: var(--ga-space-3) var(--ga-space-4);
+  border-top: 1px solid var(--ga-border);
+  background-color: rgba(0,0,0,0.02);
+}
+
+/* --- Buttons --- */
+.ga-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1rem;
+  font-size: var(--ga-fs-md);
+  font-weight: 500;
+  line-height: 1.5;
+  border-radius: var(--ga-radius-sm);
+  border: 1px solid transparent;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.ga-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.ga-btn--primary {
+  background-color: var(--ga-primary);
+  color: var(--color-white);
+}
+.ga-btn--primary:hover {
+  background-color: var(--ga-primary-dark);
+}
+
+.ga-btn--accent {
+  background-color: var(--ga-accent);
+  color: var(--color-white);
+}
+.ga-btn--accent:hover {
+  background-color: var(--ga-accent-dark);
+}
+
+.ga-btn--outline {
+  background-color: transparent;
+  border-color: var(--ga-border);
+  color: var(--ga-text);
+}
+.ga-btn--outline:hover {
+  background-color: var(--ga-bg);
+  border-color: var(--ga-muted);
+}
+
+.ga-btn--ghost {
+  background-color: transparent;
+  color: var(--ga-text);
+}
+.ga-btn--ghost:hover {
+  background-color: rgba(0,0,0,0.05);
+}
+
+.ga-btn--sm {
+  padding: 0.25rem 0.5rem;
+  font-size: var(--ga-fs-sm);
+}
+
+.ga-btn--lg {
+  padding: 0.75rem 1.5rem;
+  font-size: var(--ga-fs-lg);
+}
+
+/* --- Forms --- */
+.ga-label {
+  display: block;
+  margin-bottom: var(--ga-space-1);
+  font-weight: 500;
+  font-size: var(--ga-fs-sm);
+  color: var(--ga-text);
+}
+
+.ga-control, .ga-input, .ga-select, .ga-textarea {
+  display: block;
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  font-size: var(--ga-fs-md);
+  line-height: 1.5;
+  color: var(--ga-text);
+  background-color: var(--ga-surface);
+  border: 1px solid var(--ga-border);
+  border-radius: var(--ga-radius-sm);
+  transition: border-color 0.15s ease-in-out;
+}
+
+.ga-control:focus, .ga-input:focus, .ga-select:focus, .ga-textarea:focus {
+  border-color: var(--ga-accent);
+  outline: 0;
+  box-shadow: 0 0 0 2px rgba(234, 118, 0, 0.25);
+}
+
+.ga-control:disabled, .ga-input:disabled {
+  background-color: var(--ga-bg);
+  opacity: 1;
+}
+
+.ga-help {
+  margin-top: 0.25rem;
+  font-size: var(--ga-fs-sm);
+  color: var(--ga-muted);
+}
+
+.ga-error {
+  color: var(--ga-danger);
+  font-size: var(--ga-fs-sm);
+  margin-top: 0.25rem;
+}
+
+/* --- Tables --- */
+.ga-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--ga-border);
+  border-radius: var(--ga-radius-md);
+}
+
+.ga-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: var(--ga-surface);
+}
+
+.ga-table th, 
+.ga-table td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid var(--ga-border);
+}
+
+.ga-table th {
+  background-color: var(--ga-bg);
+  font-weight: 600;
+  color: var(--ga-primary);
+  white-space: nowrap;
+}
+
+.ga-table tr:last-child td {
+  border-bottom: none;
+}
+
+.ga-table tr:nth-child(even) {
+  background-color: #FAFAFA;
+}
+
+.ga-table tr:hover {
+  background-color: rgba(234, 118, 0, 0.05); /* Tint of accent */
+}
+
+/* --- Badges / Alerts --- */
+.ga-badge {
+  display: inline-flex;
+  padding: 0.25em 0.6em;
+  font-size: 0.75em;
+  font-weight: 700;
+  line-height: 1;
+  border-radius: 999px;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: baseline;
+  background-color: var(--ga-bg);
+  color: var(--ga-text);
+  border: 1px solid var(--ga-border);
+}
+
+.ga-badge--ok { background-color: #E8F5E9; color: #2E7D32; border-color: transparent; }
+.ga-badge--warn { background-color: #FFFDE7; color: #F57F17; border-color: transparent; }
+.ga-badge--error { background-color: #FFEBEE; color: #C62828; border-color: transparent; }
+.ga-badge--muted { background-color: #F5F5F5; color: #616161; border-color: transparent; }
+
+.ga-alert {
+  padding: var(--ga-space-3);
+  margin-bottom: var(--ga-space-4);
+  border: 1px solid transparent;
+  border-radius: var(--ga-radius-md);
+  display: flex;
+  align-items: center;
+  gap: var(--ga-space-2);
+}
+
+.ga-alert--info { background-color: #E3F2FD; color: #0D47A1; border-color: #BBDEFB; }
+.ga-alert--success { background-color: #E8F5E9; color: #1B5E20; border-color: #C8E6C9; }
+.ga-alert--warning { background-color: #FFFDE7; color: #F57F17; border-color: #FFF9C4; }
+.ga-alert--error { background-color: #FFEBEE; color: #B71C1C; border-color: #FFCDD2; }
+
+/* --- Top Level Modals --- */
+.ga-modal-backdrop {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background-color: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: var(--ga-space-4);
+}
+
+.ga-modal {
+  background-color: var(--ga-surface);
+  border-radius: var(--ga-radius-lg);
+  box-shadow: var(--ga-shadow-lg);
+  max-width: 500px;
+  width: 100%;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.ga-modal__header {
+  padding: var(--ga-space-3) var(--ga-space-4);
+  border-bottom: 1px solid var(--ga-border);
+  font-weight: 600;
+  font-size: var(--ga-fs-lg);
+  display: flex;
+  justify-content: space-between;
+}
+
+.ga-modal__content {
+  padding: var(--ga-space-4);
+  overflow-y: auto;
+}
+
+.ga-modal__footer {
+  padding: var(--ga-space-3) var(--ga-space-4);
+  border-top: 1px solid var(--ga-border);
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--ga-space-2);
+}
+
+/* -------------------------------------------------------------------------- */
+/* 4. Utilities */
+/* -------------------------------------------------------------------------- */
+.u-hidden { display: none !important; }
+.u-center { text-align: center; }
+.u-right { text-align: right; }
+.u-muted { color: var(--ga-muted); }
+.u-bold { font-weight: 600; }
+.u-flex { display: flex; }
+.u-truncate {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.u-gap-2 { gap: var(--ga-space-2); }
+.u-mb-2 { margin-bottom: var(--ga-space-2); }
+.u-mb-4 { margin-bottom: var(--ga-space-4); }
+
+/* -------------------------------------------------------------------------- */
+/* 5. Custom Scrollbar */
+/* -------------------------------------------------------------------------- */
+.ga-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.ga-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.ga-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #BDBDBD;
+  border-radius: 4px;
+}
+.ga-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: #9E9E9E;
+}
+
+/* -------------------------------------------------------------------------- */
+/* 6. Dark Mode (Optional) */
+/* -------------------------------------------------------------------------- */
+[data-theme="dark"] {
+  --ga-bg: #121212;
+  --ga-surface: #1E1E1E;
+  --ga-text: #E0E0E0;
+  --ga-muted: #9E9E9E;
+  --ga-border: #333333;
+  
+  --ga-primary: #8D857C; /* Lighter earth gray */
+  --ga-primary-dark: #696158;
+  
+  --ga-shadow-sm: 0 1px 2px rgba(0,0,0,0.5);
+  --ga-shadow-md: 0 4px 6px -1px rgba(0,0,0,0.6);
+  
+  /* Table overrides */
+  .ga-table tr:nth-child(even) { background-color: #252525; }
+}
+
+/* -------------------------------------------------------------------------- */
+/* 7. Print Styles */
+/* -------------------------------------------------------------------------- */
+@media print {
+  body {
+    background-color: #FFFFFF;
+    color: #000000;
+  }
+  
+  .ga-app, .ga-page, .ga-card {
+    box-shadow: none;
+    border: none;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    max-width: none;
+  }
+  
+  .ga-topbar, .ga-sidebar, .ga-btn, .no-print {
+    display: none !important;
+  }
+  
+  .ga-table th {
+    background-color: #EEEEEE !important;
+    color: #000000 !important;
+    -webkit-print-color-adjust: exact;
+  }
+  
+  .ga-table td {
+    border-bottom: 1px solid #000000;
+  }
+  
+  a[href]:after {
+    content: " (" attr(href) ")";
+    font-size: 0.8em;
+  }
+}

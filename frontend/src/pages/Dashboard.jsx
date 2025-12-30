@@ -47,26 +47,26 @@ const Dashboard = () => {
     const processBg = user?.process_type === 'Seco' ? 'bg-amber-500/10 border-amber-500/20' : 'bg-emerald-500/10 border-emerald-500/20';
 
     return (
-        <div className="p-8 max-w-7xl mx-auto">
-            <div className="mb-12 text-center">
+        <div className="ga-stack">
+            <div className="u-center u-mb-4">
                 <motion.div
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className={`inline-flex items-center gap-2 px-4 py-2 rounded-full border mb-6 ${processBg} ${processColor}`}
+                    className={`ga-badge ga-badge--${user?.process_type === 'Seco' ? 'warn' : 'ok'}`}
+                    style={{ marginBottom: '1.5rem', padding: '0.5rem 1rem' }}
                 >
-                    <span className="w-2 h-2 rounded-full bg-current animate-pulse" />
-                    <span className="font-semibold uppercase tracking-wider text-sm">Proceso {user?.process_type || 'General'}</span>
+                    <span className="u-bold uppercase" style={{ fontSize: '0.875rem' }}>Proceso {user?.process_type || 'General'}</span>
                 </motion.div>
 
-                <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-4">
+                <h1 style={{ fontSize: '2.5rem', fontWeight: 800, marginBottom: '1rem', color: 'var(--ga-text)' }}>
                     Centro de Actividades
                 </h1>
-                <p className="text-slate-400 text-lg max-w-2xl mx-auto">
+                <p className="u-muted" style={{ maxWidth: '600px', margin: '0 auto', fontSize: '1.125rem' }}>
                     Seleccione una actividad para comenzar el registro de datos y supervisión del proceso.
                 </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="ga-grid ga-grid--2">
                 {activities.map((activity, index) => (
                     <motion.div
                         key={activity.id}
@@ -74,22 +74,28 @@ const Dashboard = () => {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: index * 0.1 }}
                         whileHover={{ y: -5 }}
-                        className="group relative bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-6 overflow-hidden hover:bg-slate-800 transition-all cursor-pointer"
+                        className="ga-card"
+                        style={{ cursor: 'pointer', transition: 'all 0.2s', borderLeft: '4px solid var(--ga-accent)' }}
                         onClick={() => navigate(activity.path)}
                     >
-                        <div className={`absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity bg-gradient-to-br ${activity.color}`} />
+                        <div className="ga-card__body ga-stack">
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                <div style={{
+                                    width: '48px', height: '48px', borderRadius: '12px',
+                                    background: 'var(--ga-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center'
+                                }}>
+                                    <activity.icon size={24} color="var(--ga-accent)" />
+                                </div>
+                                <h3 className="ga-card__title">{activity.title}</h3>
+                            </div>
 
-                        <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${activity.color} flex items-center justify-center mb-6 shadow-lg`}>
-                            <activity.icon className="w-7 h-7 text-white" />
-                        </div>
+                            <p className="u-muted" style={{ fontSize: '0.875rem', minHeight: '40px' }}>
+                                {activity.description}
+                            </p>
 
-                        <h3 className="text-xl font-bold text-white mb-2">{activity.title}</h3>
-                        <p className="text-slate-400 mb-6 text-sm leading-relaxed">
-                            {activity.description}
-                        </p>
-
-                        <div className="flex items-center text-sm font-medium text-slate-300 group-hover:text-white transition-colors">
-                            Comenzar <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                            <div style={{ display: 'flex', alignItems: 'center', color: 'var(--ga-primary)', fontWeight: 500, fontSize: '0.875rem', marginTop: 'auto' }}>
+                                Comenzar <ArrowRight size={16} style={{ marginLeft: '0.5rem' }} />
+                            </div>
                         </div>
                     </motion.div>
                 ))}

@@ -3,7 +3,8 @@ from sqlalchemy.orm import Session
 from typing import List
 from database import database, models
 import schemas
-from routers.auth import get_password_hash, get_current_active_user, get_current_admin_user, get_current_privileged_user
+from routers.auth import get_current_active_user, get_current_admin_user, get_current_privileged_user
+from services.auth_service import auth_service
 
 router = APIRouter(
     prefix="/users",
@@ -14,23 +15,21 @@ router = APIRouter(
 # Crear: Solo Admins pueden crear usuarios? O asistentes también?
 # Prompt de usuario: "Permisos principales: agregar usuario... admin tiene acceso total... asistente solo editar..."
 # Así que Crear -> Solo Admin.
-@router.post("/", response_model=schemas.UserResponse) 
-def create_user(user: schemas.UserCreate, db: Session = Depends(database.get_db)):
+@router.post("/", response_model=schemas.UserResponse)
+async def create_user(user: schemas.UserCreate, db: Session = Depends(database.get_db), current_user: models.User = Depends(get_current_admin_user)):
     db_user = db.query(models.User).filter(models.User.username == user.username).first()
     if db_user:
-        raise HTTPException(status_code=400, detail="El nombre de usuario ya está registrado")
+        raise HTTPException(status_code=400, detail="El nombre de usuario ya existe")
     
-    hashed_password = get_password_hash(user.password)
-    
+    hashed_password = auth_service.get_password_hash(user.password)
     db_user = models.User(
         username=user.username,
         password_hash=hashed_password,
         first_name=user.first_name,
         last_name=user.last_name,
         position=user.position,
-        level=user.level, 
-        process_type=user.process_type,
-        is_active=True
+        level=user.level,
+        process_type=user.process_type
     )
     db.add(db_user)
     db.commit()
@@ -66,7 +65,7 @@ def update_user(user_id: int, user_update: schemas.UserUpdate, db: Session = Dep
     
     update_data = user_update.model_dump(exclude_unset=True)
     if 'password' in update_data:
-         update_data['password_hash'] = get_password_hash(update_data.pop('password'))
+         update_data['password_hash'] = auth_service.get_password_hash(update_data.pop('password'))
 
     for key, value in update_data.items():
         setattr(db_user, key, value)
