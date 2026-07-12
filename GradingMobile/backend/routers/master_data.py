@@ -11,11 +11,11 @@ import io
 router = APIRouter(
     prefix="/master-data",
     tags=["Master Data"],
-    # dependencies=[Depends(get_current_admin_user)] # REMOVED Global Admin Constraint
+    # dependencies=[Depends(get_current_admin_user)] # ELIMINADO restricción global de Admin
 )
 
 
-# Schemas
+# Esquemas
 class CatalogItemBase(BaseModel):
     category: str
     name: str
@@ -38,7 +38,7 @@ class DefectResponse(BaseModel):
     class Config:
         from_attributes = True
 
-# --- Catalog Items (Generic Lists) ---
+# --- Ítems de Catálogo (Listas Genéricas) ---
 @router.get("/catalogs/{category}", response_model=List[CatalogItemResponse])
 def get_catalog_items(category: str, db: Session = Depends(database.get_db), current_user = Depends(get_current_active_user)):
 
@@ -62,7 +62,7 @@ def delete_catalog_item(id: int, db: Session = Depends(database.get_db), current
         db.commit()
     return {"detail": "Item deleted"}
 
-# --- Defects ---
+# --- Defectos ---
 @router.get("/defects", response_model=List[DefectResponse])
 def get_defects(db: Session = Depends(database.get_db), current_user = Depends(get_current_active_user)):
 
@@ -87,19 +87,19 @@ def delete_defect(id: int, db: Session = Depends(database.get_db), current_user 
     return {"detail": "Defect deleted"}
 
 
-# --- Bulk Upload Stub ---
+# --- Código auxiliar de Carga Masiva ---
 @router.post("/upload")
 async def upload_master_data(type: str, file: UploadFile = File(...), db: Session = Depends(database.get_db), current_user = Depends(get_current_admin_user)):
 
     """
-    Type can be: 'catalog', 'markets', 'defects'
-    File should be CSV.
+    El tipo puede ser: 'catalog', 'markets', 'defects'
+    El archivo debe ser CSV.
     """
     content = await file.read()
-    # Logic to parse CSV and populate tables
-    # For now, just a placeholder success
+    # Lógica para analizar CSV y poblar tablas
+    # Por ahora, solo un éxito de marcador de posición
 
-# --- Grading Hierarchy (Product -> Grade -> Defect) ---
+# --- Jerarquía de Clasificación (Producto -> Grado -> Defecto) ---
 
 class ProductCreate(BaseModel):
     name: str
@@ -121,11 +121,11 @@ class GradeResponse(BaseModel):
     product_id: int
     grade_rank: int
     defects: List[DefectResponse] = []
-    # Defects can be loaded separately or included
+    # Los defectos pueden cargarse por separado o incluirse
     class Config:
         from_attributes = True
 
-# Products
+# Productos
 @router.get("/products", response_model=List[ProductResponse])
 def get_products(db: Session = Depends(database.get_db), current_user = Depends(get_current_active_user)):
 
@@ -149,7 +149,7 @@ def delete_product(id: int, db: Session = Depends(database.get_db), current_user
         db.commit()
     return {"detail": "Product deleted"}
 
-# Grades (Cascades)
+# Grados (Cascadas)
 @router.get("/products/{product_id}/grades", response_model=List[GradeResponse])
 def get_grades_by_product(product_id: int, db: Session = Depends(database.get_db), current_user = Depends(get_current_active_user)):
 
@@ -180,7 +180,7 @@ def delete_grade(id: int, db: Session = Depends(database.get_db), current_user =
         db.commit()
     return {"detail": "Grade deleted"}
 
-# Grade-Defect Association
+# Asociación Grado-Defecto
 class GradeDefectLink(BaseModel):
     grade_id: int
     defect_id: int
@@ -193,7 +193,7 @@ def add_defect_to_grade(link: GradeDefectLink, db: Session = Depends(database.ge
     if not grade or not defect:
         raise HTTPException(status_code=404, detail="Grade or Defect not found")
     
-    # Check existence
+    # Verificar existencia
     if defect in grade.defects:
         return {"detail": "Defect already assigned to grade"}
         
@@ -223,7 +223,7 @@ def get_defects_by_grade(grade_id: int, db: Session = Depends(database.get_db), 
         raise HTTPException(status_code=404, detail="Grade not found")
     return grade.defects
 
-# --- Markets ---
+# --- Mercados ---
 class MarketCreate(BaseModel):
     name: str
 

@@ -2,16 +2,16 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { User, Lock, LogIn, WifiOff, Upload } from 'lucide-react';
-import DataImportExport from '../components/DataImportExport';
+import { User, Lock, ArrowRight, Settings, Database, FileUp } from 'lucide-react';
+import { importDatabaseFile } from '../services/sqliteImporter';
 
 const Login = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
-    const { login, loginOffline } = useAuth();
+    const [importMsg, setImportMsg] = useState('');
+    const { login } = useAuth();
     const navigate = useNavigate();
-    const [showImport, setShowImport] = useState(false);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -19,142 +19,180 @@ const Login = () => {
             await login(username, password);
             navigate('/');
         } catch (err) {
-            setError('Credenciales inválidas');
+            console.error("Login Error:", err);
+            if (err.response) {
+                setError(`Error ${err.response.status}: ${err.response.data.detail || 'Error de servidor'}`);
+            } else if (err.request) {
+                // Mensaje orientado al modo offline
+                setError('No se pudo conectar. Si estás offline, asegúrate de haber importado una Base de Datos Local.');
+            } else {
+                setError(`Error: ${err.message}`);
+            }
+        }
+    };
+
+    const handleFileChange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        setImportMsg("Procesando base de datos...");
+        setError('');
+
+        try {
+            const result = await importDatabaseFile(file);
+            if (result.success) {
+                setImportMsg(result.message);
+                // Opcional: Podríamos listar usuarios importados si quisiéramos ser amigables
+            } else {
+                setError("Error importando BD: " + result.message);
+                setImportMsg('');
+            }
+        } catch (e) {
+            setError("Excepción al importar: " + e.message);
+            setImportMsg('');
         }
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-slate-900 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-800 via-slate-900 to-black overflow-hidden relative">
-            {/* Background blobs */}
-            <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-purple-500/20 rounded-full blur-3xl" />
-            <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-blue-500/10 rounded-full blur-3xl" />
+        <div className="ga-app" style={{
+            display: 'flex',
+            flexDirection: 'row',
+            height: '100vh',
+            overflow: 'hidden',
+            background: 'var(--color-white)'
+        }}>
+            {/* Left Side - Brand / Image placeholder */}
+            <div style={{
+                flex: '1.2',
+                background: 'var(--color-arauco-gray)',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                padding: '4rem',
+                color: 'white',
+                position: 'relative',
+                overflow: 'hidden'
+            }}>
+                <div style={{
+                    position: 'absolute',
+                    top: '-10%', left: '-10%',
+                    width: '60%', height: '60%',
+                    background: 'radial-gradient(circle, var(--color-arauco-lime) 0%, transparent 70%)',
+                    opacity: 0.1,
+                    filter: 'blur(80px)'
+                }} />
 
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-                className="w-full max-w-md p-8 bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl relative z-10"
-            >
-                <div className="text-center mb-8">
-                    <img
-                        src="../public/logo-arauco-blanco.png"
-                        className="w-52 h-auto mx-auto mb-4"
-                    />
-                    <h2 className="text-3xl font-bold text-white mb-2">Bienvenido a Grading App</h2>
-                    <p className="text-slate-400">Inicia sesión para acceder a la App</p>
-                </div>
-
-                {error && (
-                    <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        className="mb-4 p-3 bg-red-500/20 border border-red-500/50 rounded-lg text-red-200 text-sm"
-                    >
-                        {error}
-                    </motion.div>
-                )}
-
-                <form onSubmit={handleSubmit} className="space-y-6">
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium text-slate-300 block">Usuario</label>
-                        <div className="relative">
-                            <User className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 w-5 h-5" />
-                            <input
-                                type="text"
-                                value={username}
-                                onChange={(e) => setUsername(e.target.value)}
-                                className="w-full pl-10 pr-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none text-white placeholder-slate-500 transition-all"
-                                placeholder="Ingresa tu usuario"
-                                required
-                            />
-                        </div>
-                    </div>
-
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium text-slate-300 block">Contraseña</label>
-                        <div className="relative">
-                            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 w-5 h-5" />
-                            <input
-                                type="password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                className="w-full pl-10 pr-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none text-white placeholder-slate-500 transition-all"
-                                placeholder="Ingresa tu contraseña"
-                                required
-                            />
-                        </div>
-                    </div>
-
-                    <motion.button
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        type="submit"
-                        className="w-full py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-bold rounded-xl shadow-lg hover:shadow-purple-500/25 transition-all flex items-center justify-center gap-2"
-                    >
-                        <LogIn className="w-5 h-5" />
-                        Iniciar Sesión
-                    </motion.button>
-                </form>
-
-                <div className="mt-6 text-center">
-                    <p className="text-slate-400 text-sm">
-                        ¿No tienes cuenta?{' '}
-                        <Link to="/register" className="text-purple-400 hover:text-purple-300 font-semibold transition-colors">
-                            Regístrate aquí
-                        </Link>
+                <div style={{ position: 'relative', zIndex: 10 }}>
+                    <div className="u-mb-4" style={{
+                        width: '80px', height: '8px',
+                        background: 'var(--color-arauco-lime)',
+                        marginBottom: '2rem'
+                    }} />
+                    <h1 style={{ fontSize: '3.5rem', fontWeight: 'bold', lineHeight: 1.1, marginBottom: '1.5rem', color: 'white' }}>
+                        Calidad &<br />Excelencia
+                    </h1>
+                    <p style={{ fontSize: '1.25rem', opacity: 0.8, maxWidth: '500px', fontWeight: 300 }}>
+                        Sistema movil Offline-Ready.
+                        Importa tu BD local para comenzar.
                     </p>
-
-                    <button
-                        onClick={() => loginOffline()}
-                        type="button"
-                        className="mt-6 text-slate-500 hover:text-white text-sm flex items-center justify-center gap-2 mx-auto transition-colors"
-                    >
-                        <WifiOff className="w-4 h-4" />
-                        Ingresar sin conexión (Modo Offline)
-                    </button>
-
-                    <button
-                        onClick={() => {
-                            localStorage.removeItem('setup_completed');
-                            window.location.reload();
-                        }}
-                        type="button"
-                        className="mt-4 text-slate-600 hover:text-slate-400 text-xs underline transition-colors"
-                    >
-                        Configurar Servidor
-                    </button>
-
-                    <button
-                        onClick={() => setShowImport(true)}
-                        type="button"
-                        className="mt-4 flex items-center justify-center gap-2 text-slate-500 hover:text-purple-400 text-xs transition-colors mx-auto"
-                    >
-                        <Upload className="w-3 h-3" />
-                        Importar Datos (Excel)
-                    </button>
                 </div>
 
-                {showImport && (
-                    <div className="fixed inset-0 bg-slate-900 z-50 flex flex-col p-6">
-                        <div className="flex justify-between items-center mb-6">
-                            <h2 className="text-xl font-bold text-white">Importar Datos Offline</h2>
-                            <button
-                                onClick={() => setShowImport(false)}
-                                className="text-slate-400 hover:text-white"
-                            >
-                                Cerrar
-                            </button>
-                        </div>
-                        <div className="flex-1 overflow-y-auto">
-                            <DataImportExport />
-                        </div>
-                    </div>
-                )}
+                <div style={{ position: 'absolute', bottom: '2rem', left: '4rem', fontSize: '0.875rem', opacity: 0.5 }}>
+                    © 2025 Arauco - Mejora Continua
+                </div>
+            </div>
 
-                <p className="text-slate-500 text-xs text-center mt-8">
-                    Departamento de Mejora Continua - Arauco
-                </p>
-            </motion.div>
+            {/* Right Side - Login Form */}
+            <div style={{
+                flex: '1',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: 'var(--ga-bg)',
+                padding: '2rem'
+            }}>
+                <motion.div
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.5 }}
+                    style={{ width: '100%', maxWidth: '420px' }}
+                >
+                    <div className="ga-card" style={{ padding: '3rem', borderColor: 'transparent', boxShadow: '0 20px 40px rgba(0,0,0,0.05)' }}>
+                        <div className="u-mb-4">
+                            <h2 style={{ fontSize: '1.75rem', fontWeight: '300', color: 'var(--color-arauco-gray)', marginBottom: '0.5rem' }}>Bienvenido</h2>
+                            <p className="u-muted">Ingresa con tu usuario (Requiere BD Local).</p>
+                        </div>
+
+                        {/* Import Database Section */}
+                        <div className="u-mb-4" style={{ padding: '1rem', background: 'var(--ga-surface)', borderRadius: '8px', border: '1px dashed var(--ga-border)' }}>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: 'var(--color-arauco-blue)' }}>
+                                <Database size={18} />
+                                <span className="u-bold" style={{ fontSize: '0.875rem' }}>Cargar grading.db</span>
+                                <input
+                                    type="file"
+                                    accept=".db,.sqlite,.sqlite3"
+                                    onChange={handleFileChange}
+                                    style={{ display: 'none' }}
+                                />
+                            </label>
+                            {importMsg && <div style={{ color: 'var(--ga-success)', fontSize: '0.75rem', marginTop: '0.5rem' }}>{importMsg}</div>}
+                        </div>
+
+                        {error && (
+                            <div className="ga-alert ga-alert--error ga-stack">
+                                {error}
+                            </div>
+                        )}
+
+                        <form onSubmit={handleSubmit} className="ga-stack" style={{ marginTop: '2rem' }}>
+                            <div>
+                                <label className="ga-label">Usuario</label>
+                                <div style={{ position: 'relative' }}>
+                                    <User style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--ga-muted)' }} size={18} />
+                                    <input
+                                        type="text"
+                                        value={username}
+                                        onChange={(e) => setUsername(e.target.value)}
+                                        className="ga-control"
+                                        style={{ paddingLeft: '2.5rem', height: '48px' }}
+                                        placeholder="Nombre.Apellido"
+                                        required
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="ga-label">Contraseña</label>
+                                <div style={{ position: 'relative' }}>
+                                    <Lock style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--ga-muted)' }} size={18} />
+                                    <input
+                                        type="password"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        className="ga-control"
+                                        style={{ paddingLeft: '2.5rem', height: '48px' }}
+                                        placeholder="••••••••"
+                                        required
+                                    />
+                                </div>
+                            </div>
+
+                            <div style={{ marginTop: '1rem' }}>
+                                <motion.button
+                                    whileHover={{ scale: 1.01 }}
+                                    whileTap={{ scale: 0.99 }}
+                                    type="submit"
+                                    className="ga-btn ga-btn--accent"
+                                    style={{ width: '100%', height: '48px', fontSize: '1rem', display: 'flex', justifyContent: 'space-between', padding: '0 1.5rem' }}
+                                >
+                                    <span>ENTRAR</span>
+                                    <ArrowRight size={20} />
+                                </motion.button>
+                            </div>
+                        </form>
+                    </div>
+                </motion.div>
+            </div>
         </div>
     );
 };

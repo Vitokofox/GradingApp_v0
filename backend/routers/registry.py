@@ -1,8 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session, joinedload
+from sqlalchemy import distinct
 from typing import List
 from database import database, models
 import schemas
+from routers.auth import get_current_active_user
 
 router = APIRouter(
     prefix="/api",
@@ -16,18 +18,38 @@ def read_markets(db: Session = Depends(database.get_db)):
     return markets
 
 @router.get("/inspections", response_model=List[schemas.InspectionResponse])
-def read_inspections(skip: int = 0, limit: int = 100, db: Session = Depends(database.get_db)):
-    inspections = db.query(models.Inspection).options(joinedload(models.Inspection.market)).offset(skip).limit(limit).all()
+def read_inspections(skip: int = 0, limit: int = 5000, db: Session = Depends(database.get_db)):
+    inspections = db.query(models.Inspection).options(joinedload(models.Inspection.market)).order_by(models.Inspection.id.desc()).offset(skip).limit(limit).all()
     return inspections
+
+@router.get("/inspections/distinct/{field}", response_model=List[str])
+def get_distinct_values(field: str, db: Session = Depends(database.get_db)):
+    # Validate field to prevent SQL injection or errors
+    allowed_fields = ['shift', 'responsible', 'supervisor', 'origin', 'lot', 'thickness', 'width', 'length', 'area', 'machine']
+    if field not in allowed_fields:
+        raise HTTPException(status_code=400, detail=f"Field '{field}' not allowed. Allowed: {allowed_fields}")
+    
+    # Dynamic field access
+    column = getattr(models.Inspection, field, None)
+    if not column:
+        raise HTTPException(status_code=400, detail=f"Field '{field}' not found in Inspection model")
+
+    values = db.query(distinct(column)).filter(column != None).all()
+    # Flattens result from [(val1,), (val2,), ...] to [val1, val2, ...]
+    return [v[0] for v in values if v[0]]
 
 from datetime import datetime
 
 @router.post("/inspections", response_model=schemas.InspectionResponse)
-def create_inspection(inspection: schemas.InspectionCreate, db: Session = Depends(database.get_db)):
+def create_inspection(
+    inspection: schemas.InspectionCreate, 
+    db: Session = Depends(database.get_db),
+    current_user: models.User = Depends(get_current_active_user)
+):
     print(f"DEBUG: Creating inspection with: {inspection}")
     
-    # Validación: Verificar Lote duplicado
-    if inspection.lot:
+    # Validación: Verificar Lote duplicado (excepto para Stacker 1 y 2)
+    if inspection.lot and inspection.lot not in ['Stacker 1', 'Stacker 2']:
         existing_lot = db.query(models.Inspection).filter(models.Inspection.lot == inspection.lot).first()
         if existing_lot:
              raise HTTPException(status_code=400, detail=f"El número de lote '{inspection.lot}' ya existe.")
@@ -42,6 +64,7 @@ def create_inspection(inspection: schemas.InspectionCreate, db: Session = Depend
             data['production_date'] = datetime.strptime(data['production_date'], '%Y-%m-%d').date()
 
         db_inspection = models.Inspection(**data)
+        db_inspection.process = current_user.process_type
         db.add(db_inspection)
         db.commit()
         db.refresh(db_inspection)

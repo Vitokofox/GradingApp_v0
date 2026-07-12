@@ -2,7 +2,7 @@ from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from database import models, database
-from routers import registry, auth, users, master_data, scanner
+from routers import registry, auth, users, master_data, scanner, sync
 
 models.Base.metadata.create_all(bind=database.engine)
 
@@ -22,6 +22,7 @@ app.include_router(users.router)
 app.include_router(registry.router)
 app.include_router(master_data.router)
 app.include_router(scanner.router)
+app.include_router(sync.router, prefix="/api/sync", tags=["Sync"])
 
 @app.get("/")
 def read_root():

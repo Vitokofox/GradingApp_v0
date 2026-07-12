@@ -1,0 +1,1 @@
+Norma endpoint: degradar por nudo cuando excede tolerancia.

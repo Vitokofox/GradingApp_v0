@@ -45,12 +45,14 @@ if __name__ == "__main__":
         # Remount /assets
         pass
 
-    # --- Ensure Admin User Exists ---
+    # --- Ensure Admin User and Basic Catalogs Exist ---
     try:
         from database import database, models
         from services.auth_service import auth_service
         
         db = database.SessionLocal()
+        
+        # 1. Admin User
         username = "admin"
         existing_user = db.query(models.User).filter(models.User.username == username).first()
         if not existing_user:
@@ -69,11 +71,61 @@ if __name__ == "__main__":
             db.add(admin_user)
             db.commit()
             print("Default admin user created.")
+        
+        # 2. Basic Catalogs for Truck Study and common navigation
+        # Check if any catalog items exist for 'estate'
+        if not db.query(models.CatalogItem).filter(models.CatalogItem.category == 'estate').first():
+            print("Seeding initial Truck Study catalogs...")
+            basic_items = [
+                ('estate', 'PREDIO EJEMPLO 1'),
+                ('estate', 'PREDIO EJEMPLO 2'),
+                ('logging_team', 'EQUIPO MADERERO 1'),
+                ('logging_team', 'EQUIPO TRABAJO 2'),
+                ('characteristic', 'NUDOS FUERA DE NORMA'),
+                ('characteristic', 'GRIETAS / RAJADURAS'),
+                ('characteristic', 'MANCHA AZUL'),
+                ('characteristic', 'DIAMETRO PEQUENO'),
+                ('area', 'ASERRADERO'),
+                ('area', 'CEPILLADO'),
+                ('shift', 'A'),
+                ('shift', 'B'),
+                ('shift', 'C'),
+                ('supervisor', 'ADMINISTRADOR'),
+                ('termination', 'SIN TERMINAR'),
+                ('termination', 'TERMINADO'),
+                ('state', 'PLANIFICADO'),
+                ('state', 'PROCESADO'),
+                ('origin', 'INTERNO'),
+                ('origin', 'EXTERNO'),
+                ('journey', 'DIA'),
+                ('journey', 'NOCHE')
+            ]
+            
+            for cat, name in basic_items:
+                # Double check to avoid duplicates if re-running
+                if not db.query(models.CatalogItem).filter(models.CatalogItem.category == cat, models.CatalogItem.name == name).first():
+                    db.add(models.CatalogItem(category=cat, name=name, active=True))
+            db.commit()
+            print("Initial catalogs seeded.")
+
         db.close()
     except Exception as e:
-        print(f"Error ensuring admin user: {e}")
+        print(f"Error ensuring initial data: {e}")
     # -------------------------------
 
-    print("Starting Portable Grading App...")
-    uvicorn.run(app, host="0.0.0.0", port=8000, log_level="info")
+    print("Starting Portable Grading App (Main Backend) on port 8000...")
+    print("Starting Mobile Bridge Backend on port 8080...")
+    
+    import threading
+
+    def run_main():
+        uvicorn.run(app, host="0.0.0.0", port=8000, log_level="info")
+
+    def run_mobile():
+        uvicorn.run(app, host="0.0.0.0", port=8080, log_level="info")
+
+    t1 = threading.Thread(target=run_mobile, daemon=True)
+    t1.start()
+
+    run_main()
 

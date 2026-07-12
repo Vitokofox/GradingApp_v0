@@ -84,6 +84,13 @@ El frontend correrá en el puerto **5173** por defecto.
 *   **Variables de Entorno**:
     *   Backend: Revisar `backend/.env` para configuración de CORS, SECRET_KEY, y base de datos.
     *   Frontend: Configurado para conectar a `http://127.0.0.1:8000` por defecto.
+*   **Despliegue compartido (recomendado en planta)**:
+    *   Puede centralizar recursos en una carpeta de red compartida para todos los usuarios.
+    *   En `backend/.env`:
+        *   `DATABASE_URL=sqlite:///Y:/GradingApp/grading.db`
+        *   `NORMAS_PATH=Y:/GradingApp/normas`
+        *   `VECTORSTORE_PATH=Y:/GradingApp/vectorstore`
+    *   Flujo recomendado: subir normas al backend y luego ejecutar `POST /indice/reconstruir` para regenerar el índice común.
 
 ## Historial de Cambios Recientes (v0.1)
 

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getInspection, getInspectionResults } from '../api';
 import { ArrowLeft, Printer } from 'lucide-react';
+import { formatSpanishDate, getLocalISODate } from '../utils/dataUtils';
 
 // Componente Principal: Reporte de Grado en Línea
 // Muestra el detalle completo de una inspección, con desglose de defectos por cada grado.
@@ -100,14 +101,14 @@ export default function InlineGradeReport() {
                 {/* Contenido del Reporte (Report Content) */}
                 <div className="ga-card" style={{ background: 'white', color: '#1e293b', padding: 0, overflow: 'hidden', boxShadow: 'none' }}>
 
-                    {/* Cabecera del Reporte (Report Header - Green) */}
-                    <div style={{ background: '#84cc16', padding: '1.5rem', printColorAdjust: 'exact', WebkitPrintColorAdjust: 'exact' }}>
+                    {/* Cabecera del Reporte (Report Header - Corporate Gray) */}
+                    <div style={{ background: 'var(--ga-primary)', padding: '1.5rem', printColorAdjust: 'exact', WebkitPrintColorAdjust: 'exact' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                             <h1 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'white', textTransform: 'uppercase', margin: 0 }}>
                                 Reporte de Grado en Línea N° {inspection.id}
                             </h1>
-                            <div style={{ textAlign: 'right', color: '#365314', fontFamily: 'monospace', fontSize: '0.875rem' }}>
-                                {new Date().toLocaleDateString()} {new Date().toLocaleTimeString()}
+                            <div style={{ textAlign: 'right', color: 'white', fontFamily: 'monospace', fontSize: '0.875rem' }}>
+                                {formatSpanishDate(getLocalISODate())} {new Date().toLocaleTimeString()}
                             </div>
                         </div>
                     </div>
@@ -117,7 +118,7 @@ export default function InlineGradeReport() {
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem 2rem' }}>
                             <div className="space-y-1">
                                 <div style={{ fontWeight: 'bold', color: '#64748b', fontSize: '0.75rem', textTransform: 'uppercase' }}>Fecha Inspección</div>
-                                <div style={{ fontWeight: 600 }}>{inspection.date}</div>
+                                <div style={{ fontWeight: 600 }}>{formatSpanishDate(inspection.date)}</div>
                             </div>
                             <div className="space-y-1">
                                 <div style={{ fontWeight: 'bold', color: '#64748b', fontSize: '0.75rem', textTransform: 'uppercase' }}>Piezas Insp.</div>
@@ -151,7 +152,7 @@ export default function InlineGradeReport() {
 
                             <div className="space-y-1">
                                 <div style={{ fontWeight: 'bold', color: '#64748b', fontSize: '0.75rem', textTransform: 'uppercase' }}>Producto</div>
-                                <div style={{ fontWeight: 'bold', color: '#7e22ce' }}>{inspection.product_name}</div>
+                                <div style={{ fontWeight: 'bold', color: 'var(--ga-primary)' }}>{inspection.product_name}</div>
                             </div>
                             <div className="space-y-1">
                                 <div style={{ fontWeight: 'bold', color: '#64748b', fontSize: '0.75rem', textTransform: 'uppercase' }}>Mercado</div>
@@ -187,8 +188,8 @@ export default function InlineGradeReport() {
                     <div style={{ padding: '1.5rem', pageBreakInside: 'avoid' }}>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', alignItems: 'flex-start' }}>
                             {/* Tabla Resumen de Grados */}
-                            <div style={{ border: '1px solid #e2e8f0', borderRadius: '4px', overflow: 'hidden' }}>
-                                <div style={{ background: '#0284c7', color: 'white', fontWeight: 'bold', padding: '0.5rem 1rem', textAlign: 'center', textTransform: 'uppercase', fontSize: '0.875rem', printColorAdjust: 'exact', WebkitPrintColorAdjust: 'exact' }}>
+                            <div style={{ border: '1px solid var(--ga-border)', borderRadius: '4px', overflow: 'hidden' }}>
+                                <div style={{ background: 'var(--ga-primary)', color: 'white', fontWeight: 'bold', padding: '0.5rem 1rem', textAlign: 'center', textTransform: 'uppercase', fontSize: '0.875rem', printColorAdjust: 'exact', WebkitPrintColorAdjust: 'exact' }}>
                                     Resumen General de Grados
                                 </div>
                                 <table style={{ width: '100%', fontSize: '0.875rem', borderCollapse: 'collapse' }}>
@@ -230,7 +231,7 @@ export default function InlineGradeReport() {
                                                     style={{
                                                         width: '100%',
                                                         borderRadius: '4px 4px 0 0',
-                                                        background: grade.name === 'RECHAZO' ? '#dc2626' : '#16a34a',
+                                                        background: grade.name === 'RECHAZO' ? 'var(--ga-danger)' : 'var(--ga-success)',
                                                         height: `${grade.percentage}%`,
                                                         transition: 'height 0.7s',
                                                         printColorAdjust: 'exact', WebkitPrintColorAdjust: 'exact'
@@ -254,7 +255,7 @@ export default function InlineGradeReport() {
                             const defectsList = Object.entries(gradeData.defects).map(([dName, count]) => ({
                                 name: dName,
                                 count,
-                                percentage: gradeData.total ? (count / gradeData.total) * 100 : 0
+                                percentage: stats.totalPieces ? (count / stats.totalPieces) * 100 : 0
                             })).sort((a, b) => b.count - a.count);
 
                             if (defectsList.length === 0) return null; // No mostrar si no hay defectos (ej: grado perfecto)
@@ -264,7 +265,7 @@ export default function InlineGradeReport() {
                                     {/* Cabecera del Grado */}
                                     <div style={{ background: '#f1f5f9', padding: '0.75rem', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', printColorAdjust: 'exact', WebkitPrintColorAdjust: 'exact' }}>
                                         <h3 style={{ fontSize: '1rem', fontWeight: 'bold', color: '#334155', textTransform: 'uppercase', margin: 0 }}>
-                                            Detalle de Defectos: <span style={{ color: '#7e22ce' }}>{gradeName}</span>
+                                            Detalle de Defectos: <span style={{ color: 'var(--ga-primary)' }}>{gradeName}</span>
                                         </h3>
                                         <div style={{ fontSize: '0.875rem', fontWeight: 'bold', color: '#64748b' }}>
                                             Total Piezas Grado: {gradeData.total}
@@ -279,7 +280,7 @@ export default function InlineGradeReport() {
                                                     <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
                                                         <th style={{ padding: '0.25rem 0.5rem', textAlign: 'left', fontWeight: 'bold', color: '#64748b', fontSize: '0.75rem', textTransform: 'uppercase' }}>Defecto</th>
                                                         <th style={{ padding: '0.25rem 0.5rem', textAlign: 'center', fontWeight: 'bold', color: '#64748b', fontSize: '0.75rem', textTransform: 'uppercase' }}>Piezas</th>
-                                                        <th style={{ padding: '0.25rem 0.5rem', textAlign: 'center', fontWeight: 'bold', color: '#64748b', fontSize: '0.75rem', textTransform: 'uppercase' }}>% (del Grado)</th>
+                                                        <th style={{ padding: '0.25rem 0.5rem', textAlign: 'center', fontWeight: 'bold', color: '#64748b', fontSize: '0.75rem', textTransform: 'uppercase' }}>% (del Total)</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -287,7 +288,9 @@ export default function InlineGradeReport() {
                                                         <tr key={idx} style={{ borderBottom: '1px solid #f8fafc' }}>
                                                             <td style={{ padding: '0.5rem 0.5rem', color: '#334155' }}>{d.name}</td>
                                                             <td style={{ padding: '0.5rem 0.5rem', textAlign: 'center', color: '#475569' }}>{d.count}</td>
-                                                            <td style={{ padding: '0.5rem 0.5rem', textAlign: 'center', fontWeight: 'bold', color: '#334155' }}>{d.percentage.toFixed(1)}%</td>
+                                                            <td style={{ padding: '0.5rem 0.5rem', textAlign: 'center', fontWeight: 'bold', color: '#334155' }}>
+                                                                {d.percentage.toFixed(1)}%
+                                                            </td>
                                                         </tr>
                                                     ))}
                                                 </tbody>
@@ -307,7 +310,7 @@ export default function InlineGradeReport() {
                                                             style={{
                                                                 height: '100%',
                                                                 borderRadius: '99px',
-                                                                background: gradeName === 'RECHAZO' ? '#ef4444' : '#22c55e',
+                                                                background: gradeName === 'RECHAZO' ? 'var(--ga-danger)' : 'var(--ga-success)',
                                                                 width: `${d.percentage}%`,
                                                                 printColorAdjust: 'exact', WebkitPrintColorAdjust: 'exact'
                                                             }}

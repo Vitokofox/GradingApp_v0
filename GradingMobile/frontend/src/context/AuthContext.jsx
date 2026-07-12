@@ -1,98 +1,158 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import api from '../api';
+import axios from 'axios';
+import { getOfflineUser, saveUserOffline } from '../services/db';
+import bcrypt from 'bcryptjs';
 
 const AuthContext = createContext(null);
-
-import { seedMasterData, saveUserOffline, getOfflineUser } from '../services/db';
-import seedData from '../seed_data.json';
 
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const token = localStorage.getItem('token');
-        if (token) {
-            // api interceptor already handles token from localStorage, 
-            // but we might need to fetch user on load.
-            fetchUser();
-        } else {
-            // AUTO-LOGIN BYPASS
-            console.log("No token found, auto-logging in as offline user...");
-            loginOffline();
-            setLoading(false);
+        // Check for existing session
+        const storedUser = localStorage.getItem('user_session');
+        if (storedUser) {
+            try {
+                setUser(JSON.parse(storedUser));
+            } catch (e) {
+                console.error("Session parse error", e);
+                localStorage.removeItem('user_session');
+            }
         }
+        setLoading(false);
     }, []);
 
-    const fetchUser = async () => {
+    const normalizeBaseUrl = (url) => {
+        if (!url) return '';
+        let formatted = String(url).trim();
+        if (!formatted.startsWith('http://') && !formatted.startsWith('https://')) {
+            formatted = `http://${formatted}`;
+        }
+
         try {
-            const response = await api.get('/users/me');
-            setUser(response.data);
+            const parsed = new URL(formatted);
+            return `${parsed.protocol}//${parsed.host}`;
+        } catch (e) {
+            return formatted.endsWith('/') ? formatted.slice(0, -1) : formatted;
+        }
+    };
+
+    const tryOnlineLogin = async (username, password, offlineUser) => {
+        const baseUrl = normalizeBaseUrl(localStorage.getItem('server_url'));
+        if (!baseUrl) return null;
+
+        const params = new URLSearchParams();
+        params.append('username', username);
+        params.append('password', password);
+
+        let tokenResponse;
+        let lastError;
+        for (const path of ['/token', '/api/token']) {
+            try {
+                tokenResponse = await axios.post(`${baseUrl}${path}`, params, {
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    timeout: 12000,
+                });
+                break;
+            } catch (error) {
+                lastError = error;
+                if (![404, 405].includes(error?.response?.status)) {
+                    break;
+                }
+            }
+        }
+
+        if (!tokenResponse?.data?.access_token) {
+            if (lastError?.response?.status === 401) {
+                throw new Error('Usuario o contraseña incorrectos.');
+            }
+            return null;
+        }
+
+        const accessToken = tokenResponse.data.access_token;
+        const meResponse = await axios.get(`${baseUrl}/users/me`, {
+            headers: { Authorization: `Bearer ${accessToken}` },
+            timeout: 12000,
+        });
+
+        const serverUser = meResponse.data || {};
+        const cachedUser = {
+            ...offlineUser,
+            ...serverUser,
+            username: serverUser.username || username,
+            password,
+            isOffline: false,
+        };
+
+        await saveUserOffline(cachedUser);
+        localStorage.setItem('token', accessToken);
+        localStorage.setItem('user_session', JSON.stringify(cachedUser));
+        setUser(cachedUser);
+        return cachedUser;
+    };
+
+    const login = async (username, password) => {
+        setLoading(true);
+        try {
+            // 1. Fetch user from Local DB
+            const offlineUser = await getOfflineUser(username);
+
+            // 1a. Prefer online auth when server is available so first login works even if hash format differs.
+            const onlineSession = await tryOnlineLogin(username, password, offlineUser);
+            if (onlineSession) {
+                return onlineSession;
+            }
+
+            if (!offlineUser) {
+                throw new Error("Usuario no encontrado en la base de datos.");
+            }
+
+            // 2. Verify Credential
+            const dbPass = offlineUser.password || offlineUser.password_hash;
+
+            // Check if it's a Bcrypt hash (starts with $2)
+            let isValid = false;
+
+            if (dbPass && dbPass.startsWith('$2')) {
+                // Use bcrypt compare
+                isValid = await bcrypt.compare(password, dbPass);
+            } else {
+                // Fallback to plain text (legacy or non-hashed dev DB)
+                isValid = String(dbPass) === String(password);
+            }
+
+            if (!isValid) {
+                throw new Error("Contraseña incorrecta.");
+            }
+
+            // 3. Set Session
+            const sessionUser = { ...offlineUser, isOffline: true };
+            setUser(sessionUser);
+            localStorage.setItem('user_session', JSON.stringify(sessionUser));
+
+            return sessionUser;
+
         } catch (error) {
-            console.error("Failed to fetch user", error);
-            logout();
+            console.error("Login failed", error);
+            throw error;
         } finally {
             setLoading(false);
         }
     };
 
-    const login = async (username, password) => {
-        try {
-            const formData = new FormData();
-            formData.append('username', username);
-            formData.append('password', password);
-
-            const response = await api.post('/token', formData);
-            const { access_token } = response.data;
-
-            localStorage.setItem('token', access_token);
-            // Interceptor in api.js reads 'token' from localStorage automatically.
-            await fetchUser();
-        } catch (error) {
-            console.log("Online login failed, trying offline...", error);
-            try {
-                const offlineUser = await getOfflineUser(username);
-                if (offlineUser && offlineUser.password === password) {
-                    setUser({ ...offlineUser, isOffline: true });
-                    localStorage.setItem('offline_mode', 'true');
-                    return; // Success
-                }
-            } catch (dbError) {
-                console.error("Offline login failed", dbError);
-            }
-            throw error; // Re-throw original error if offline fails
-        }
-    };
-
     const logout = () => {
-        localStorage.removeItem('token');
+        localStorage.removeItem('user_session');
         setUser(null);
     };
 
-    const register = async (userData) => {
-        try {
-            await api.post('/users/', userData);
-        } catch (error) {
-            console.log("Online registration failed, saving locally...", error);
-            // Save locally if network error or server down
-            await saveUserOffline(userData);
-            // We treat this as success for the UI
-        }
+    // No registration in strict offline mode
+    const register = async () => {
+        throw new Error("Registro no disponible en modo Offline.");
     };
 
-    const loginOffline = () => {
-        const offlineUser = {
-            id: 'offline-user',
-            username: 'offline_user',
-            first_name: 'Modo',
-            last_name: 'Offline',
-            position: 'Operador Local',
-            level: 'user',
-            process_type: 'offline'
-        };
-        setUser(offlineUser);
-        localStorage.setItem('offline_mode', 'true');
-    };
+    // Legacy support (optional, can render nothing or 'local' badge)
+    const loginOffline = () => { /* No-op or debug helper */ };
 
     return (
         <AuthContext.Provider value={{ user, login, logout, register, loginOffline, loading }}>

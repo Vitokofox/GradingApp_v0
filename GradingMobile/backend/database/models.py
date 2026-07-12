@@ -2,7 +2,7 @@ from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, Date, DateT
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from .database import Base
-# Association Table for Grade-Defect
+# Tabla de asociación para Grado-Defecto
 grade_defects = Table('grade_defects', Base.metadata,
     Column('grade_id', Integer, ForeignKey('grades.id')),
     Column('defect_id', Integer, ForeignKey('defects.id'))
@@ -22,16 +22,16 @@ class Market(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, unique=True, index=True)
     
-    # Market might still be relevant for destination
+    # Mercado podría ser relevante para el destino
     inspections = relationship("Inspection", back_populates="market")
 
 class Grade(Base):
     __tablename__ = "grades"
     
     id = Column(Integer, primary_key=True, index=True)
-    product_id = Column(Integer, ForeignKey("products.id")) # Changed from market_id to product_id
+    product_id = Column(Integer, ForeignKey("products.id")) # Cambiado de market_id a product_id
     name = Column(String)
-    grade_rank = Column(Integer)  # 1 is best, higher is worse
+    grade_rank = Column(Integer)  # 1 es mejor, mayor es peor
     
     product = relationship("Product", back_populates="grades")
     defects = relationship("Defect", secondary=grade_defects, back_populates="grades")
@@ -40,7 +40,7 @@ class CatalogItem(Base):
     __tablename__ = "catalog_items"
     
     id = Column(Integer, primary_key=True, index=True)
-    category = Column(String, index=True) # e.g., "Area", "Machine", "Product", "Shift"
+    category = Column(String, index=True) # ej., "Área", "Máquina", "Producto", "Turno"
     name = Column(String)
     active = Column(Boolean, default=True)
 
@@ -70,18 +70,18 @@ class Inspection(Base):
     lot = Column(String, nullable=False)
     
     market_id = Column(Integer, ForeignKey("markets.id"), nullable=False)
-    product_name = Column(String, nullable=False) # Or ID if cataloged
+    product_name = Column(String, nullable=False) # O ID si está catalogado
     
     state = Column(String, nullable=False) # Estado
-    termination = Column(String, nullable=False) # Terminacion
+    termination = Column(String, nullable=False) # Terminación
     
     thickness = Column(String, nullable=False)
     width = Column(String, nullable=False)
     length = Column(String, nullable=False)
     
-    pieces_inspected = Column(Integer, default=0) # Planned amount
+    pieces_inspected = Column(Integer, default=0) # Cantidad planificada
     
-    type = Column(String) # Discriminator
+    type = Column(String) # Discriminador
     
     market = relationship("Market", back_populates="inspections")
     
@@ -94,7 +94,7 @@ class FinishedProductInspection(Inspection):
     __mapper_args__ = {
         "polymorphic_identity": "finished_product",
     }
-    # Add specific columns if any, for now it reuses the base
+    # Agregar columnas específicas si las hay, por ahora reutiliza la base
 
 class LineGradingInspection(Inspection):
     __mapper_args__ = {
@@ -112,7 +112,7 @@ class InspectionResult(Base):
     id = Column(Integer, primary_key=True, index=True)
     inspection_id = Column(Integer, ForeignKey("inspections.id"))
     grade_id = Column(Integer, ForeignKey("grades.id"))
-    defect_id = Column(Integer, ForeignKey("defects.id"), nullable=True) # None means "Base Grade / Perfect"
+    defect_id = Column(Integer, ForeignKey("defects.id"), nullable=True) # None significa "Grado Base / Perfecto"
     
     pieces_count = Column(Integer, default=0)
     
@@ -120,7 +120,7 @@ class InspectionResult(Base):
     grade = relationship("Grade")
     defect = relationship("Defect")
 
-# Extend Inspection to link results
+# Extender Inspección para enlazar resultados
 Inspection.results = relationship("InspectionResult", back_populates="inspection")
 class ScannerStep(Base):
     __tablename__ = "scanner_steps"
@@ -132,14 +132,14 @@ class ScannerStep(Base):
     
     items = relationship("ScannerItem", back_populates="step")
 
-    # Expanded fields to match DB_Clasificadores
+    # Campos expandidos para coincidir con DB_Clasificadores
     shift = Column(String)
     area = Column(String)
     machine = Column(String)
-    responsible = Column(String) # Who performed the study
+    responsible = Column(String) # Quien realizó el estudio
     product_name = Column(String)
     
-    # Defaults for fluidity
+    # Valores por defecto para fluidez
     default_thickness = Column(Float, nullable=True)
     default_width = Column(Float, nullable=True)
     default_length = Column(Float, nullable=True)
@@ -151,22 +151,22 @@ class ScannerItem(Base):
     
     id = Column(Integer, primary_key=True, index=True)
     step_id = Column(Integer, ForeignKey("scanner_steps.id"))
-    item_number = Column(Integer) # 1 to 10
+    item_number = Column(Integer) # 1 a 10
     
     inspector_grade_id = Column(Integer, ForeignKey("grades.id"))
     scanner_grade_id = Column(Integer, ForeignKey("grades.id"))
     
-    # Dimensions per piece
+    # Dimensiones por pieza
     thickness = Column(Float, nullable=True)
     width = Column(Float, nullable=True)
-    length = Column(Float, nullable=True) # Renamed or aliased to original_length? Let's keep original_length for legacy if any, or just use length.
+    length = Column(Float, nullable=True) # Renombrado o alias a original_length? Mantegamos original_length por legado si hay, o solo usar length.
     
-    original_length = Column(Float, nullable=True) # Keeping this but maybe redundant if we use 'length'
+    original_length = Column(Float, nullable=True) # Manteniendo esto pero quizás redundante si usamos 'length'
 
-    optimized_grade_id = Column(Integer, ForeignKey("grades.id"), nullable=True) # If optimization happens
+    optimized_grade_id = Column(Integer, ForeignKey("grades.id"), nullable=True) # Si ocurre optimización
     cut_length = Column(Float, nullable=True)
     
-    winner = Column(String) # "Inspector", "Scanner", "Tie"
+    winner = Column(String) # "Inspector", "Escáner", "Empate"
     
     step = relationship("ScannerStep", back_populates="items")
     inspector_grade = relationship("Grade", foreign_keys=[inspector_grade_id])
@@ -182,6 +182,104 @@ class User(Base):
     first_name = Column(String)
     last_name = Column(String)
     position = Column(String) # Cargo
-    level = Column(String) # user, assistant, admin
+    level = Column(String) # usuario, asistente, admin
     process_type = Column(String) # Verde, Seco
     is_active = Column(Boolean, default=True)
+
+class BrokenPieceStudy(Base):
+    __tablename__ = "broken_piece_studies"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    date = Column(DateTime, default=datetime.now)
+    supervisor = Column(String)
+    responsible = Column(String) # Usuario que ingresa
+    
+    # Totales para resumen rápido
+    total_pieces = Column(Integer, default=0)
+    total_m3 = Column(Float, default=0.0)
+    total_loss_m3 = Column(Float, default=0.0)
+    total_loss_percentage = Column(Float, default=0.0)
+    
+    lots = relationship("BrokenPieceLot", back_populates="study", cascade="all, delete-orphan")
+
+class BrokenPieceLot(Base):
+    __tablename__ = "broken_piece_lots"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    study_id = Column(Integer, ForeignKey("broken_piece_studies.id"))
+    
+    lot_code = Column(String) # Código Lote
+    
+    # Dimensiones
+    thickness = Column(Float) # E (mm)
+    width = Column(Float)     # A (mm)
+    length = Column(Float)    # L (m)
+    
+    pieces_theoretical = Column(Integer) # Pza. SAP / Teóricas
+    m3_theoretical = Column(Float)       # M3 Calculado
+    
+    pieces_physical = Column(Integer)    # Pza. Físicas
+    diff_pieces = Column(Integer)        # Dif SAP v/s Fís
+    
+    # Defectos (Conteos)
+    broken_mobile = Column(Integer, default=0)    # Quebrada por móvil
+    broken_sawmill = Column(Integer, default=0)   # Q. desde Aserradero
+    broken_knot = Column(Integer, default=0)      # Q. por nudo
+    missing_pieces = Column(Integer, default=0)   # Piezas Faltantes
+    over_width = Column(Integer, default=0)       # Sobre Ancho
+    under_width = Column(Integer, default=0)      # Bajo Ancho
+    warped = Column(Integer, default=0)           # Alabeo
+    in_process = Column(Integer, default=0)       # Q en proceso
+    
+    # Cálculos de Pérdida
+    loss_m3 = Column(Float, default=0.0)          # Vol. De perdida por móvil
+    loss_percentage = Column(Float, default=0.0)  # % total Perdida
+    
+    # Evidencia
+    image_path = Column(String, nullable=True)
+    
+    
+    study = relationship("BrokenPieceStudy", back_populates="lots")
+
+class LogQualityControl(Base):
+    __tablename__ = "log_quality_controls"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    date = Column(Date, default=datetime.now)
+    shift = Column(String)
+    responsible = Column(String)
+    
+    target_diameter = Column(String)
+    target_length = Column(String)
+    wood_type = Column(String)
+    bin_number = Column(String) # Buzón
+    
+    timestamp = Column(DateTime, default=datetime.now)
+    
+    logs = relationship("LogInspection", back_populates="control", cascade="all, delete-orphan")
+
+class LogInspection(Base):
+    __tablename__ = "log_inspections"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    control_id = Column(Integer, ForeignKey("log_quality_controls.id"))
+    
+    jas_diameter = Column(Float, nullable=True) # Diam JAS (cm)
+    actual_length = Column(Float, nullable=True) # Largo (mm)
+    curvature = Column(Float, nullable=True)     # Curvatura (mm)
+    double_curvature = Column(Float, nullable=True) # Doble Curv. (mm)
+    
+    # Defects - Boolean flags
+    freckles = Column(Boolean, default=False)      # Pecas
+    splintering = Column(Boolean, default=False)   # Astillamiento
+    fissures = Column(Boolean, default=False)      # Fisuras
+    spores = Column(Boolean, default=False)        # Esporas
+    blue_stain = Column(Boolean, default=False)    # M. Azul
+    bark = Column(Boolean, default=False)          # Corteza
+    rot = Column(Boolean, default=False)           # Pudrición
+    bad_pruning = Column(Boolean, default=False)   # Mal Desrame
+    
+    other = Column(String, nullable=True)          # Otro
+    
+    control = relationship("LogQualityControl", back_populates="logs")
+

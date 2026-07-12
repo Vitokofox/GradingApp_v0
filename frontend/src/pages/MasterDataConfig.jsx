@@ -4,12 +4,13 @@ import {
     getCatalogItems, createCatalogItem, deleteCatalogItem,
     getDefects, createDefect, deleteDefect, uploadMasterData,
     getProducts, createProduct, deleteProduct,
-    getGradesByProduct, createGrade, deleteGrade,
+    getGradesByProduct, createGrade, updateGrade, deleteGrade,
     getDefectsByGrade, addDefectToGrade, removeDefectFromGrade,
-    getMarkets, createMarket, deleteMarket, downloadTemplate
+    getMarkets, createMarket, deleteMarket, downloadTemplate, downloadMasterDataCsv,
+    syncDownload, importMobileFile
 } from '../api';
 import {
-    Settings, Plus, Trash2, Upload, FileText, Check, AlertCircle, Database,
+    Settings, Plus, Trash2, Edit2, X, Upload, FileText, Check, AlertCircle, Database,
     ChevronRight, Layers, LayoutList, GitMerge, Search, Download
 } from 'lucide-react';
 
@@ -81,9 +82,19 @@ const ConfigSection = ({ title, category, type = 'catalog' }) => {
     return (
         <div className="ga-card" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
             <div className="ga-card__body" style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                <h3 className="ga-card__title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <Database size={16} className="u-muted" />
-                    {title}
+                <h3 className="ga-card__title" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <Database size={16} className="u-muted" />
+                        {title}
+                    </div>
+                    <button
+                        onClick={() => downloadMasterDataCsv(category || (type === 'defect' ? 'defects' : 'unknown'))}
+                        className="ga-btn ga-btn--sm ga-btn--ghost"
+                        title="Descargar CSV"
+                        style={{ padding: '0.25rem' }}
+                    >
+                        <Download size={14} />
+                    </button>
                 </h3>
 
                 <div className="ga-scrollbar" style={{ flex: 1, overflowY: 'auto', minHeight: '150px' }}>
@@ -150,11 +161,16 @@ const HierarchyManager = () => {
     const [selectedGrade, setSelectedGrade] = useState(null);
     const [assignedDefects, setAssignedDefects] = useState([]);
     const [allDefects, setAllDefects] = useState([]);
-    const [searchTerm, setSearchTerm] = useState('');
+    const [defectSearchTerm, setDefectSearchTerm] = useState('');
+    const [productSearchTerm, setProductSearchTerm] = useState('');
 
     const [newProductName, setNewProductName] = useState('');
     const [newGradeName, setNewGradeName] = useState('');
     const [newGradeRank, setNewGradeRank] = useState(1);
+
+    const [editingGradeId, setEditingGradeId] = useState(null);
+    const [editGradeName, setEditGradeName] = useState('');
+    const [editGradeRank, setEditGradeRank] = useState('');
 
     useEffect(() => {
         loadProducts();
@@ -165,6 +181,7 @@ const HierarchyManager = () => {
         if (selectedProduct) {
             loadGrades(selectedProduct.id);
             setSelectedGrade(null);
+            setEditingGradeId(null);
             setAssignedDefects([]);
         }
     }, [selectedProduct]);
@@ -222,6 +239,27 @@ const HierarchyManager = () => {
         }
     };
 
+    const handleUpdateGrade = async (id) => {
+        if (!editGradeName.trim()) return;
+        try {
+            await updateGrade(id, {
+                name: editGradeName,
+                grade_rank: parseInt(editGradeRank)
+            });
+            setEditingGradeId(null);
+            loadGrades(selectedProduct.id);
+        } catch (error) {
+            console.error(error);
+            alert(`Error al actualizar grado: ${error.response?.data?.detail || error.message}`);
+        }
+    };
+
+    const startEditingGrade = (grade) => {
+        setEditingGradeId(grade.id);
+        setEditGradeName(grade.name);
+        setEditGradeRank(grade.grade_rank);
+    };
+
     const handleDeleteGrade = async (id) => {
         if (!window.confirm('¿Eliminar grado?')) return;
         try {
@@ -256,53 +294,94 @@ const HierarchyManager = () => {
             {/* Column 1: Products */}
             <div className="ga-card" style={{ display: 'flex', flexDirection: 'column' }}>
                 <div className="ga-card__body" style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                    <h3 className="ga-card__title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <LayoutList size={20} className="u-muted" /> Productos
+                    <h3 className="ga-card__title" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <LayoutList size={20} className="u-muted" /> Productos
+                        </div>
+                        <button
+                            onClick={() => downloadMasterDataCsv('products')}
+                            className="ga-btn ga-btn--sm ga-btn--ghost"
+                            title="Descargar CSV"
+                        >
+                            <Download size={16} />
+                        </button>
                     </h3>
 
-                    <div className="ga-scrollbar" style={{ flex: 1, overflowY: 'auto' }}>
-                        <div className="ga-stack" style={{ gap: '0.5rem' }}>
-                            {products.map(p => (
-                                <div key={p.id}
-                                    onClick={() => setSelectedProduct(p)}
-                                    style={{
-                                        padding: '0.75rem',
-                                        borderRadius: 'var(--ga-radius-sm)',
-                                        cursor: 'pointer',
-                                        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                                        backgroundColor: selectedProduct?.id === p.id ? 'var(--ga-bg)' : 'transparent',
-                                        border: selectedProduct?.id === p.id ? '1px solid var(--ga-accent)' : '1px solid transparent',
-                                        color: selectedProduct?.id === p.id ? 'var(--ga-accent)' : 'inherit'
-                                    }}
-                                >
-                                    <span style={{ fontWeight: 500 }}>{p.name}</span>
-                                    <button onClick={(e) => { e.stopPropagation(); handleDeleteProduct(p.id); }} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--ga-danger)' }}>
-                                        <Trash2 size={16} />
-                                    </button>
-                                </div>
-                            ))}
+                    {/* Controls: Search & Add */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                        <form onSubmit={handleCreateProduct} style={{ display: 'flex', gap: '0.5rem' }}>
+                            <input value={newProductName} onChange={e => setNewProductName(e.target.value)} placeholder="Nuevo Producto..." className="ga-control" style={{ flex: 1 }} />
+                            <button type="submit" className="ga-btn ga-btn--primary"><Plus size={16} /></button>
+                        </form>
+                        <div style={{ position: 'relative' }}>
+                            <Search className="u-muted" size={14} style={{ position: 'absolute', left: '8px', top: '50%', transform: 'translateY(-50%)' }} />
+                            <input
+                                type="text"
+                                placeholder="Buscar producto..."
+                                value={productSearchTerm}
+                                onChange={e => setProductSearchTerm(e.target.value)}
+                                className="ga-control"
+                                style={{ paddingLeft: '1.75rem', fontSize: '0.875rem', paddingBlock: '0.35rem' }}
+                            />
                         </div>
                     </div>
 
-                    <form onSubmit={handleCreateProduct} style={{ display: 'flex', gap: '0.5rem' }}>
-                        <input value={newProductName} onChange={e => setNewProductName(e.target.value)} placeholder="Nuevo Producto..." className="ga-control" style={{ flex: 1 }} />
-                        <button type="submit" className="ga-btn ga-btn--primary"><Plus size={16} /></button>
-                    </form>
+                    <div className="ga-scrollbar" style={{ flex: 1, overflowY: 'auto' }}>
+                        <div className="ga-stack" style={{ gap: '0.5rem' }}>
+                            {products
+                                .filter(p => p.name.toLowerCase().includes(productSearchTerm.toLowerCase()))
+                                .map(p => (
+                                    <div key={p.id}
+                                        onClick={() => setSelectedProduct(p)}
+                                        style={{
+                                            padding: '0.75rem',
+                                            borderRadius: 'var(--ga-radius-sm)',
+                                            cursor: 'pointer',
+                                            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                                            backgroundColor: selectedProduct?.id === p.id ? 'var(--ga-bg)' : 'transparent',
+                                            border: selectedProduct?.id === p.id ? '1px solid var(--ga-accent)' : '1px solid transparent',
+                                            color: selectedProduct?.id === p.id ? 'var(--ga-accent)' : 'inherit'
+                                        }}
+                                    >
+                                        <span style={{ fontWeight: 500 }}>{p.name}</span>
+                                        <button onClick={(e) => { e.stopPropagation(); handleDeleteProduct(p.id); }} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--ga-danger)' }}>
+                                            <Trash2 size={16} />
+                                        </button>
+                                    </div>
+                                ))}
+                        </div>
+                    </div>
                 </div>
             </div>
 
             {/* Column 2: Grades */}
             <div className="ga-card" style={{ display: 'flex', flexDirection: 'column', opacity: !selectedProduct ? 0.5 : 1, pointerEvents: !selectedProduct ? 'none' : 'auto' }}>
                 <div className="ga-card__body" style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                    <h3 className="ga-card__title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <Layers size={20} className="u-muted" /> Cascadas (Grados)
+                    <h3 className="ga-card__title" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <Layers size={20} className="u-muted" /> Cascadas (Grados)
+                        </div>
+                        <button
+                            onClick={() => downloadMasterDataCsv('grades')}
+                            className="ga-btn ga-btn--sm ga-btn--ghost"
+                            title="Descargar CSV"
+                        >
+                            <Download size={16} />
+                        </button>
                     </h3>
 
                     {!selectedProduct ? (
                         <div className="u-center u-muted u-italic" style={{ marginTop: '2rem' }}>Selecciona un producto</div>
                     ) : (
                         <>
-                            <div className="ga-scrollbar" style={{ flex: 1, overflowY: 'auto' }}>
+                            {/* Controls: Add (Already at top as requested) */}
+                            <form onSubmit={handleCreateGrade} style={{ display: 'flex', gap: '0.5rem' }}>
+                                <input type="number" value={newGradeRank} onChange={e => setNewGradeRank(e.target.value)} className="ga-control" style={{ width: '60px', textAlign: 'center' }} title="Rango" />
+                                <input value={newGradeName} onChange={e => setNewGradeName(e.target.value)} placeholder="Nombre Grado..." className="ga-control" style={{ flex: 1 }} />
+                                <button type="submit" className="ga-btn ga-btn--primary"><Plus size={16} /></button>
+                            </form>
+
+                            <div className="ga-scrollbar max-h-[250px] overflow-y-auto overscroll-contain pr-1">
                                 <div className="ga-stack" style={{ gap: '0.5rem' }}>
                                     {grades.sort((a, b) => a.grade_rank - b.grade_rank).map(g => (
                                         <div key={g.id}
@@ -317,25 +396,52 @@ const HierarchyManager = () => {
                                                 color: selectedGrade?.id === g.id ? 'var(--ga-accent)' : 'inherit'
                                             }}
                                         >
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                                <span style={{
-                                                    background: 'var(--ga-bg)', padding: '0.1rem 0.4rem',
-                                                    borderRadius: '4px', fontSize: '0.75rem', fontWeight: 'bold'
-                                                }}>{g.grade_rank}</span>
-                                                <span style={{ fontWeight: 500 }}>{g.name}</span>
-                                            </div>
-                                            <button onClick={(e) => { e.stopPropagation(); handleDeleteGrade(g.id); }} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--ga-danger)' }}>
-                                                <Trash2 size={16} />
-                                            </button>
+                                            {editingGradeId === g.id ? (
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flex: 1 }} onClick={(e) => e.stopPropagation()}>
+                                                    <input
+                                                        type="number"
+                                                        value={editGradeRank}
+                                                        onChange={(e) => setEditGradeRank(e.target.value)}
+                                                        className="ga-control"
+                                                        style={{ width: '60px', textAlign: 'center', padding: '0.2rem' }}
+                                                    />
+                                                    <input
+                                                        type="text"
+                                                        value={editGradeName}
+                                                        onChange={(e) => setEditGradeName(e.target.value)}
+                                                        className="ga-control"
+                                                        style={{ flex: 1, padding: '0.2rem' }}
+                                                    />
+                                                    <button onClick={() => handleUpdateGrade(g.id)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--ga-success)' }} title="Guardar">
+                                                        <Check size={16} />
+                                                    </button>
+                                                    <button onClick={() => setEditingGradeId(null)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--ga-danger)' }} title="Cancelar">
+                                                        <X size={16} />
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                        <span style={{
+                                                            background: 'var(--ga-bg)', padding: '0.1rem 0.4rem',
+                                                            borderRadius: '4px', fontSize: '0.75rem', fontWeight: 'bold'
+                                                        }}>{g.grade_rank}</span>
+                                                        <span style={{ fontWeight: 500 }}>{g.name}</span>
+                                                    </div>
+                                                    <div style={{ display: 'flex', gap: '0.25rem' }}>
+                                                        <button onClick={(e) => { e.stopPropagation(); startEditingGrade(g); }} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--ga-accent)' }} title="Editar">
+                                                            <Edit2 size={16} />
+                                                        </button>
+                                                        <button onClick={(e) => { e.stopPropagation(); handleDeleteGrade(g.id); }} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--ga-danger)' }} title="Eliminar">
+                                                            <Trash2 size={16} />
+                                                        </button>
+                                                    </div>
+                                                </>
+                                            )}
                                         </div>
                                     ))}
                                 </div>
                             </div>
-                            <form onSubmit={handleCreateGrade} style={{ display: 'flex', gap: '0.5rem' }}>
-                                <input type="number" value={newGradeRank} onChange={e => setNewGradeRank(e.target.value)} className="ga-control" style={{ width: '60px', textAlign: 'center' }} title="Rango" />
-                                <input value={newGradeName} onChange={e => setNewGradeName(e.target.value)} placeholder="Nombre Grado..." className="ga-control" style={{ flex: 1 }} />
-                                <button type="submit" className="ga-btn ga-btn--primary"><Plus size={16} /></button>
-                            </form>
                         </>
                     )}
                 </div>
@@ -357,8 +463,8 @@ const HierarchyManager = () => {
                                 <input
                                     type="text"
                                     placeholder="Buscar defecto..."
-                                    value={searchTerm}
-                                    onChange={e => setSearchTerm(e.target.value)}
+                                    value={defectSearchTerm}
+                                    onChange={e => setDefectSearchTerm(e.target.value)}
                                     className="ga-control"
                                     style={{ paddingLeft: '1.75rem', fontSize: '0.875rem', paddingBlock: '0.35rem' }}
                                 />
@@ -370,7 +476,7 @@ const HierarchyManager = () => {
 
                             <div className="ga-stack" style={{ gap: '0.25rem' }}>
                                 {allDefects
-                                    .filter(d => d.name.toLowerCase().includes(searchTerm.toLowerCase()))
+                                    .filter(d => d.name.toLowerCase().includes(defectSearchTerm.toLowerCase()))
                                     .map(defect => {
                                         const isAssigned = assignedDefects.some(d => d.id === defect.id);
                                         return (
@@ -423,6 +529,9 @@ const MasterDataConfig = () => {
         { id: 'market', title: 'Mercado' },
         { id: 'supervisor', title: 'Supervisores' },
         { id: 'length', title: 'Largos Configurados' },
+        { id: 'estate', title: 'Predios (Estudio Camión)' },
+        { id: 'characteristic', title: 'Características (Estudio Camión)' },
+        { id: 'logging_team', title: 'Equipos Madereros (Estudio Camión)' },
     ];
 
     const tabStyle = (tabName) => ({
@@ -436,6 +545,48 @@ const MasterDataConfig = () => {
         cursor: 'pointer',
         whiteSpace: 'nowrap'
     });
+
+    const handleDownloadTemplate = () => {
+        downloadTemplate();
+    };
+
+    const handleDownloadMobileDB = async () => {
+        try {
+            const data = await syncDownload();
+            const jsonStr = JSON.stringify(data, null, 2);
+            const blob = new Blob([jsonStr], { type: 'application/json' });
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `base_datos_movil_${new Date().toISOString().split('T')[0]}.json`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+        } catch (error) {
+            console.error("Error downloading mobile DB", error);
+            alert("Error al descargar master data.");
+        }
+    };
+
+    const handleImportMobileData = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        if (!window.confirm(`¿Deseas importar los datos desde ${file.name}? Esto agregará las inspecciones nuevas al servidor.`)) return;
+
+        try {
+            const result = await importMobileFile(file);
+            if (result.status === 'success') {
+                alert(`Importación exitosa: ${result.imported} registros agregados, ${result.skipped} duplicados omitidos.`);
+            } else {
+                alert(`Error: ${result.message}`);
+            }
+        } catch (error) {
+            console.error(error);
+            alert("Error al procesar el archivo de sincronización.");
+        }
+        e.target.value = null; // Reset input
+    };
 
     return (
         <div className="ga-page">
@@ -453,6 +604,35 @@ const MasterDataConfig = () => {
                 <button onClick={() => setActiveTab('defects')} style={tabStyle('defects')}>Defectos y Rechazos</button>
                 <button onClick={() => setActiveTab('general')} style={tabStyle('general')}>Listas Generales</button>
                 <button onClick={() => setActiveTab('upload')} style={tabStyle('upload')}>Carga Masiva</button>
+
+                <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <button
+                        onClick={handleDownloadMobileDB}
+                        className="ga-btn ga-btn--sm ga-btn--secondary"
+                        title="1. Generar archivo para el Celular"
+                        style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}
+                    >
+                        <Download size={14} /> 1. Exportar a Celular
+                    </button>
+
+                    <div style={{ position: 'relative' }}>
+                        <input
+                            type="file"
+                            id="mobile-import"
+                            accept=".json"
+                            style={{ display: 'none' }}
+                            onChange={handleImportMobileData}
+                        />
+                        <label
+                            htmlFor="mobile-import"
+                            className="ga-btn ga-btn--sm ga-btn--primary"
+                            style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', cursor: 'pointer' }}
+                            title="2. Cargar archivo enviado desde el Celular"
+                        >
+                            <Upload size={14} /> 2. Importar desde Celular
+                        </label>
+                    </div>
+                </div>
             </div>
 
             <div style={{ minHeight: '500px' }}>

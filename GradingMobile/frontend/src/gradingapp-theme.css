@@ -1,0 +1,629 @@
+/* 
+ * Grading App Theme - Arauco Corporate Design System 
+ * Updated: 2025-12-30
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap');
+
+/* -------------------------------------------------------------------------- */
+/* 1. Reset + Base */
+/* -------------------------------------------------------------------------- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+:root {
+  /* -------------------------------------------------------------------------- */
+  /* 2. Design Tokens (Brand Identity) */
+  /* -------------------------------------------------------------------------- */
+
+  /* Arauco Corporate Palette */
+  --color-arauco-gray: #5F5953;
+  /* Corporate Dark Grey (Text/Footer) */
+  --color-arauco-lime: #BCC300;
+  /* Corporate Lime/Green (Innovation) */
+  --color-arauco-orange: #E27000;
+  /* Corporate Orange (Energy) */
+  --color-arauco-teal: #00968F;
+  /* Corporate Teal (Industrial) */
+  --color-arauco-beige: #E6E2D8;
+  /* Subtle Wood Tone */
+
+  /* Neutrals */
+  --color-white: #FFFFFF;
+  --color-black: #1A1A1A;
+  --color-gray-100: #F8F9FA;
+  --color-gray-200: #E9ECEF;
+  --color-gray-300: #DEE2E6;
+  --color-gray-500: #ADB5BD;
+  --color-gray-800: #343A40;
+
+  /* Semantic Mappings */
+  --ga-bg: #F4F4F4;
+  /* Clean Industrial Background */
+  --ga-surface: var(--color-white);
+  --ga-text: #2C2C2C;
+  --ga-muted: #6C757D;
+  --ga-border: #D1D5DB;
+
+  /* Brand Semantic Layers */
+  --ga-primary: var(--color-arauco-gray);
+  /* Standard Corporate Action */
+  --ga-primary-dark: #4A4540;
+
+  --ga-accent: var(--color-arauco-lime);
+  /* High Visibility / Active State */
+  --ga-accent-text: #2C2C2C;
+  /* Text on Accent */
+
+  --ga-secondary: var(--color-arauco-orange);
+  /* Call to Action / Warning */
+
+  /* Status Colors */
+  --ga-info: var(--color-arauco-teal);
+  --ga-success: #4D8C2F;
+  /* Accessible darker green for text/success states */
+  --ga-warning: var(--color-arauco-orange);
+  --ga-danger: #C0392B;
+  /* Strong Red for Rejection */
+
+  /* Shape & Form (Sharp/Industrial) */
+  --ga-radius-sm: 0px;
+  /* Sharp edges as per Arauco.com */
+  --ga-radius-md: 0px;
+  --ga-radius-lg: 0px;
+
+  /* Shadows (Subtle Lift) */
+  --ga-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --ga-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
+
+  /* Spacing System */
+  --ga-space-1: 0.25rem;
+  --ga-space-2: 0.5rem;
+  --ga-space-3: 1rem;
+  --ga-space-4: 1.5rem;
+  --ga-space-5: 2rem;
+
+  /* Typography (Roboto) */
+  --ga-font: 'Roboto', system-ui, sans-serif;
+  --ga-fs-sm: 0.875rem;
+  --ga-fs-md: 1rem;
+  --ga-fs-lg: 1.25rem;
+  --ga-fs-xl: 1.5rem;
+  --ga-fs-2xl: 2rem;
+  --ga-safe-top: env(safe-area-inset-top, 0px);
+  --ga-topbar-height: 70px;
+}
+
+/* Base Elements */
+body {
+  margin: 0;
+  font-family: var(--ga-font);
+  background-color: var(--ga-bg);
+  color: var(--ga-text);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin-top: 0;
+  font-weight: 700;
+  color: var(--color-black);
+}
+
+a {
+  color: var(--ga-info);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* -------------------------------------------------------------------------- */
+/* 3. Component System */
+/* -------------------------------------------------------------------------- */
+
+/* --- Layout --- */
+.ga-app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.ga-page {
+  padding: var(--ga-space-4);
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.ga-page--app {
+  padding-top: calc(var(--ga-topbar-height) + var(--ga-safe-top) + 0.625rem);
+}
+
+.ga-container {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding-left: var(--ga-space-4);
+  padding-right: var(--ga-space-4);
+}
+
+/* --- Grids & Stacks --- */
+.ga-grid {
+  display: grid;
+  gap: var(--ga-space-3);
+}
+
+.ga-grid--2 {
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+}
+
+.ga-grid--3 {
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.ga-grid--4 {
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.ga-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ga-space-3);
+}
+
+/* --- Navigation (Corporate Gray Header) --- */
+.ga-topbar {
+  background-color: var(--ga-primary);
+  color: var(--color-white);
+  min-height: calc(var(--ga-topbar-height) + var(--ga-safe-top));
+  display: flex;
+  align-items: center;
+  box-shadow: var(--ga-shadow-sm);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  padding-top: var(--ga-safe-top);
+}
+
+.ga-topbar__container {
+  width: 100%;
+}
+
+.ga-topbar__row {
+  min-height: var(--ga-topbar-height);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding-top: 0.25rem;
+  padding-bottom: 0.35rem;
+}
+
+.ga-topbar__left {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  min-width: 0;
+  flex: 1 1 560px;
+}
+
+.ga-topbar__brand {
+  font-size: 1.25rem;
+  color: var(--color-white);
+  flex: 0 0 auto;
+}
+
+.ga-topbar__links {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.ga-topbar__right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: 0 0 auto;
+}
+
+/* --- Cards (Clean Surface) --- */
+.ga-card {
+  background-color: var(--ga-surface);
+  border: 1px solid var(--ga-border);
+  /* Subtle border */
+  border-radius: var(--ga-radius-md);
+  box-shadow: var(--ga-shadow-sm);
+  display: flex;
+  flex-direction: column;
+  transition: box-shadow 0.2s;
+}
+
+.ga-card:hover {
+  box-shadow: var(--ga-shadow-md);
+}
+
+.ga-card__header {
+  padding: var(--ga-space-3);
+  border-bottom: 1px solid var(--ga-border);
+  background-color: var(--color-white);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.ga-card__title {
+  font-size: var(--ga-fs-lg);
+  font-weight: 700;
+  text-transform: uppercase;
+  /* Industrial feel */
+  letter-spacing: 0.5px;
+  color: var(--ga-primary);
+  margin: 0;
+}
+
+.ga-card__body {
+  padding: var(--ga-space-3);
+  flex: 1;
+}
+
+/* --- Buttons (Rectangular & Bold) --- */
+.ga-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.6rem 1.25rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-radius: var(--ga-radius-sm);
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* Primary: Dark Corporate Grey */
+.ga-btn--primary {
+  background-color: var(--ga-primary);
+  color: var(--color-white);
+}
+
+.ga-btn--primary:hover {
+  background-color: var(--ga-primary-dark);
+  color: var(--color-white);
+  transform: translateY(-1px);
+}
+
+/* Accent: Bright Lime (Text needs to be dark for contrast) */
+.ga-btn--accent {
+  background-color: var(--ga-accent);
+  color: var(--ga-text);
+}
+
+.ga-btn--accent:hover {
+  background-color: #A4AA00;
+  /* Darker Lime */
+  transform: translateY(-1px);
+}
+
+/* Secondary: Orange */
+.ga-btn--secondary {
+  background-color: var(--ga-secondary);
+  color: var(--color-white);
+}
+
+.ga-btn--secondary:hover {
+  background-color: #C66200;
+}
+
+/* Outline */
+.ga-btn--outline {
+  background-color: transparent;
+  border: 2px solid var(--ga-border);
+  color: var(--ga-text);
+}
+
+.ga-btn--outline:hover {
+  border-color: var(--ga-primary);
+  color: var(--ga-primary);
+  background-color: var(--color-gray-100);
+}
+
+/* Ghost / Text */
+.ga-btn--text {
+  background-color: transparent;
+  color: var(--ga-primary);
+  text-transform: none;
+  font-weight: 600;
+}
+
+.ga-btn--text:hover {
+  background-color: rgba(0, 0, 0, 0.03);
+}
+
+/* --- Forms (Sharp Inputs) --- */
+.ga-label {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-weight: 700;
+  font-size: 0.8rem;
+  color: var(--ga-primary);
+  text-transform: uppercase;
+}
+
+.ga-control,
+.ga-select,
+.ga-input {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  font-family: var(--ga-font);
+  font-size: 1rem;
+  color: var(--ga-text);
+  background-color: var(--color-white);
+  border: 1px solid var(--ga-border);
+  border-radius: var(--ga-radius-sm);
+  transition: border-color 0.2s;
+}
+
+.ga-control:focus,
+.ga-select:focus {
+  outline: none;
+  border-color: var(--ga-primary);
+  box-shadow: 0 0 0 3px rgba(95, 89, 83, 0.1);
+}
+
+/* Remove Arrows/Spinners */
+.u-hide-spinners::-webkit-outer-spin-button,
+.u-hide-spinners::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.u-hide-spinners {
+  -moz-appearance: textfield;
+}
+
+/* --- Tables (Data Dense) --- */
+.ga-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: var(--color-white);
+  font-size: 0.9rem;
+}
+
+.ga-table th {
+  background-color: var(--color-gray-100);
+  color: var(--ga-primary);
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 2px solid var(--ga-border);
+}
+
+.ga-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--ga-border);
+  color: var(--ga-text);
+}
+
+.ga-table tr:hover td {
+  background-color: rgba(188, 195, 0, 0.05);
+  /* Subtle Lime tint */
+}
+
+/* --- Badges & Status --- */
+.ga-badge {
+  display: inline-block;
+  padding: 0.25em 0.8em;
+  font-size: 0.75em;
+  font-weight: 700;
+  text-transform: uppercase;
+  border-radius: 99px;
+  /* Badges can remain pill-shaped for distinction */
+  line-height: 1;
+}
+
+.ga-badge--ok {
+  background-color: rgba(77, 140, 47, 0.15);
+  color: #3A6923;
+}
+
+.ga-badge--warn {
+  background-color: rgba(226, 112, 0, 0.15);
+  color: #B35800;
+}
+
+.ga-badge--error {
+  background-color: rgba(192, 57, 43, 0.15);
+  color: #962D22;
+}
+
+.ga-badge--muted {
+  background-color: var(--color-gray-200);
+  color: var(--ga-muted);
+}
+
+/* --- Alerts --- */
+.ga-alert {
+  padding: 1rem;
+  border-left: 4px solid transparent;
+  background-color: var(--color-white);
+  border: 1px solid var(--ga-border);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-weight: 500;
+}
+
+@media (max-width: 980px) {
+  .ga-topbar__row {
+    align-items: flex-start;
+  }
+
+  .ga-topbar__left,
+  .ga-topbar__right {
+    width: 100%;
+  }
+
+  .ga-topbar__left {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .ga-topbar__links {
+    width: 100%;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 0.25rem;
+  }
+
+  .ga-topbar__links::-webkit-scrollbar {
+    height: 4px;
+  }
+
+  .ga-topbar__right {
+    justify-content: space-between;
+  }
+
+  .ga-page--app {
+    padding-top: calc(var(--ga-topbar-height) + var(--ga-safe-top) + 4.5rem);
+  }
+}
+
+@media (max-width: 640px) {
+  .ga-container {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+
+  .ga-topbar__right {
+    gap: 0.5rem;
+  }
+
+  .ga-page {
+    padding: 1rem;
+  }
+
+  .ga-page--app {
+    padding-top: calc(var(--ga-topbar-height) + var(--ga-safe-top) + 5.5rem);
+  }
+}
+
+.ga-alert--info {
+  border-left-color: var(--ga-info);
+  background-color: rgba(0, 150, 143, 0.05);
+}
+
+.ga-alert--success {
+  border-left-color: var(--ga-success);
+  background-color: rgba(77, 140, 47, 0.05);
+}
+
+.ga-alert--warning {
+  border-left-color: var(--ga-warning);
+  background-color: rgba(226, 112, 0, 0.05);
+}
+
+.ga-alert--error {
+  border-left-color: var(--ga-danger);
+  background-color: rgba(192, 57, 43, 0.05);
+}
+
+/* --- Utilities --- */
+.u-text-center {
+  text-align: center;
+}
+
+.u-text-right {
+  text-align: right;
+}
+
+.u-bold {
+  font-weight: 700;
+}
+
+.u-muted {
+  color: var(--ga-muted);
+}
+
+.u-success {
+  color: var(--ga-success);
+}
+
+.u-danger {
+  color: var(--ga-danger);
+}
+
+.u-accent {
+  color: var(--ga-accent-dark);
+}
+
+.u-uppercase {
+  text-transform: uppercase;
+}
+
+.u-shadow {
+  box-shadow: var(--ga-shadow-md);
+}
+
+/* --- Print Overrides (Report Quality) --- */
+@media print {
+  @page {
+    margin: 1cm;
+    size: auto;
+  }
+
+  body {
+    background: white;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .ga-app,
+  .ga-page,
+  .ga-card {
+    box-shadow: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    max-width: none;
+  }
+
+  .ga-topbar,
+  .ga-btn,
+  .ga-no-print {
+    display: none !important;
+  }
+
+  /* Ensure backgrounds print */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}

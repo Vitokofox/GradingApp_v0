@@ -1,5 +1,13 @@
 {
   "appId": "com.grading.app",
-  "appName": "GradingApp",
-  "webDir": "dist"
+  "appName": "GradingApp Mobile",
+  "webDir": "dist",
+  "server": {
+    "cleartext": true
+  },
+  "plugins": {
+    "CapacitorHttp": {
+      "enabled": true
+    }
+  }
 }

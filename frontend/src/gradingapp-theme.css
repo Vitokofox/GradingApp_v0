@@ -1,69 +1,99 @@
 /* 
- * Grading App Theme - Enterprise Design System 
- * Replaces Tailwind CSS
+ * Grading App Theme - Arauco Corporate Design System 
+ * Updated: 2025-12-30
  */
+
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap');
 
 /* -------------------------------------------------------------------------- */
 /* 1. Reset + Base */
 /* -------------------------------------------------------------------------- */
 
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
 :root {
   /* -------------------------------------------------------------------------- */
-  /* 2. Tokens (Variables) */
+  /* 2. Design Tokens (Brand Identity) */
   /* -------------------------------------------------------------------------- */
-  
-  /* Palette (Strict Corporate) */
-  --color-earth-gray: #696158;
-  --color-olive: #BFB800;
-  --color-orange: #EA7600;
-  --color-beige: #DFD1A7;
+
+  /* Arauco Corporate Palette */
+  --color-arauco-gray: #5F5953;
+  /* Corporate Dark Grey (Text/Footer) */
+  --color-arauco-lime: #BCC300;
+  /* Corporate Lime/Green (Innovation) */
+  --color-arauco-orange: #E27000;
+  /* Corporate Orange (Energy) */
+  --color-arauco-teal: #00968F;
+  /* Corporate Teal (Industrial) */
+  --color-arauco-beige: #E6E2D8;
+  /* Subtle Wood Tone */
+
+  /* Neutrals */
   --color-white: #FFFFFF;
-  --color-black: #000000;
-  
-  /* Semantic Colors */
-  --ga-bg: #F5F5F0; /* Light derivation of beige/white */
+  --color-black: #1A1A1A;
+  --color-gray-100: #F8F9FA;
+  --color-gray-200: #E9ECEF;
+  --color-gray-300: #DEE2E6;
+  --color-gray-500: #ADB5BD;
+  --color-gray-800: #343A40;
+
+  /* Semantic Mappings */
+  --ga-bg: #F4F4F4;
+  /* Clean Industrial Background */
   --ga-surface: var(--color-white);
-  --ga-text: #2D2D2D; /* Soft black */
-  --ga-muted: #757575;
-  --ga-border: #E0E0E0;
-  
-  --ga-primary: var(--color-earth-gray);
-  --ga-primary-dark: #504942;
-  --ga-accent: var(--color-orange);
-  --ga-accent-dark: #C66200;
-  --ga-warning: var(--color-olive);
-  --ga-danger: #D32F2F; /* Material Red for critical errors */
-  --ga-success: #2E7D32; /* Material Green */
+  --ga-text: #2C2C2C;
+  --ga-muted: #6C757D;
+  --ga-border: #D1D5DB;
 
-  /* Radius */
-  --ga-radius-sm: 4px;
-  --ga-radius-md: 8px;
-  --ga-radius-lg: 12px;
+  /* Brand Semantic Layers */
+  --ga-primary: var(--color-arauco-gray);
+  /* Standard Corporate Action */
+  --ga-primary-dark: #4A4540;
 
-  /* Shadows */
-  --ga-shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
-  --ga-shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
-  --ga-shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+  --ga-accent: var(--color-arauco-lime);
+  /* High Visibility / Active State */
+  --ga-accent-text: #2C2C2C;
+  /* Text on Accent */
 
-  /* Spacing */
-  --ga-space-1: 0.25rem; /* 4px */
-  --ga-space-2: 0.5rem;  /* 8px */
-  --ga-space-3: 0.75rem; /* 12px */
-  --ga-space-4: 1rem;    /* 16px */
-  --ga-space-5: 1.5rem;  /* 24px */
-  --ga-space-6: 2rem;    /* 32px */
+  --ga-secondary: var(--color-arauco-orange);
+  /* Call to Action / Warning */
 
-  /* Typography */
-  --ga-font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  /* Status Colors */
+  --ga-info: var(--color-arauco-teal);
+  --ga-success: #4D8C2F;
+  /* Accessible darker green for text/success states */
+  --ga-warning: var(--color-arauco-orange);
+  --ga-danger: #C0392B;
+  /* Strong Red for Rejection */
+
+  /* Shape & Form (Sharp/Industrial) */
+  --ga-radius-sm: 0px;
+  /* Sharp edges as per Arauco.com */
+  --ga-radius-md: 0px;
+  --ga-radius-lg: 0px;
+
+  /* Shadows (Subtle Lift) */
+  --ga-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --ga-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
+
+  /* Spacing System */
+  --ga-space-1: 0.25rem;
+  --ga-space-2: 0.5rem;
+  --ga-space-3: 1rem;
+  --ga-space-4: 1.5rem;
+  --ga-space-5: 2rem;
+
+  /* Typography (Roboto) */
+  --ga-font: 'Roboto', system-ui, sans-serif;
   --ga-fs-sm: 0.875rem;
   --ga-fs-md: 1rem;
-  --ga-fs-lg: 1.125rem;
-  --ga-fs-xl: 1.25rem;
-  --ga-fs-2xl: 1.5rem;
+  --ga-fs-lg: 1.25rem;
+  --ga-fs-xl: 1.5rem;
+  --ga-fs-2xl: 2rem;
 }
 
 /* Base Elements */
@@ -76,26 +106,29 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-a {
-  color: var(--ga-accent);
-  text-decoration: none;
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin-top: 0;
+  font-weight: 700;
+  color: var(--color-black);
 }
+
+a {
+  color: var(--ga-info);
+  text-decoration: none;
+  font-weight: 500;
+}
+
 a:hover {
   text-decoration: underline;
 }
 
-button {
-  cursor: pointer;
-  font-family: inherit;
-}
-
-:focus-visible {
-  outline: 2px solid var(--ga-accent);
-  outline-offset: 2px;
-}
-
 /* -------------------------------------------------------------------------- */
-/* 3. Semantic Components */
+/* 3. Component System */
 /* -------------------------------------------------------------------------- */
 
 /* --- Layout --- */
@@ -107,32 +140,35 @@ button {
 
 .ga-page {
   padding: var(--ga-space-4);
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
   width: 100%;
 }
 
 .ga-container {
   width: 100%;
-  margin-right: auto;
-  margin-left: auto;
-  padding-right: var(--ga-space-4);
+  max-width: 1400px;
+  margin: 0 auto;
   padding-left: var(--ga-space-4);
+  padding-right: var(--ga-space-4);
 }
 
+/* --- Grids & Stacks --- */
 .ga-grid {
   display: grid;
-  gap: var(--ga-space-4);
+  gap: var(--ga-space-3);
 }
 
-.ga-grid--2 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
-.ga-grid--3 { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
+.ga-grid--2 {
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+}
 
-.ga-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--ga-space-3);
-  align-items: center;
+.ga-grid--3 {
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.ga-grid--4 {
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
 }
 
 .ga-stack {
@@ -141,72 +177,36 @@ button {
   gap: var(--ga-space-3);
 }
 
-.ga-spacer {
-  flex-grow: 1;
-}
-
-/* --- Topbar / Sidebar --- */
+/* --- Navigation (Corporate Gray Header) --- */
 .ga-topbar {
   background-color: var(--ga-primary);
   color: var(--color-white);
-  padding: var(--ga-space-3) var(--ga-space-4);
+  height: 70px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  box-shadow: var(--ga-shadow-md);
+  box-shadow: var(--ga-shadow-sm);
 }
 
-.ga-topbar-title {
-  font-size: var(--ga-fs-lg);
-  font-weight: 600;
-  margin: 0;
-}
-
-.ga-sidebar {
-  background-color: var(--ga-surface);
-  border-right: 1px solid var(--ga-border);
-  width: 250px;
-  height: 100%;
-  padding: var(--ga-space-4);
-  display: flex;
-  flex-direction: column;
-  gap: var(--ga-space-2);
-}
-
-.ga-nav-item {
-  display: block;
-  padding: var(--ga-space-2) var(--ga-space-3);
-  border-radius: var(--ga-radius-sm);
-  color: var(--ga-text);
-  transition: background-color 0.2s;
-}
-
-.ga-nav-item:hover {
-  background-color: var(--ga-bg);
-  text-decoration: none;
-}
-
-.ga-nav-item--active {
-  background-color: var(--color-beige);
-  color: var(--ga-primary);
-  font-weight: 600;
-}
-
-/* --- Cards --- */
+/* --- Cards (Clean Surface) --- */
 .ga-card {
   background-color: var(--ga-surface);
   border: 1px solid var(--ga-border);
+  /* Subtle border */
   border-radius: var(--ga-radius-md);
   box-shadow: var(--ga-shadow-sm);
-  overflow: hidden;
   display: flex;
   flex-direction: column;
+  transition: box-shadow 0.2s;
+}
+
+.ga-card:hover {
+  box-shadow: var(--ga-shadow-md);
 }
 
 .ga-card__header {
-  padding: var(--ga-space-3) var(--ga-space-4);
+  padding: var(--ga-space-3);
   border-bottom: 1px solid var(--ga-border);
-  background-color: rgba(0,0,0,0.02);
+  background-color: var(--color-white);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -214,341 +214,360 @@ button {
 
 .ga-card__title {
   font-size: var(--ga-fs-lg);
-  font-weight: 600;
+  font-weight: 700;
+  text-transform: uppercase;
+  /* Industrial feel */
+  letter-spacing: 0.5px;
+  color: var(--ga-primary);
   margin: 0;
 }
 
 .ga-card__body {
-  padding: var(--ga-space-4);
+  padding: var(--ga-space-3);
   flex: 1;
 }
 
-.ga-card__footer {
-  padding: var(--ga-space-3) var(--ga-space-4);
-  border-top: 1px solid var(--ga-border);
-  background-color: rgba(0,0,0,0.02);
-}
-
-/* --- Buttons --- */
+/* --- Buttons (Rectangular & Bold) --- */
 .ga-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.5rem 1rem;
-  font-size: var(--ga-fs-md);
-  font-weight: 500;
-  line-height: 1.5;
+  padding: 0.6rem 1.25rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
   border-radius: var(--ga-radius-sm);
-  border: 1px solid transparent;
-  transition: all 0.2s;
-  white-space: nowrap;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-.ga-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  pointer-events: none;
-}
-
+/* Primary: Dark Corporate Grey */
 .ga-btn--primary {
   background-color: var(--ga-primary);
   color: var(--color-white);
 }
+
 .ga-btn--primary:hover {
   background-color: var(--ga-primary-dark);
+  color: var(--color-white);
+  transform: translateY(-1px);
 }
 
+/* Accent: Bright Lime (Text needs to be dark for contrast) */
 .ga-btn--accent {
   background-color: var(--ga-accent);
+  color: var(--ga-text);
+}
+
+.ga-btn--accent:hover {
+  background-color: #A4AA00;
+  /* Darker Lime */
+  transform: translateY(-1px);
+}
+
+/* Secondary: Orange */
+.ga-btn--secondary {
+  background-color: var(--ga-secondary);
   color: var(--color-white);
 }
-.ga-btn--accent:hover {
-  background-color: var(--ga-accent-dark);
+
+.ga-btn--secondary:hover {
+  background-color: #C66200;
 }
 
+/* Outline */
 .ga-btn--outline {
   background-color: transparent;
-  border-color: var(--ga-border);
+  border: 2px solid var(--ga-border);
   color: var(--ga-text);
 }
+
 .ga-btn--outline:hover {
-  background-color: var(--ga-bg);
-  border-color: var(--ga-muted);
+  border-color: var(--ga-primary);
+  color: var(--ga-primary);
+  background-color: var(--color-gray-100);
 }
 
-.ga-btn--ghost {
+/* Ghost / Text */
+.ga-btn--text {
   background-color: transparent;
-  color: var(--ga-text);
-}
-.ga-btn--ghost:hover {
-  background-color: rgba(0,0,0,0.05);
-}
-
-.ga-btn--sm {
-  padding: 0.25rem 0.5rem;
-  font-size: var(--ga-fs-sm);
+  color: var(--ga-primary);
+  text-transform: none;
+  font-weight: 600;
 }
 
-.ga-btn--lg {
-  padding: 0.75rem 1.5rem;
-  font-size: var(--ga-fs-lg);
+.ga-btn--text:hover {
+  background-color: rgba(0, 0, 0, 0.03);
 }
 
-/* --- Forms --- */
+/* --- Forms (Sharp Inputs) --- */
 .ga-label {
   display: block;
-  margin-bottom: var(--ga-space-1);
-  font-weight: 500;
-  font-size: var(--ga-fs-sm);
-  color: var(--ga-text);
+  margin-bottom: 0.35rem;
+  font-weight: 700;
+  font-size: 0.8rem;
+  color: var(--ga-primary);
+  text-transform: uppercase;
 }
 
-.ga-control, .ga-input, .ga-select, .ga-textarea {
-  display: block;
+.ga-control,
+.ga-select,
+.ga-input {
   width: 100%;
-  padding: 0.5rem 0.75rem;
-  font-size: var(--ga-fs-md);
-  line-height: 1.5;
+  padding: 0.6rem 0.75rem;
+  font-family: var(--ga-font);
+  font-size: 1rem;
   color: var(--ga-text);
-  background-color: var(--ga-surface);
+  background-color: var(--color-white);
   border: 1px solid var(--ga-border);
   border-radius: var(--ga-radius-sm);
-  transition: border-color 0.15s ease-in-out;
+  transition: border-color 0.2s;
 }
 
-.ga-control:focus, .ga-input:focus, .ga-select:focus, .ga-textarea:focus {
-  border-color: var(--ga-accent);
-  outline: 0;
-  box-shadow: 0 0 0 2px rgba(234, 118, 0, 0.25);
+.ga-control:focus,
+.ga-select:focus {
+  outline: none;
+  border-color: var(--ga-primary);
+  box-shadow: 0 0 0 3px rgba(95, 89, 83, 0.1);
 }
 
-.ga-control:disabled, .ga-input:disabled {
-  background-color: var(--ga-bg);
-  opacity: 1;
+/* Remove Arrows/Spinners */
+.u-hide-spinners::-webkit-outer-spin-button,
+.u-hide-spinners::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
-.ga-help {
-  margin-top: 0.25rem;
-  font-size: var(--ga-fs-sm);
-  color: var(--ga-muted);
+.u-hide-spinners {
+  -moz-appearance: textfield;
 }
 
-.ga-error {
-  color: var(--ga-danger);
-  font-size: var(--ga-fs-sm);
-  margin-top: 0.25rem;
-}
-
-/* --- Tables --- */
-.ga-table-wrap {
-  overflow-x: auto;
-  border: 1px solid var(--ga-border);
-  border-radius: var(--ga-radius-md);
-}
-
+/* --- Tables (Data Dense) --- */
 .ga-table {
   width: 100%;
   border-collapse: collapse;
-  background-color: var(--ga-surface);
-}
-
-.ga-table th, 
-.ga-table td {
-  padding: 0.75rem 1rem;
-  text-align: left;
-  border-bottom: 1px solid var(--ga-border);
+  background-color: var(--color-white);
+  font-size: 0.9rem;
 }
 
 .ga-table th {
-  background-color: var(--ga-bg);
-  font-weight: 600;
+  background-color: var(--color-gray-100);
   color: var(--ga-primary);
-  white-space: nowrap;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 2px solid var(--ga-border);
 }
 
-.ga-table tr:last-child td {
-  border-bottom: none;
+.ga-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--ga-border);
+  color: var(--ga-text);
 }
 
-.ga-table tr:nth-child(even) {
-  background-color: #FAFAFA;
+.ga-table tr:hover td {
+  background-color: rgba(188, 195, 0, 0.05);
+  /* Subtle Lime tint */
 }
 
-.ga-table tr:hover {
-  background-color: rgba(234, 118, 0, 0.05); /* Tint of accent */
-}
-
-/* --- Badges / Alerts --- */
+/* --- Badges & Status --- */
 .ga-badge {
-  display: inline-flex;
-  padding: 0.25em 0.6em;
+  display: inline-block;
+  padding: 0.25em 0.8em;
   font-size: 0.75em;
   font-weight: 700;
+  text-transform: uppercase;
+  border-radius: 99px;
+  /* Badges can remain pill-shaped for distinction */
   line-height: 1;
-  border-radius: 999px;
-  text-align: center;
-  white-space: nowrap;
-  vertical-align: baseline;
-  background-color: var(--ga-bg);
-  color: var(--ga-text);
-  border: 1px solid var(--ga-border);
 }
 
-.ga-badge--ok { background-color: #E8F5E9; color: #2E7D32; border-color: transparent; }
-.ga-badge--warn { background-color: #FFFDE7; color: #F57F17; border-color: transparent; }
-.ga-badge--error { background-color: #FFEBEE; color: #C62828; border-color: transparent; }
-.ga-badge--muted { background-color: #F5F5F5; color: #616161; border-color: transparent; }
+.ga-badge--ok {
+  background-color: rgba(77, 140, 47, 0.15);
+  color: #3A6923;
+}
 
+.ga-badge--warn {
+  background-color: rgba(226, 112, 0, 0.15);
+  color: #B35800;
+}
+
+.ga-badge--error {
+  background-color: rgba(192, 57, 43, 0.15);
+  color: #962D22;
+}
+
+.ga-badge--muted {
+  background-color: var(--color-gray-200);
+  color: var(--ga-muted);
+}
+
+/* --- Alerts --- */
 .ga-alert {
-  padding: var(--ga-space-3);
-  margin-bottom: var(--ga-space-4);
-  border: 1px solid transparent;
-  border-radius: var(--ga-radius-md);
+  padding: 1rem;
+  border-left: 4px solid transparent;
+  background-color: var(--color-white);
+  border: 1px solid var(--ga-border);
+  margin-bottom: 1rem;
   display: flex;
   align-items: center;
-  gap: var(--ga-space-2);
+  gap: 1rem;
+  font-weight: 500;
 }
 
-.ga-alert--info { background-color: #E3F2FD; color: #0D47A1; border-color: #BBDEFB; }
-.ga-alert--success { background-color: #E8F5E9; color: #1B5E20; border-color: #C8E6C9; }
-.ga-alert--warning { background-color: #FFFDE7; color: #F57F17; border-color: #FFF9C4; }
-.ga-alert--error { background-color: #FFEBEE; color: #B71C1C; border-color: #FFCDD2; }
+.ga-alert--info {
+  border-left-color: var(--ga-info);
+  background-color: rgba(0, 150, 143, 0.05);
+}
 
-/* --- Top Level Modals --- */
-.ga-modal-backdrop {
-  position: fixed;
-  top: 0; left: 0; width: 100%; height: 100%;
-  background-color: rgba(0,0,0,0.5);
+.ga-alert--success {
+  border-left-color: var(--ga-success);
+  background-color: rgba(77, 140, 47, 0.05);
+}
+
+.ga-alert--warning {
+  border-left-color: var(--ga-warning);
+  background-color: rgba(226, 112, 0, 0.05);
+}
+
+.ga-alert--error {
+  border-left-color: var(--ga-danger);
+  background-color: rgba(192, 57, 43, 0.05);
+}
+
+/* --- Utilities --- */
+.u-text-center {
+  text-align: center;
+}
+
+.u-text-right {
+  text-align: right;
+}
+
+.u-bold {
+  font-weight: 700;
+}
+
+.u-muted {
+  color: var(--ga-muted);
+}
+
+.u-success {
+  color: var(--ga-success);
+}
+
+.u-danger {
+  color: var(--ga-danger);
+}
+
+.u-accent {
+  color: var(--ga-accent-dark);
+}
+
+.u-uppercase {
+  text-transform: uppercase;
+}
+
+.u-shadow {
+  box-shadow: var(--ga-shadow-md);
+}
+
+/* --- Print Overrides (Report Quality) --- */
+@media print {
+  @page {
+    margin: 1cm;
+    size: auto;
+  }
+
+  body {
+    background: white;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .ga-app,
+  .ga-page,
+  .ga-card {
+    box-shadow: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    max-width: none;
+  }
+
+  .ga-topbar,
+  .ga-btn,
+  .ga-no-print {
+    display: none !important;
+  }
+
+  /* Ensure backgrounds print */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
+
+/* --- Tally Counter --- */
+.ga-tally {
+  display: flex;
+  align-items: center;
+  background-color: var(--color-white);
+  border: 1px solid var(--ga-border);
+  border-radius: var(--ga-radius-sm);
+  overflow: hidden;
+  height: 40px;
+}
+
+.ga-tally-btn {
+  width: 40px;
+  height: 100%;
+  border: none;
+  background-color: var(--color-gray-100);
+  color: var(--ga-primary);
+  font-size: 1.4rem;
+  font-weight: 700;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
-  padding: var(--ga-space-4);
+  transition: all 0.2s;
+  user-select: none;
 }
 
-.ga-modal {
-  background-color: var(--ga-surface);
-  border-radius: var(--ga-radius-lg);
-  box-shadow: var(--ga-shadow-lg);
-  max-width: 500px;
-  width: 100%;
-  max-height: 90vh;
+.ga-tally-btn:hover {
+  background-color: var(--ga-primary);
+  color: white;
+}
+
+.ga-tally-value, .ga-tally-input {
+  width: 50px;
+  text-align: center;
+  font-size: 1.1rem;
+  font-weight: 900;
+  color: var(--ga-primary);
+  height: 100%;
   display: flex;
-  flex-direction: column;
-}
-
-.ga-modal__header {
-  padding: var(--ga-space-3) var(--ga-space-4);
-  border-bottom: 1px solid var(--ga-border);
-  font-weight: 600;
-  font-size: var(--ga-fs-lg);
-  display: flex;
-  justify-content: space-between;
-}
-
-.ga-modal__content {
-  padding: var(--ga-space-4);
-  overflow-y: auto;
-}
-
-.ga-modal__footer {
-  padding: var(--ga-space-3) var(--ga-space-4);
-  border-top: 1px solid var(--ga-border);
-  display: flex;
-  justify-content: flex-end;
-  gap: var(--ga-space-2);
-}
-
-/* -------------------------------------------------------------------------- */
-/* 4. Utilities */
-/* -------------------------------------------------------------------------- */
-.u-hidden { display: none !important; }
-.u-center { text-align: center; }
-.u-right { text-align: right; }
-.u-muted { color: var(--ga-muted); }
-.u-bold { font-weight: 600; }
-.u-flex { display: flex; }
-.u-truncate {
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-.u-gap-2 { gap: var(--ga-space-2); }
-.u-mb-2 { margin-bottom: var(--ga-space-2); }
-.u-mb-4 { margin-bottom: var(--ga-space-4); }
-
-/* -------------------------------------------------------------------------- */
-/* 5. Custom Scrollbar */
-/* -------------------------------------------------------------------------- */
-.ga-scrollbar::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-.ga-scrollbar::-webkit-scrollbar-track {
+  align-items: center;
+  justify-content: center;
+  border: none;
   background: transparent;
-}
-.ga-scrollbar::-webkit-scrollbar-thumb {
-  background-color: #BDBDBD;
-  border-radius: 4px;
-}
-.ga-scrollbar::-webkit-scrollbar-thumb:hover {
-  background-color: #9E9E9E;
+  padding: 0;
+  margin: 0;
 }
 
-/* -------------------------------------------------------------------------- */
-/* 6. Dark Mode (Optional) */
-/* -------------------------------------------------------------------------- */
-[data-theme="dark"] {
-  --ga-bg: #121212;
-  --ga-surface: #1E1E1E;
-  --ga-text: #E0E0E0;
-  --ga-muted: #9E9E9E;
-  --ga-border: #333333;
-  
-  --ga-primary: #8D857C; /* Lighter earth gray */
-  --ga-primary-dark: #696158;
-  
-  --ga-shadow-sm: 0 1px 2px rgba(0,0,0,0.5);
-  --ga-shadow-md: 0 4px 6px -1px rgba(0,0,0,0.6);
-  
-  /* Table overrides */
-  .ga-table tr:nth-child(even) { background-color: #252525; }
+.ga-tally-input:focus {
+  outline: 2px solid var(--ga-accent);
 }
 
-/* -------------------------------------------------------------------------- */
-/* 7. Print Styles */
-/* -------------------------------------------------------------------------- */
-@media print {
-  body {
-    background-color: #FFFFFF;
-    color: #000000;
-  }
-  
-  .ga-app, .ga-page, .ga-card {
-    box-shadow: none;
-    border: none;
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    max-width: none;
-  }
-  
-  .ga-topbar, .ga-sidebar, .ga-btn, .no-print {
-    display: none !important;
-  }
-  
-  .ga-table th {
-    background-color: #EEEEEE !important;
-    color: #000000 !important;
-    -webkit-print-color-adjust: exact;
-  }
-  
-  .ga-table td {
-    border-bottom: 1px solid #000000;
-  }
-  
-  a[href]:after {
-    content: " (" attr(href) ")";
-    font-size: 0.8em;
-  }
+.ga-tally-input::-webkit-outer-spin-button,
+.ga-tally-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
+.ga-tally-input[type=number] {
+  -moz-appearance: textfield;
+}

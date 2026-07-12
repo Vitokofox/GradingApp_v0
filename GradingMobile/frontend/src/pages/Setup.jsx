@@ -1,259 +1,266 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Server, Wifi, Download, CheckCircle, AlertCircle, Settings } from 'lucide-react';
-import api, { setBaseUrl } from '../api';
-import { seedMasterData } from '../services/db';
-import seedData from '../seed_data.json';
-import { Network } from '@capacitor/network';
-import DataImportExport from '../components/DataImportExport';
+import { Wifi, WifiOff, CheckCircle, RefreshCw, UploadCloud, Database, AlertCircle, Server } from 'lucide-react';
+import axios from 'axios';
+import { importDatabaseFile } from '../services/sqliteImporter';
+
+const APP_VERSION = "1.3.1";
+const OFICIAL_DNS = "http://CLDAA512-D7D.arauco.cl:8080";
+
+const formatUrl = (url) => {
+    if (!url) return '';
+    let formatted = String(url).trim();
+    if (!formatted.startsWith('http://') && !formatted.startsWith('https://')) {
+        formatted = `http://${formatted}`;
+    }
+
+    try {
+        const parsed = new URL(formatted);
+        let basePath = (parsed.pathname || '').replace(/\/+$/, '');
+        const removableSuffixes = ['/api/sync/full-dump', '/api/sync', '/sync/full-dump', '/sync'];
+        for (const suffix of removableSuffixes) {
+            if (basePath.toLowerCase().endsWith(suffix)) {
+                basePath = basePath.slice(0, basePath.length - suffix.length);
+                break;
+            }
+        }
+        return `${parsed.protocol}//${parsed.host}${basePath}`;
+    } catch (e) {
+        if (formatted.endsWith('/')) {
+            formatted = formatted.slice(0, -1);
+        }
+    }
+
+    return formatted;
+};
+
+const isIPv4Host = (host) => /^\d{1,3}(\.\d{1,3}){3}$/.test(host);
+
+const buildCandidateUrls = (rawValue) => {
+    const raw = String(rawValue || '').trim().replace(/\/$/, '');
+    if (!raw) return [];
+
+    if (raw.startsWith('http://') || raw.startsWith('https://')) {
+        return [formatUrl(raw)];
+    }
+
+    const hostOnly = raw.split('/')[0];
+    const hostPart = hostOnly.split(':')[0];
+    const preferHttpsFirst = !isIPv4Host(hostPart);
+
+    return preferHttpsFirst
+        ? [formatUrl(`https://${raw}`), formatUrl(`http://${raw}`)]
+        : [formatUrl(`http://${raw}`), formatUrl(`https://${raw}`)];
+};
 
 const Setup = () => {
     const navigate = useNavigate();
-    const [step, setStep] = useState(1);
-    const [serverUrl, setServerUrl] = useState(localStorage.getItem('server_url') || 'http://192.168.1.30:8000');
-    const [status, setStatus] = useState('idle'); // inactivo, probando, éxito, error, sincronizando
-    const [message, setMessage] = useState('');
-    const [showImport, setShowImport] = useState(false);
+    const [status, setStatus] = useState('checking_wms'); // checking_wms, wms_failed, processing, success, error
+    const [message, setMessage] = useState('Verificando conexión a la red WMS...');
+    const [showAdvanced, setShowAdvanced] = useState(false);
+    const [serverUrl, setServerUrl] = useState(OFICIAL_DNS);
 
-    const handleTestConnection = async () => {
-        setStatus('testing');
-        setMessage('Probando conexión...');
+    useEffect(() => {
+        localStorage.setItem('app_version', APP_VERSION);
+        checkWmsNetwork();
+    }, []);
 
-        // Establecer temporalmente URL para probar
-        setBaseUrl(serverUrl);
+    const checkWmsNetwork = async () => {
+        const candidates = buildCandidateUrls(serverUrl);
+        if (candidates.length === 0) {
+            setStatus('wms_failed');
+            setMessage('Debe ingresar una URL o IP valida del servidor.');
+            return;
+        }
+
+        setStatus('checking_wms');
+        setMessage(`Buscando servidor en ${candidates[0]}...`);
+
+        let lastError = null;
+        for (const candidate of candidates) {
+            try {
+                const probe = await axios.get(`${candidate}/api/sync/full-dump`, { timeout: 6000 });
+                if (probe?.status >= 200 && probe?.status < 300) {
+                    await handleWifiSync(candidate);
+                    return;
+                }
+            } catch (error) {
+                lastError = error;
+                console.warn(`No se pudo alcanzar ${candidate}`, error?.message || error);
+            }
+        }
+
+        setStatus('wms_failed');
+        const msg = lastError?.response?.data?.detail || lastError?.message || 'Sin respuesta del servidor';
+        setMessage(`No se pudo conectar al API. Detalle: ${msg}`);
+    };
+
+    const handleWifiSync = async (url) => {
+        const normalizedUrl = formatUrl(url);
+        if (!normalizedUrl) {
+            setStatus('error');
+            setMessage('URL/IP del servidor invalida.');
+            return;
+        }
+
+        setStatus('processing');
+        setMessage("Descargando base de datos oficial...");
 
         try {
-            // Ping simple a salud o raíz
-            // Asumiendo que la raíz "/" retorna algo o 404 pero prueba conexión
-            await api.get('/', { timeout: 3000 });
+            setServerUrl(normalizedUrl);
+            localStorage.setItem('server_url', normalizedUrl);
+            const { syncService } = await import('../services/syncService');
+            const result = await syncService.downloadData();
+
             setStatus('success');
-            setMessage('¡Conexión exitosa!');
-            setTimeout(() => setStep(2), 1000);
+            setMessage(`Datos oficiales sincronizados correctamente. Usuarios: ${result?.counts?.users || 0}.`);
+            localStorage.setItem('setup_completed', 'true');
         } catch (error) {
             console.error(error);
             setStatus('error');
-            setMessage('No se pudo conectar. Verifica la IP y que el servidor esté corriendo.');
+            setMessage(`Fallo al descargar la base de datos: ${error.message}`);
         }
     };
 
-    const handleSync = async () => {
-        setStatus('syncing');
-        setMessage('Sincronizando datos iniciales...');
+    const handleFileSelect = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        setStatus('processing');
+        setMessage(`Importando ${file.name} (Modo Offline Manual)...`);
 
         try {
-            // 1. Guardar URL permanentemente
-            localStorage.setItem('server_url', serverUrl);
-            setBaseUrl(serverUrl);
-
-            // 2. Realizar semilla/sincronización inicial
-            // Podemos intentar obtener del endpoint de semilla del servidor si está disponible, 
-            // de lo contrario usar JSON local pero asegurar que la BD esté lista.
-            await seedMasterData(seedData);
-
-            // 3. Marcar configuración como hecha
-            localStorage.setItem('setup_completed', 'true');
+            const result = await importDatabaseFile(file);
+            if (!result.success) throw new Error(result.message);
 
             setStatus('success');
-            setMessage('Configuración completada.');
+            setMessage(result.message);
+            localStorage.setItem('setup_completed', 'true');
 
-            setTimeout(() => {
-                navigate('/login');
-            }, 1000);
         } catch (error) {
-            console.error(error);
             setStatus('error');
-            setMessage('Error al sincronizar datos.');
+            setMessage("Error de carga manual: " + error.message);
         }
+    };
+
+    const handleEnterApp = () => {
+        window.location.href = '/login';
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-slate-900 text-white p-6">
+        <div className="ga-page u-center" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem', background: 'var(--ga-bg-subtle)' }}>
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="w-full max-w-md bg-slate-800 rounded-2xl p-8 shadow-xl border border-slate-700"
+                className="ga-card"
+                style={{ width: '100%', maxWidth: '420px', padding: '2rem' }}
             >
-                <div className="mb-8 text-center">
-                    <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <Settings className="w-8 h-8 text-white" />
+                <div className="u-center u-mb-6">
+                    <div style={{
+                        width: '64px', height: '64px', borderRadius: '50%',
+                        background: status === 'wms_failed' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(37, 99, 235, 0.1)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        margin: '0 auto 1rem auto',
+                        border: `2px solid var(--ga-${status === 'wms_failed' ? 'danger' : 'primary'})`
+                    }}>
+                        {status === 'wms_failed' ? (
+                            <WifiOff className="u-color-danger" size={32} />
+                        ) : status === 'success' ? (
+                            <CheckCircle className="u-color-success" size={32} />
+                        ) : (
+                            <Server className="u-color-primary" size={32} />
+                        )}
                     </div>
-                    <h1 className="text-2xl font-bold">Configuración Inicial</h1>
-                    <p className="text-slate-400 mt-2">Configura la conexión con el servidor</p>
+                    <h1 className="ga-card__title" style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>Configuración Inicial</h1>
+                    <p className="u-muted">Dispositivo Móvil</p>
                 </div>
 
-                {step === 1 && (
-                    <div className="space-y-6">
-                        <div>
-                            <label className="block text-sm font-medium text-slate-400 mb-2">Dirección del Servidor (API)</label>
-                            <div className="relative">
-                                <Server className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 w-5 h-5" />
-                                <input
-                                    type="text"
-                                    value={serverUrl}
-                                    onChange={(e) => setServerUrl(e.target.value)}
-                                    placeholder="http://192.168.1.XX:8000"
-                                    className="w-full bg-slate-900 border border-slate-700 rounded-xl py-3 pl-10 pr-4 text-white focus:ring-2 focus:ring-blue-500 outline-none"
-                                />
-                            </div>
-                            <p className="text-xs text-slate-500 mt-2">Asegúrate que tu móvil y PC estén en la misma red Wi-Fi.</p>
-                        </div>
-
-                        {message && (
-                            <div className={`p-3 rounded-lg text-sm flex items-center gap-2 ${status === 'error' ? 'bg-red-500/20 text-red-200' :
-                                status === 'success' ? 'bg-green-500/20 text-green-200' : 'bg-blue-500/20 text-blue-200'
-                                }`}>
-                                {status === 'error' ? <AlertCircle className="w-4 h-4" /> :
-                                    status === 'success' ? <CheckCircle className="w-4 h-4" /> : <Wifi className="w-4 h-4 animate-pulse" />}
-                                {message}
-                            </div>
-                        )}
-
-                        <button
-                            onClick={handleTestConnection}
-                            disabled={status === 'testing'}
-                            className="w-full py-4 bg-blue-600 hover:bg-blue-700 rounded-xl font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            {status === 'testing' ? 'Conectando...' : 'Probar Conexión'}
-                        </button>
-
-                        <div className="relative flex py-2 items-center">
-                            <div className="flex-grow border-t border-gray-600"></div>
-                            <span className="flex-shrink-0 mx-4 text-gray-500 text-xs">O SI NO TIENES CONEXIÓN</span>
-                            <div className="flex-grow border-t border-gray-600"></div>
-                        </div>
-
-                        <button
-                            onClick={async () => {
-                                setStatus('syncing');
-                                setMessage('Cargando datos predefinidos...');
-                                try {
-                                    localStorage.setItem('server_url', 'http://offline-mode');
-                                    setBaseUrl('http://offline-mode');
-
-                                    await seedMasterData(seedData);
-                                    localStorage.setItem('setup_completed', 'true');
-                                    setStatus('success');
-                                    setTimeout(() => navigate('/login'), 1000);
-                                } catch (e) {
-                                    console.error(e);
-                                    setStatus('error');
-                                    setMessage('Error cargando datos offline');
-                                }
-                            }}
-                            className="w-full py-3 bg-slate-700 hover:bg-slate-600 rounded-xl font-bold transition-all text-sm text-slate-300"
-                        >
-                            Usar Datos Offline (Demo)
-                        </button>
-
-                        <div className="relative flex py-2 items-center">
-                            <div className="flex-grow border-t border-gray-600"></div>
-                            <span className="flex-shrink-0 mx-4 text-gray-500 text-xs">O CARGAR DESDE EXCEL</span>
-                            <div className="flex-grow border-t border-gray-600"></div>
-                        </div>
-
-                        <button
-                            onClick={() => setShowImport(true)}
-                            className="w-full py-3 bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/50 text-purple-200 rounded-xl font-bold transition-all text-sm"
-                        >
-                            Cargar Excel (Usuarios/Datos)
-                        </button>
+                {status === 'checking_wms' || status === 'processing' ? (
+                    <div className="ga-stack u-center u-py-6">
+                        <RefreshCw className="u-color-primary u-spin u-mb-4" size={40} />
+                        <h3 className="u-bold u-text-center">{message}</h3>
+                        <p className="u-muted u-text-xs u-text-center u-mt-2">Por favor, espere y no cierre la aplicación...</p>
                     </div>
-                )}
-
-                {showImport && (
-                    <div className="fixed inset-0 bg-slate-900 z-50 flex flex-col p-6">
-                        <div className="flex justify-between items-center mb-6">
-                            <h2 className="text-xl font-bold text-white">Importar Datos Offline</h2>
-                            <button
-                                onClick={() => setShowImport(false)}
-                                className="text-slate-400 hover:text-white"
-                            >
-                                Cerrar
-                            </button>
-                        </div>
-                        <div className="flex-1 overflow-y-auto">
-                            <DataImportExport />
-                        </div>
-                        <div className="mt-6 text-center">
-                            <p className="text-sm text-slate-400 mb-4">
-                                Una vez cargados los datos, puedes volver y usar "Datos Offline (Demo)" o configurar el servidor.
+                ) : status === 'wms_failed' ? (
+                    <div className="ga-stack u-gap-4">
+                        <div className="ga-alert ga-alert--danger">
+                            <h3 className="u-bold u-mb-2">Red o Servidor No Detectado</h3>
+                            <p className="u-text-sm">
+                                Para la carga inicial, es obligatorio estar conectado a la red oficial donde se aloja la base de datos (Ej: red WMS).
                             </p>
-                            <button
-                                onClick={() => {
-                                    localStorage.setItem('setup_completed', 'true');
-                                    navigate('/login');
+                        </div>
+                        
+                        <div className="u-text-left u-mb-2">
+                            <label className="ga-label u-text-xs">Dirección del Servidor (Puedes usar la IP del PC si el DNS falla):</label>
+                            <input 
+                                type="text" 
+                                className="ga-input" 
+                                value={serverUrl} 
+                                onChange={(e) => setServerUrl(e.target.value)} 
+                                onBlur={(e) => {
+                                    const options = buildCandidateUrls(e.target.value);
+                                    setServerUrl(options[0] || e.target.value.trim());
                                 }}
-                                className="w-full py-3 bg-green-600 hover:bg-green-500 text-white rounded-xl font-bold"
-                            >
-                                Finalizar e Ir al Login
+                            />
+                        </div>
+
+                        <div className="ga-stack" style={{ flexDirection: 'row', gap: '0.5rem' }}>
+                            <button onClick={checkWmsNetwork} className="ga-btn ga-btn--primary u-flex-1" style={{ justifyContent: 'center' }}>
+                                <RefreshCw size={18} className="u-mr-2" /> Reintentar
+                            </button>
+                            <button onClick={() => handleWifiSync(serverUrl)} className="ga-btn ga-btn--outline u-flex-1" style={{ justifyContent: 'center' }}>
+                                Forzar Sincro
                             </button>
                         </div>
                     </div>
+                ) : status === 'success' ? (
+                    <div className="ga-stack u-center">
+                        <h2 className="ga-card__title u-mb-4">¡Listo para trabajar!</h2>
+                        <p className="u-muted u-mb-6 u-text-center">{message}</p>
+
+                        <button onClick={handleEnterApp} className="ga-btn ga-btn--primary ga-btn--lg" style={{ width: '100%', justifyContent: 'center' }}>
+                            Ingresar a la App
+                        </button>
+                    </div>
+                ) : null}
+
+                {/* Optional Error State mapping if standard download fails after connection is validated */}
+                {status === 'error' && (
+                    <div className="ga-stack u-gap-4">
+                        <div className="ga-alert ga-alert--danger u-text-sm">
+                            <AlertCircle size={16} className="u-inline u-mr-1" />
+                            {message}
+                        </div>
+                        <button onClick={checkWmsNetwork} className="ga-btn ga-btn--outline u-w-full" style={{ justifyContent: 'center' }}>
+                            Volver a intentar
+                        </button>
+                    </div>
                 )}
 
+                {/* Advanced Options For Admins / Manual loading fallback */}
+                {status !== 'success' && status !== 'processing' && status !== 'checking_wms' && (
+                    <div className="u-mt-6 u-border-t u-pt-4">
+                        <button 
+                            className="ga-btn ga-btn--text u-w-full u-text-xs u-muted" 
+                            onClick={() => setShowAdvanced(!showAdvanced)}
+                            style={{ justifyContent: 'center' }}
+                        >
+                            {showAdvanced ? "Ocultar Opciones Avanzadas" : "Opciones Avanzadas"}
+                        </button>
 
-                {step === 2 && (
-                    <div className="space-y-6">
-                        <div className="bg-slate-900/50 p-4 rounded-xl border border-slate-700">
-                            <h3 className="font-semibold mb-2 flex items-center gap-2">
-                                <CheckCircle className="w-5 h-5 text-green-500" />
-                                Servidor Detectado
-                            </h3>
-                            <p className="text-sm text-slate-400 break-all">{serverUrl}</p>
-                        </div>
-
-                        <div className="space-y-4">
-                            <p className="text-slate-300 text-center">
-                                Ahora descargaremos la configuración inicial (Usuarios, Defectos, Productos) para uso offline.
-                            </p>
-                        </div>
-
-                        {message && status !== 'success' && (
-                            <div className={`p-3 rounded-lg text-sm flex items-center gap-2 ${status === 'error' ? 'bg-red-500/20 text-red-200' : 'bg-blue-500/20 text-blue-200'
-                                }`}>
-                                {status === 'error' ? <AlertCircle className="w-4 h-4" /> : <Download className="w-4 h-4 animate-bounce" />}
-                                {message}
+                        {showAdvanced && (
+                            <div className="u-mt-4 ga-stack u-center u-p-4" style={{ background: 'var(--ga-bg)', borderRadius: 'var(--ga-radius)', border: '1px dashed var(--ga-border)' }}>
+                                <p className="u-text-xs u-muted u-text-center u-mb-3">
+                                    Carga de base de datos local SQLite (.db) si no es posible acceder a la red WMS físicamente.
+                                </p>
+                                <label className="ga-btn ga-btn--outline ga-btn--sm" style={{ cursor: 'pointer' }}>
+                                    <Database size={14} className="u-mr-2" />
+                                    Importar Archivo .db
+                                    <input type="file" accept=".db,.sqlite,.sqlite3" onChange={handleFileSelect} style={{ display: 'none' }} />
+                                </label>
                             </div>
                         )}
-
-                        <button
-                            onClick={handleSync}
-                            disabled={status === 'syncing'}
-                            className="w-full py-4 bg-green-600 hover:bg-green-700 rounded-xl font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                        >
-                            <Download className="w-5 h-5" />
-                            {status === 'syncing' ? 'Sincronizando...' : 'Descargar e Iniciar'}
-                        </button>
-
-                        <div className="relative flex py-2 items-center">
-                            <div className="flex-grow border-t border-gray-600"></div>
-                            <span className="flex-shrink-0 mx-4 text-gray-500 text-xs">O SI NO TIENES CONEXIÓN</span>
-                            <div className="flex-grow border-t border-gray-600"></div>
-                        </div>
-
-                        <button
-                            onClick={async () => {
-                                setStatus('syncing');
-                                setMessage('Cargando datos predefinidos...');
-                                try {
-                                    localStorage.setItem('server_url', 'http://offline-mode');
-                                    setBaseUrl('http://offline-mode');
-
-                                    await seedMasterData(seedData);
-                                    localStorage.setItem('setup_completed', 'true');
-                                    setStatus('success');
-                                    setTimeout(() => navigate('/login'), 1000);
-                                } catch (e) {
-                                    console.error(e);
-                                    setStatus('error');
-                                    setMessage('Error cargando datos offline');
-                                }
-                            }}
-                            className="w-full py-3 bg-slate-700 hover:bg-slate-600 rounded-xl font-bold transition-all text-sm text-slate-300"
-                        >
-                            Usar Datos Offline (Demo)
-                        </button>
                     </div>
                 )}
             </motion.div>

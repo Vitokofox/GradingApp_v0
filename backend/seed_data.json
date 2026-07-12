@@ -1,0 +1,2021 @@
+{
+  "shifts": [
+    {
+      "id": "shifts_4",
+      "db_id": 4,
+      "name": "Turno 1",
+      "category": "shifts"
+    },
+    {
+      "id": "shifts_18",
+      "db_id": 18,
+      "name": "Turno 2",
+      "category": "shifts"
+    },
+    {
+      "id": "shifts_19",
+      "db_id": 19,
+      "name": "Turno 3",
+      "category": "shifts"
+    }
+  ],
+  "journeys": [
+    {
+      "id": "journeys_5",
+      "db_id": 5,
+      "name": "D\u00eda",
+      "category": "journeys"
+    },
+    {
+      "id": "journeys_22",
+      "db_id": 22,
+      "name": "Tarde",
+      "category": "journeys"
+    },
+    {
+      "id": "journeys_23",
+      "db_id": 23,
+      "name": "Noche",
+      "category": "journeys"
+    }
+  ],
+  "areas": [
+    {
+      "id": "areas_1",
+      "db_id": 1,
+      "name": "Cepillado",
+      "category": "areas"
+    },
+    {
+      "id": "areas_2",
+      "db_id": 2,
+      "name": "Aserradero",
+      "category": "areas"
+    },
+    {
+      "id": "areas_10",
+      "db_id": 10,
+      "name": "Pallet",
+      "category": "areas"
+    },
+    {
+      "id": "areas_11",
+      "db_id": 11,
+      "name": "LOG",
+      "category": "areas"
+    },
+    {
+      "id": "areas_12",
+      "db_id": 12,
+      "name": "Secado",
+      "category": "areas"
+    }
+  ],
+  "machines": [
+    {
+      "id": "machines_3",
+      "db_id": 3,
+      "name": "Sorter",
+      "category": "machines"
+    },
+    {
+      "id": "machines_13",
+      "db_id": 13,
+      "name": "Taquera",
+      "category": "machines"
+    },
+    {
+      "id": "machines_14",
+      "db_id": 14,
+      "name": "KallFass Seco",
+      "category": "machines"
+    },
+    {
+      "id": "machines_15",
+      "db_id": 15,
+      "name": "Edgar",
+      "category": "machines"
+    },
+    {
+      "id": "machines_16",
+      "db_id": 16,
+      "name": "Exeltec",
+      "category": "machines"
+    },
+    {
+      "id": "machines_17",
+      "db_id": 17,
+      "name": "Stacker",
+      "category": "machines"
+    }
+  ],
+  "origins": [
+    {
+      "id": "origins_6",
+      "db_id": 6,
+      "name": "Nueva Aldea",
+      "category": "origins"
+    },
+    {
+      "id": "origins_24",
+      "db_id": 24,
+      "name": "Cholguan",
+      "category": "origins"
+    },
+    {
+      "id": "origins_25",
+      "db_id": 25,
+      "name": "Valdivia",
+      "category": "origins"
+    },
+    {
+      "id": "origins_26",
+      "db_id": 26,
+      "name": "Horcones",
+      "category": "origins"
+    },
+    {
+      "id": "origins_27",
+      "db_id": 27,
+      "name": "Vi\u00f1ales",
+      "category": "origins"
+    }
+  ],
+  "states": [
+    {
+      "id": "states_7",
+      "db_id": 7,
+      "name": "Seco",
+      "category": "states"
+    },
+    {
+      "id": "states_28",
+      "db_id": 28,
+      "name": "Verde",
+      "category": "states"
+    }
+  ],
+  "terminations": [
+    {
+      "id": "terminations_8",
+      "db_id": 8,
+      "name": "RGH",
+      "category": "terminations"
+    },
+    {
+      "id": "terminations_29",
+      "db_id": 29,
+      "name": "S4S",
+      "category": "terminations"
+    },
+    {
+      "id": "terminations_30",
+      "db_id": 30,
+      "name": "S2S",
+      "category": "terminations"
+    }
+  ],
+  "supervisors": [
+    {
+      "id": "supervisors_9",
+      "db_id": 9,
+      "name": "Jorge Barros",
+      "category": "supervisors"
+    }
+  ],
+  "lengths": [
+    {
+      "id": "lengths_31",
+      "db_id": 31,
+      "name": "2440",
+      "category": "lengths"
+    },
+    {
+      "id": "lengths_32",
+      "db_id": 32,
+      "name": "2745",
+      "category": "lengths"
+    },
+    {
+      "id": "lengths_33",
+      "db_id": 33,
+      "name": "3050",
+      "category": "lengths"
+    },
+    {
+      "id": "lengths_34",
+      "db_id": 34,
+      "name": "3350",
+      "category": "lengths"
+    },
+    {
+      "id": "lengths_35",
+      "db_id": 35,
+      "name": "3660",
+      "category": "lengths"
+    },
+    {
+      "id": "lengths_36",
+      "db_id": 36,
+      "name": "3962",
+      "category": "lengths"
+    },
+    {
+      "id": "lengths_37",
+      "db_id": 37,
+      "name": "4200",
+      "category": "lengths"
+    },
+    {
+      "id": "lengths_38",
+      "db_id": 38,
+      "name": "4270",
+      "category": "lengths"
+    },
+    {
+      "id": "lengths_39",
+      "db_id": 39,
+      "name": "4500",
+      "category": "lengths"
+    },
+    {
+      "id": "lengths_40",
+      "db_id": 40,
+      "name": "4880",
+      "category": "lengths"
+    }
+  ],
+  "products": [
+    {
+      "id": 1,
+      "name": "China"
+    },
+    {
+      "id": 2,
+      "name": "America Latina"
+    }
+  ],
+  "markets": [
+    {
+      "id": 1,
+      "name": "CHINA"
+    },
+    {
+      "id": 2,
+      "name": "AMERICA LATINA"
+    },
+    {
+      "id": 3,
+      "name": "BOARD SECO"
+    },
+    {
+      "id": 4,
+      "name": "BOARD VERDE"
+    },
+    {
+      "id": 5,
+      "name": "ESTRUCTURAL"
+    },
+    {
+      "id": 6,
+      "name": "NACIONAL AF (RIP)"
+    },
+    {
+      "id": 7,
+      "name": "NACIONAL AV (SHOP)"
+    },
+    {
+      "id": 8,
+      "name": "PALLET CHEP MEXICO"
+    },
+    {
+      "id": 9,
+      "name": "PALLET CHEP USA"
+    },
+    {
+      "id": 10,
+      "name": "PALLET COSTA RICA"
+    },
+    {
+      "id": 11,
+      "name": "PALLET MEXICO"
+    }
+  ],
+  "defects": [
+    {
+      "id": 1,
+      "name": "Peca",
+      "description": null
+    },
+    {
+      "id": 2,
+      "name": "Grieta Natural",
+      "description": null
+    },
+    {
+      "id": 3,
+      "name": "Grieta Secado",
+      "description": null
+    },
+    {
+      "id": 4,
+      "name": "Canto Muerto",
+      "description": null
+    },
+    {
+      "id": 5,
+      "name": "Mancha Azul",
+      "description": null
+    },
+    {
+      "id": 6,
+      "name": "Moho",
+      "description": null
+    },
+    {
+      "id": 7,
+      "name": "Espora",
+      "description": null
+    },
+    {
+      "id": 8,
+      "name": "Mancha de Agua",
+      "description": null
+    },
+    {
+      "id": 9,
+      "name": "Astillamiento",
+      "description": null
+    },
+    {
+      "id": 10,
+      "name": "Desgarro",
+      "description": null
+    },
+    {
+      "id": 11,
+      "name": "Perforacion ",
+      "description": null
+    },
+    {
+      "id": 12,
+      "name": "Nudo Muerto",
+      "description": null
+    },
+    {
+      "id": 13,
+      "name": "Nudo con corteza",
+      "description": null
+    },
+    {
+      "id": 14,
+      "name": "Peca PM",
+      "description": null
+    },
+    {
+      "id": 15,
+      "name": "Peca Blanca",
+      "description": null
+    },
+    {
+      "id": 16,
+      "name": "Peca Cafe",
+      "description": null
+    }
+  ],
+  "users": [
+    {
+      "username": "Vitokofox",
+      "first_name": "Victor",
+      "last_name": "Valenzuela",
+      "position": "Operador Experto"
+    },
+    {
+      "username": "Erika",
+      "first_name": "Erika",
+      "last_name": "Galvez",
+      "position": "Inspectora"
+    },
+    {
+      "username": "admin",
+      "first_name": "Admin",
+      "last_name": "System",
+      "position": "Administrador"
+    },
+    {
+      "username": "Vitoko",
+      "first_name": "Victor",
+      "last_name": "Valenzuela",
+      "position": "Operador Experto"
+    }
+  ],
+  "grades": [
+    {
+      "id": 1,
+      "name": "COL",
+      "grade_rank": 1,
+      "product_id": 1,
+      "defects": []
+    },
+    {
+      "id": 2,
+      "name": "COP",
+      "grade_rank": 2,
+      "product_id": 1,
+      "defects": [
+        {
+          "id": 1,
+          "name": "Peca"
+        },
+        {
+          "id": 4,
+          "name": "Canto Muerto"
+        },
+        {
+          "id": 2,
+          "name": "Grieta Natural"
+        },
+        {
+          "id": 9,
+          "name": "Astillamiento"
+        },
+        {
+          "id": 10,
+          "name": "Desgarro"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "COB",
+      "grade_rank": 3,
+      "product_id": 1,
+      "defects": [
+        {
+          "id": 4,
+          "name": "Canto Muerto"
+        },
+        {
+          "id": 5,
+          "name": "Mancha Azul"
+        },
+        {
+          "id": 6,
+          "name": "Moho"
+        },
+        {
+          "id": 8,
+          "name": "Mancha de Agua"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "RECHAZO",
+      "grade_rank": 6,
+      "product_id": 1,
+      "defects": [
+        {
+          "id": 1,
+          "name": "Peca"
+        },
+        {
+          "id": 2,
+          "name": "Grieta Natural"
+        },
+        {
+          "id": 3,
+          "name": "Grieta Secado"
+        },
+        {
+          "id": 4,
+          "name": "Canto Muerto"
+        },
+        {
+          "id": 5,
+          "name": "Mancha Azul"
+        },
+        {
+          "id": 6,
+          "name": "Moho"
+        },
+        {
+          "id": 9,
+          "name": "Astillamiento"
+        },
+        {
+          "id": 10,
+          "name": "Desgarro"
+        },
+        {
+          "id": 7,
+          "name": "Espora"
+        },
+        {
+          "id": 8,
+          "name": "Mancha de Agua"
+        },
+        {
+          "id": 12,
+          "name": "Nudo Muerto"
+        },
+        {
+          "id": 14,
+          "name": "Peca PM"
+        },
+        {
+          "id": 15,
+          "name": "Peca Blanca"
+        },
+        {
+          "id": 13,
+          "name": "Nudo con corteza"
+        },
+        {
+          "id": 16,
+          "name": "Peca Cafe"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "name": "FG4",
+      "grade_rank": 1,
+      "product_id": 2,
+      "defects": []
+    },
+    {
+      "id": 6,
+      "name": "FG5",
+      "grade_rank": 1,
+      "product_id": 2,
+      "defects": [
+        {
+          "id": 1,
+          "name": "Peca"
+        },
+        {
+          "id": 11,
+          "name": "Perforacion "
+        },
+        {
+          "id": 12,
+          "name": "Nudo Muerto"
+        },
+        {
+          "id": 13,
+          "name": "Nudo con corteza"
+        },
+        {
+          "id": 2,
+          "name": "Grieta Natural"
+        },
+        {
+          "id": 3,
+          "name": "Grieta Secado"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "name": "MLR",
+      "grade_rank": 1,
+      "product_id": 2,
+      "defects": [
+        {
+          "id": 1,
+          "name": "Peca"
+        },
+        {
+          "id": 4,
+          "name": "Canto Muerto"
+        },
+        {
+          "id": 9,
+          "name": "Astillamiento"
+        },
+        {
+          "id": 5,
+          "name": "Mancha Azul"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "name": "RECHAZO",
+      "grade_rank": 1,
+      "product_id": 2,
+      "defects": [
+        {
+          "id": 1,
+          "name": "Peca"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "name": "com",
+      "grade_rank": 5,
+      "product_id": 1,
+      "defects": []
+    }
+  ],
+  "grades_1": [
+    {
+      "id": 1,
+      "name": "COL",
+      "grade_rank": 1,
+      "product_id": 1,
+      "defects": []
+    },
+    {
+      "id": 2,
+      "name": "COP",
+      "grade_rank": 2,
+      "product_id": 1,
+      "defects": [
+        {
+          "id": 1,
+          "name": "Peca"
+        },
+        {
+          "id": 4,
+          "name": "Canto Muerto"
+        },
+        {
+          "id": 2,
+          "name": "Grieta Natural"
+        },
+        {
+          "id": 9,
+          "name": "Astillamiento"
+        },
+        {
+          "id": 10,
+          "name": "Desgarro"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "COB",
+      "grade_rank": 3,
+      "product_id": 1,
+      "defects": [
+        {
+          "id": 4,
+          "name": "Canto Muerto"
+        },
+        {
+          "id": 5,
+          "name": "Mancha Azul"
+        },
+        {
+          "id": 6,
+          "name": "Moho"
+        },
+        {
+          "id": 8,
+          "name": "Mancha de Agua"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "RECHAZO",
+      "grade_rank": 6,
+      "product_id": 1,
+      "defects": [
+        {
+          "id": 1,
+          "name": "Peca"
+        },
+        {
+          "id": 2,
+          "name": "Grieta Natural"
+        },
+        {
+          "id": 3,
+          "name": "Grieta Secado"
+        },
+        {
+          "id": 4,
+          "name": "Canto Muerto"
+        },
+        {
+          "id": 5,
+          "name": "Mancha Azul"
+        },
+        {
+          "id": 6,
+          "name": "Moho"
+        },
+        {
+          "id": 9,
+          "name": "Astillamiento"
+        },
+        {
+          "id": 10,
+          "name": "Desgarro"
+        },
+        {
+          "id": 7,
+          "name": "Espora"
+        },
+        {
+          "id": 8,
+          "name": "Mancha de Agua"
+        },
+        {
+          "id": 12,
+          "name": "Nudo Muerto"
+        },
+        {
+          "id": 14,
+          "name": "Peca PM"
+        },
+        {
+          "id": 15,
+          "name": "Peca Blanca"
+        },
+        {
+          "id": 13,
+          "name": "Nudo con corteza"
+        },
+        {
+          "id": 16,
+          "name": "Peca Cafe"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "name": "com",
+      "grade_rank": 5,
+      "product_id": 1,
+      "defects": []
+    }
+  ],
+  "grades_2": [
+    {
+      "id": 5,
+      "name": "FG4",
+      "grade_rank": 1,
+      "product_id": 2,
+      "defects": []
+    },
+    {
+      "id": 6,
+      "name": "FG5",
+      "grade_rank": 1,
+      "product_id": 2,
+      "defects": [
+        {
+          "id": 1,
+          "name": "Peca"
+        },
+        {
+          "id": 11,
+          "name": "Perforacion "
+        },
+        {
+          "id": 12,
+          "name": "Nudo Muerto"
+        },
+        {
+          "id": 13,
+          "name": "Nudo con corteza"
+        },
+        {
+          "id": 2,
+          "name": "Grieta Natural"
+        },
+        {
+          "id": 3,
+          "name": "Grieta Secado"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "name": "MLR",
+      "grade_rank": 1,
+      "product_id": 2,
+      "defects": [
+        {
+          "id": 1,
+          "name": "Peca"
+        },
+        {
+          "id": 4,
+          "name": "Canto Muerto"
+        },
+        {
+          "id": 9,
+          "name": "Astillamiento"
+        },
+        {
+          "id": 5,
+          "name": "Mancha Azul"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "name": "RECHAZO",
+      "grade_rank": 1,
+      "product_id": 2,
+      "defects": [
+        {
+          "id": 1,
+          "name": "Peca"
+        }
+      ]
+    }
+  ],
+  "inspections": [
+    {
+      "id": 1,
+      "date": "2025-12-13",
+      "production_date": "2025-12-13",
+      "shift": "Turno 1",
+      "journey": "D\u00eda",
+      "supervisor": "Jorge Barros",
+      "responsible": "Victor Valenzuela",
+      "area": "Cepillado",
+      "machine": "Sorter",
+      "origin": "Nueva Aldea",
+      "lot": "5266258895",
+      "market_id": 1,
+      "product_name": "China",
+      "state": "Seco",
+      "termination": "RGH",
+      "thickness": "22",
+      "width": "95",
+      "length": "3962",
+      "pieces_inspected": 50,
+      "type": "finished_product",
+      "results": [],
+      "isSynced": true
+    },
+    {
+      "id": 2,
+      "date": "2025-12-13",
+      "production_date": "2025-12-13",
+      "shift": "Turno 1",
+      "journey": "D\u00eda",
+      "supervisor": "Jorge Barros",
+      "responsible": "Victor Valenzuela",
+      "area": "Cepillado",
+      "machine": "Sorter",
+      "origin": "Nueva Aldea",
+      "lot": "54545545464564",
+      "market_id": 1,
+      "product_name": "China",
+      "state": "Seco",
+      "termination": "RGH",
+      "thickness": "22",
+      "width": "95",
+      "length": "3962",
+      "pieces_inspected": 50,
+      "type": "finished_product",
+      "results": [],
+      "isSynced": true
+    },
+    {
+      "id": 3,
+      "date": "2025-12-13",
+      "production_date": "2025-12-13",
+      "shift": "Turno 1",
+      "journey": "D\u00eda",
+      "supervisor": "Jorge Barros",
+      "responsible": "Victor Valenzuela",
+      "area": "Cepillado",
+      "machine": "Sorter",
+      "origin": "Nueva Aldea",
+      "lot": "54545545464564",
+      "market_id": 1,
+      "product_name": "China",
+      "state": "Seco",
+      "termination": "RGH",
+      "thickness": "22",
+      "width": "95",
+      "length": "3962",
+      "pieces_inspected": 50,
+      "type": "finished_product",
+      "results": [],
+      "isSynced": true
+    },
+    {
+      "id": 4,
+      "date": "2025-12-13",
+      "production_date": "2025-12-13",
+      "shift": "Turno 1",
+      "journey": "D\u00eda",
+      "supervisor": "Jorge Barros",
+      "responsible": "Victor Valenzuela",
+      "area": "Cepillado",
+      "machine": "Sorter",
+      "origin": "Nueva Aldea",
+      "lot": "54545545464564",
+      "market_id": 1,
+      "product_name": "China",
+      "state": "Seco",
+      "termination": "RGH",
+      "thickness": "22",
+      "width": "95",
+      "length": "3962",
+      "pieces_inspected": 50,
+      "type": "finished_product",
+      "results": [],
+      "isSynced": true
+    },
+    {
+      "id": 5,
+      "date": "2025-12-13",
+      "production_date": "2025-12-13",
+      "shift": "Turno 1",
+      "journey": "D\u00eda",
+      "supervisor": "Jorge Barros",
+      "responsible": "Victor Valenzuela",
+      "area": "Cepillado",
+      "machine": "Sorter",
+      "origin": "Nueva Aldea",
+      "lot": "5266258895",
+      "market_id": 1,
+      "product_name": "China",
+      "state": "Seco",
+      "termination": "RGH",
+      "thickness": "22",
+      "width": "95",
+      "length": "3962",
+      "pieces_inspected": 20,
+      "type": "finished_product",
+      "results": [
+        {
+          "grade_id": 2,
+          "defect_id": null,
+          "pieces_count": 1
+        }
+      ],
+      "isSynced": true
+    },
+    {
+      "id": 6,
+      "date": "2025-12-13",
+      "production_date": "2025-12-13",
+      "shift": "Turno 1",
+      "journey": "D\u00eda",
+      "supervisor": "Jorge Barros",
+      "responsible": "Victor Valenzuela",
+      "area": "Cepillado",
+      "machine": "Sorter",
+      "origin": "Nueva Aldea",
+      "lot": "5266258895",
+      "market_id": 1,
+      "product_name": "China",
+      "state": "Seco",
+      "termination": "RGH",
+      "thickness": "22",
+      "width": "95",
+      "length": "3962",
+      "pieces_inspected": 20,
+      "type": "finished_product",
+      "results": [
+        {
+          "grade_id": 1,
+          "defect_id": null,
+          "pieces_count": 35
+        },
+        {
+          "grade_id": 2,
+          "defect_id": null,
+          "pieces_count": 3
+        },
+        {
+          "grade_id": 3,
+          "defect_id": null,
+          "pieces_count": 3
+        },
+        {
+          "grade_id": 4,
+          "defect_id": null,
+          "pieces_count": 2
+        },
+        {
+          "grade_id": 2,
+          "defect_id": 4,
+          "pieces_count": 1
+        },
+        {
+          "grade_id": 2,
+          "defect_id": 1,
+          "pieces_count": 2
+        },
+        {
+          "grade_id": 3,
+          "defect_id": 5,
+          "pieces_count": 3
+        },
+        {
+          "grade_id": 4,
+          "defect_id": 2,
+          "pieces_count": 2
+        },
+        {
+          "grade_id": 4,
+          "defect_id": 4,
+          "pieces_count": 1
+        },
+        {
+          "grade_id": 2,
+          "defect_id": 9,
+          "pieces_count": 3
+        }
+      ],
+      "isSynced": true
+    },
+    {
+      "id": 7,
+      "date": "2025-12-13",
+      "production_date": "2025-12-13",
+      "shift": "Turno 1",
+      "journey": "D\u00eda",
+      "supervisor": "Jorge Barros",
+      "responsible": "Victor Valenzuela",
+      "area": "Cepillado",
+      "machine": "Sorter",
+      "origin": "Nueva Aldea",
+      "lot": "5266258895",
+      "market_id": 1,
+      "product_name": "China",
+      "state": "Seco",
+      "termination": "RGH",
+      "thickness": "22",
+      "width": "125",
+      "length": "3660",
+      "pieces_inspected": 30,
+      "type": "finished_product",
+      "results": [
+        {
+          "grade_id": 1,
+          "defect_id": null,
+          "pieces_count": 23
+        },
+        {
+          "grade_id": 2,
+          "defect_id": 1,
+          "pieces_count": 2
+        },
+        {
+          "grade_id": 4,
+          "defect_id": 4,
+          "pieces_count": 1
+        },
+        {
+          "grade_id": 4,
+          "defect_id": 2,
+          "pieces_count": 1
+        },
+        {
+          "grade_id": 2,
+          "defect_id": 9,
+          "pieces_count": 2
+        },
+        {
+          "grade_id": 3,
+          "defect_id": 5,
+          "pieces_count": 1
+        }
+      ],
+      "isSynced": true
+    },
+    {
+      "id": 8,
+      "date": "2025-12-13",
+      "production_date": "2025-12-13",
+      "shift": "Turno 1",
+      "journey": "D\u00eda",
+      "supervisor": "Jorge Barros",
+      "responsible": "Victor Valenzuela",
+      "area": "Cepillado",
+      "machine": "Sorter",
+      "origin": "Nueva Aldea",
+      "lot": "562295225",
+      "market_id": 1,
+      "product_name": "China",
+      "state": "Seco",
+      "termination": "RGH",
+      "thickness": "37",
+      "width": "145",
+      "length": "3660",
+      "pieces_inspected": 30,
+      "type": "finished_product",
+      "results": [
+        {
+          "grade_id": 1,
+          "defect_id": null,
+          "pieces_count": 23
+        },
+        {
+          "grade_id": 2,
+          "defect_id": 1,
+          "pieces_count": 3
+        },
+        {
+          "grade_id": 2,
+          "defect_id": 4,
+          "pieces_count": 1
+        },
+        {
+          "grade_id": 2,
+          "defect_id": 9,
+          "pieces_count": 1
+        },
+        {
+          "grade_id": 4,
+          "defect_id": 2,
+          "pieces_count": 1
+        },
+        {
+          "grade_id": 4,
+          "defect_id": 4,
+          "pieces_count": 1
+        }
+      ],
+      "isSynced": true
+    },
+    {
+      "id": 9,
+      "date": "2025-12-14",
+      "production_date": "2025-12-14",
+      "shift": "Turno 1",
+      "journey": "D\u00eda",
+      "supervisor": "Jorge Barros",
+      "responsible": "Victor Valenzuela",
+      "area": "Aserradero",
+      "machine": "Sorter",
+      "origin": "Nueva Aldea",
+      "lot": "8265622",
+      "market_id": 1,
+      "product_name": "China",
+      "state": "Seco",
+      "termination": "RGH",
+      "thickness": "22",
+      "width": "124",
+      "length": "3660",
+      "pieces_inspected": 30,
+      "type": "finished_product",
+      "results": [
+        {
+          "grade_id": 1,
+          "defect_id": null,
+          "pieces_count": 24
+        },
+        {
+          "grade_id": 2,
+          "defect_id": 4,
+          "pieces_count": 1
+        },
+        {
+          "grade_id": 2,
+          "defect_id": 1,
+          "pieces_count": 3
+        },
+        {
+          "grade_id": 3,
+          "defect_id": 5,
+          "pieces_count": 1
+        },
+        {
+          "grade_id": 4,
+          "defect_id": 4,
+          "pieces_count": 1
+        }
+      ],
+      "isSynced": true
+    },
+    {
+      "id": 10,
+      "date": "2025-12-14",
+      "production_date": "2025-12-14",
+      "shift": "Turno 1",
+      "journey": "D\u00eda",
+      "supervisor": "Jorge Barros",
+      "responsible": "Victor Valenzuela",
+      "area": "Cepillado",
+      "machine": "Sorter",
+      "origin": "Nueva Aldea",
+      "lot": "5266258895",
+      "market_id": 1,
+      "product_name": "China",
+      "state": "Seco",
+      "termination": "RGH",
+      "thickness": "19",
+      "width": "85",
+      "length": "3050",
+      "pieces_inspected": 10,
+      "type": "finished_product",
+      "results": [
+        {
+          "grade_id": 2,
+          "defect_id": 1,
+          "pieces_count": 1
+        },
+        {
+          "grade_id": 4,
+          "defect_id": 2,
+          "pieces_count": 1
+        },
+        {
+          "grade_id": 1,
+          "defect_id": null,
+          "pieces_count": 8
+        }
+      ],
+      "isSynced": true
+    },
+    {
+      "id": 11,
+      "date": "2025-12-15",
+      "production_date": "2025-12-15",
+      "shift": "Turno 1",
+      "journey": "D\u00eda",
+      "supervisor": "Jorge Barros",
+      "responsible": "Victor Valenzuela",
+      "area": "Cepillado",
+      "machine": "Sorter",
+      "origin": "Nueva Aldea",
+      "lot": "659654545445",
+      "market_id": 1,
+      "product_name": "China",
+      "state": "Seco",
+      "termination": "RGH",
+      "thickness": "22",
+      "width": "145",
+      "length": "3960",
+      "pieces_inspected": 20,
+      "type": "finished_product",
+      "results": [
+        {
+          "grade_id": 1,
+          "defect_id": null,
+          "pieces_count": 15
+        },
+        {
+          "grade_id": 2,
+          "defect_id": 9,
+          "pieces_count": 2
+        },
+        {
+          "grade_id": 3,
+          "defect_id": 5,
+          "pieces_count": 1
+        },
+        {
+          "grade_id": 4,
+          "defect_id": 2,
+          "pieces_count": 1
+        },
+        {
+          "grade_id": 4,
+          "defect_id": 4,
+          "pieces_count": 1
+        }
+      ],
+      "isSynced": true
+    },
+    {
+      "id": 12,
+      "date": "2025-12-15",
+      "production_date": "2025-12-15",
+      "shift": "Turno 1",
+      "journey": "Tarde",
+      "supervisor": "Jorge Barros",
+      "responsible": "Victor Valenzuela",
+      "area": "Aserradero",
+      "machine": "Sorter",
+      "origin": "Nueva Aldea",
+      "lot": "",
+      "market_id": 2,
+      "product_name": "America Latina",
+      "state": "Seco",
+      "termination": "S4S",
+      "thickness": "33",
+      "width": "140",
+      "length": "3962",
+      "pieces_inspected": 20,
+      "type": "rejection_typing",
+      "results": [],
+      "isSynced": true
+    },
+    {
+      "id": 13,
+      "date": "2025-12-15",
+      "production_date": "2025-12-15",
+      "shift": "Turno 1",
+      "journey": "D\u00eda",
+      "supervisor": "Jorge Barros",
+      "responsible": "Victor Valenzuela",
+      "area": "Cepillado",
+      "machine": "Sorter",
+      "origin": "Nueva Aldea",
+      "lot": "2265",
+      "market_id": 1,
+      "product_name": "China",
+      "state": "Seco",
+      "termination": "RGH",
+      "thickness": "22",
+      "width": "145",
+      "length": "3692",
+      "pieces_inspected": 20,
+      "type": "line_grading",
+      "results": [
+        {
+          "grade_id": 1,
+          "defect_id": null,
+          "pieces_count": 12
+        },
+        {
+          "grade_id": 1,
+          "defect_id": null,
+          "pieces_count": 1
+        },
+        {
+          "grade_id": 2,
+          "defect_id": 1,
+          "pieces_count": 1
+        },
+        {
+          "grade_id": 3,
+          "defect_id": 5,
+          "pieces_count": 1
+        }
+      ],
+      "isSynced": true
+    },
+    {
+      "id": 14,
+      "date": "2025-12-15",
+      "production_date": "2025-12-15",
+      "shift": "Turno 1",
+      "journey": "D\u00eda",
+      "supervisor": "Jorge Barros",
+      "responsible": "Victor Valenzuela",
+      "area": "Cepillado",
+      "machine": "Sorter",
+      "origin": "Nueva Aldea",
+      "lot": "5295",
+      "market_id": 1,
+      "product_name": "China",
+      "state": "Seco",
+      "termination": "RGH",
+      "thickness": "22",
+      "width": "145",
+      "length": "3960",
+      "pieces_inspected": 10,
+      "type": "finished_product",
+      "results": [
+        {
+          "grade_id": 1,
+          "defect_id": null,
+          "pieces_count": 8
+        },
+        {
+          "grade_id": 2,
+          "defect_id": 4,
+          "pieces_count": 1
+        },
+        {
+          "grade_id": 3,
+          "defect_id": 4,
+          "pieces_count": 1
+        }
+      ],
+      "isSynced": true
+    },
+    {
+      "id": 15,
+      "date": "2025-12-15",
+      "production_date": "2025-12-15",
+      "shift": "Turno 1",
+      "journey": "D\u00eda",
+      "supervisor": "Jorge Barros",
+      "responsible": "Victor Valenzuela",
+      "area": "Cepillado",
+      "machine": "Sorter",
+      "origin": "Nueva Aldea",
+      "lot": "5266258895",
+      "market_id": 1,
+      "product_name": "China",
+      "state": "Seco",
+      "termination": "RGH",
+      "thickness": "22",
+      "width": "145",
+      "length": "3960",
+      "pieces_inspected": 10,
+      "type": "line_grading",
+      "results": [
+        {
+          "grade_id": 1,
+          "defect_id": null,
+          "pieces_count": 7
+        },
+        {
+          "grade_id": 2,
+          "defect_id": 10,
+          "pieces_count": 1
+        },
+        {
+          "grade_id": 3,
+          "defect_id": 5,
+          "pieces_count": 1
+        },
+        {
+          "grade_id": 4,
+          "defect_id": 2,
+          "pieces_count": 1
+        }
+      ],
+      "isSynced": true
+    },
+    {
+      "id": 16,
+      "date": "2025-12-15",
+      "production_date": "2025-12-15",
+      "shift": "Turno 1",
+      "journey": "D\u00eda",
+      "supervisor": "Jorge Barros",
+      "responsible": "Victor Valenzuela",
+      "area": "Cepillado",
+      "machine": "Sorter",
+      "origin": "Nueva Aldea",
+      "lot": "2536202",
+      "market_id": 1,
+      "product_name": "China",
+      "state": "Seco",
+      "termination": "RGH",
+      "thickness": "22",
+      "width": "125",
+      "length": "3660",
+      "pieces_inspected": 10,
+      "type": "rejection_typing",
+      "results": [
+        {
+          "grade_id": 4,
+          "defect_id": 5,
+          "pieces_count": 1
+        },
+        {
+          "grade_id": 4,
+          "defect_id": 2,
+          "pieces_count": 2
+        },
+        {
+          "grade_id": 4,
+          "defect_id": 4,
+          "pieces_count": 2
+        },
+        {
+          "grade_id": 4,
+          "defect_id": 10,
+          "pieces_count": 1
+        },
+        {
+          "grade_id": 4,
+          "defect_id": 1,
+          "pieces_count": 1
+        },
+        {
+          "grade_id": 4,
+          "defect_id": 3,
+          "pieces_count": 1
+        },
+        {
+          "grade_id": 3,
+          "defect_id": 5,
+          "pieces_count": 1
+        },
+        {
+          "grade_id": 2,
+          "defect_id": 4,
+          "pieces_count": 1
+        }
+      ],
+      "isSynced": true
+    },
+    {
+      "id": 17,
+      "date": "2025-12-16",
+      "production_date": "2025-12-16",
+      "shift": "Turno 1",
+      "journey": "D\u00eda",
+      "supervisor": "Jorge Barros",
+      "responsible": "Erika Galvez",
+      "area": "Cepillado",
+      "machine": "Sorter",
+      "origin": "Nueva Aldea",
+      "lot": "5266258895",
+      "market_id": 1,
+      "product_name": "China",
+      "state": "Seco",
+      "termination": "RGH",
+      "thickness": "22",
+      "width": "145",
+      "length": "3960",
+      "pieces_inspected": 10,
+      "type": "line_grading",
+      "results": [
+        {
+          "grade_id": 1,
+          "defect_id": null,
+          "pieces_count": 6
+        },
+        {
+          "grade_id": 2,
+          "defect_id": 4,
+          "pieces_count": 1
+        },
+        {
+          "grade_id": 3,
+          "defect_id": 5,
+          "pieces_count": 1
+        },
+        {
+          "grade_id": 4,
+          "defect_id": 4,
+          "pieces_count": 1
+        },
+        {
+          "grade_id": 4,
+          "defect_id": 9,
+          "pieces_count": 1
+        }
+      ],
+      "isSynced": true
+    },
+    {
+      "id": 18,
+      "date": "2025-12-16",
+      "production_date": "2025-12-16",
+      "shift": "Turno 1",
+      "journey": "D\u00eda",
+      "supervisor": "Jorge Barros",
+      "responsible": "Erika Galvez",
+      "area": "Cepillado",
+      "machine": "Sorter",
+      "origin": "Nueva Aldea",
+      "lot": "5266258895",
+      "market_id": 1,
+      "product_name": "China",
+      "state": "Seco",
+      "termination": "RGH",
+      "thickness": "22",
+      "width": "125",
+      "length": "3962",
+      "pieces_inspected": 200,
+      "type": "line_grading",
+      "results": [
+        {
+          "grade_id": 1,
+          "defect_id": null,
+          "pieces_count": 186
+        },
+        {
+          "grade_id": 2,
+          "defect_id": 4,
+          "pieces_count": 2
+        },
+        {
+          "grade_id": 3,
+          "defect_id": 5,
+          "pieces_count": 3
+        },
+        {
+          "grade_id": 4,
+          "defect_id": 2,
+          "pieces_count": 3
+        },
+        {
+          "grade_id": 4,
+          "defect_id": 1,
+          "pieces_count": 1
+        },
+        {
+          "grade_id": 2,
+          "defect_id": 9,
+          "pieces_count": 1
+        },
+        {
+          "grade_id": 3,
+          "defect_id": 8,
+          "pieces_count": 1
+        },
+        {
+          "grade_id": 2,
+          "defect_id": 1,
+          "pieces_count": 2
+        },
+        {
+          "grade_id": 3,
+          "defect_id": 4,
+          "pieces_count": 1
+        }
+      ],
+      "isSynced": true
+    },
+    {
+      "id": 23,
+      "date": "2025-12-18",
+      "production_date": "2025-12-18",
+      "shift": "Turno 1",
+      "journey": "D\u00eda",
+      "supervisor": "Jorge Barros",
+      "responsible": "Admin System",
+      "area": "Cepillado",
+      "machine": "Sorter",
+      "origin": "Nueva Aldea",
+      "lot": "235698",
+      "market_id": 1,
+      "product_name": "China",
+      "state": "Seco",
+      "termination": "RGH",
+      "thickness": "22",
+      "width": "145",
+      "length": "3960",
+      "pieces_inspected": 100,
+      "type": "finished_product",
+      "results": [
+        {
+          "grade_id": 3,
+          "defect_id": 5,
+          "pieces_count": 1
+        },
+        {
+          "grade_id": 2,
+          "defect_id": 2,
+          "pieces_count": 1
+        },
+        {
+          "grade_id": 4,
+          "defect_id": 4,
+          "pieces_count": 2
+        },
+        {
+          "grade_id": 3,
+          "defect_id": 4,
+          "pieces_count": 1
+        },
+        {
+          "grade_id": 2,
+          "defect_id": 1,
+          "pieces_count": 1
+        },
+        {
+          "grade_id": 1,
+          "defect_id": null,
+          "pieces_count": 94
+        }
+      ],
+      "isSynced": true
+    },
+    {
+      "id": 25,
+      "date": "2025-12-19",
+      "production_date": "2025-12-19",
+      "shift": "Turno 1",
+      "journey": "D\u00eda",
+      "supervisor": "Jorge Barros",
+      "responsible": "Admin System",
+      "area": "Cepillado",
+      "machine": "Sorter",
+      "origin": "Nueva Aldea",
+      "lot": "5645421",
+      "market_id": 1,
+      "product_name": "China",
+      "state": "Seco",
+      "termination": "RGH",
+      "thickness": "22",
+      "width": "145",
+      "length": "3960",
+      "pieces_inspected": 10,
+      "type": "line_grading",
+      "results": [],
+      "isSynced": true
+    },
+    {
+      "id": 26,
+      "date": "2025-12-19",
+      "production_date": "2025-12-19",
+      "shift": "",
+      "journey": "D\u00eda",
+      "supervisor": "Jorge Barros",
+      "responsible": "Admin System",
+      "area": "Aserradero",
+      "machine": "",
+      "origin": "Nueva Aldea",
+      "lot": "6543435435",
+      "market_id": 1,
+      "product_name": "China",
+      "state": "Seco",
+      "termination": "RGH",
+      "thickness": "22",
+      "width": "122",
+      "length": "3660",
+      "pieces_inspected": 10,
+      "type": "finished_product",
+      "results": [
+        {
+          "grade_id": 1,
+          "defect_id": null,
+          "pieces_count": 10
+        }
+      ],
+      "isSynced": true
+    },
+    {
+      "id": 27,
+      "date": "2025-12-19",
+      "production_date": "2025-12-19",
+      "shift": "Turno 1",
+      "journey": "D\u00eda",
+      "supervisor": "Jorge Barros",
+      "responsible": "Admin System",
+      "area": "Cepillado",
+      "machine": "Sorter",
+      "origin": "",
+      "lot": "",
+      "market_id": 1,
+      "product_name": "America Latina",
+      "state": "Seco",
+      "termination": "S4S",
+      "thickness": "33",
+      "width": "140",
+      "length": "3960",
+      "pieces_inspected": 100,
+      "type": "line_grading",
+      "results": [
+        {
+          "grade_id": 5,
+          "defect_id": null,
+          "pieces_count": 70
+        },
+        {
+          "grade_id": 6,
+          "defect_id": 1,
+          "pieces_count": 3
+        },
+        {
+          "grade_id": 6,
+          "defect_id": 2,
+          "pieces_count": 3
+        },
+        {
+          "grade_id": 6,
+          "defect_id": 3,
+          "pieces_count": 3
+        },
+        {
+          "grade_id": 6,
+          "defect_id": 11,
+          "pieces_count": 3
+        },
+        {
+          "grade_id": 6,
+          "defect_id": 12,
+          "pieces_count": 3
+        },
+        {
+          "grade_id": 6,
+          "defect_id": 13,
+          "pieces_count": 3
+        },
+        {
+          "grade_id": 7,
+          "defect_id": 1,
+          "pieces_count": 4
+        },
+        {
+          "grade_id": 7,
+          "defect_id": 4,
+          "pieces_count": 1
+        },
+        {
+          "grade_id": 7,
+          "defect_id": 9,
+          "pieces_count": 1
+        },
+        {
+          "grade_id": 8,
+          "defect_id": 1,
+          "pieces_count": 6
+        }
+      ],
+      "isSynced": true
+    },
+    {
+      "id": 28,
+      "date": "2025-12-19",
+      "production_date": "2025-12-19",
+      "shift": "Turno 1",
+      "journey": "D\u00eda",
+      "supervisor": "Jorge Barros",
+      "responsible": "Admin System",
+      "area": "Cepillado",
+      "machine": "Sorter",
+      "origin": "Nueva Aldea",
+      "lot": "",
+      "market_id": 1,
+      "product_name": "China",
+      "state": "Seco",
+      "termination": "RGH",
+      "thickness": "22",
+      "width": "145",
+      "length": "3960",
+      "pieces_inspected": 20,
+      "type": "line_grading",
+      "results": [],
+      "isSynced": true
+    },
+    {
+      "id": 29,
+      "date": "2025-12-19",
+      "production_date": "2025-12-19",
+      "shift": "Turno 1",
+      "journey": "D\u00eda",
+      "supervisor": "Jorge Barros",
+      "responsible": "Admin System",
+      "area": "Cepillado",
+      "machine": "Sorter",
+      "origin": "Nueva Aldea",
+      "lot": "56256",
+      "market_id": 1,
+      "product_name": "China",
+      "state": "Seco",
+      "termination": "RGH",
+      "thickness": "22",
+      "width": "125",
+      "length": "3960",
+      "pieces_inspected": 100,
+      "type": "finished_product",
+      "results": [
+        {
+          "grade_id": 2,
+          "defect_id": 1,
+          "pieces_count": 7
+        },
+        {
+          "grade_id": 2,
+          "defect_id": 4,
+          "pieces_count": 6
+        },
+        {
+          "grade_id": 3,
+          "defect_id": 5,
+          "pieces_count": 3
+        },
+        {
+          "grade_id": 4,
+          "defect_id": 1,
+          "pieces_count": 2
+        },
+        {
+          "grade_id": 4,
+          "defect_id": 9,
+          "pieces_count": 1
+        },
+        {
+          "grade_id": 4,
+          "defect_id": 12,
+          "pieces_count": 1
+        },
+        {
+          "grade_id": 4,
+          "defect_id": 14,
+          "pieces_count": 1
+        },
+        {
+          "grade_id": 1,
+          "defect_id": null,
+          "pieces_count": 79
+        }
+      ],
+      "isSynced": true
+    },
+    {
+      "id": 30,
+      "date": "2025-12-30",
+      "production_date": "2025-12-30",
+      "shift": "Turno 1",
+      "journey": "D\u00eda",
+      "supervisor": "Jorge Barros",
+      "responsible": "Admin System",
+      "area": "Cepillado",
+      "machine": "Sorter",
+      "origin": "Nueva Aldea",
+      "lot": "74525745634",
+      "market_id": 1,
+      "product_name": "China",
+      "state": "Seco",
+      "termination": "RGH",
+      "thickness": "22",
+      "width": "120",
+      "length": "3660",
+      "pieces_inspected": 7,
+      "type": "finished_product",
+      "results": [
+        {
+          "grade_id": 1,
+          "defect_id": null,
+          "pieces_count": 2
+        },
+        {
+          "grade_id": 2,
+          "defect_id": 1,
+          "pieces_count": 1
+        },
+        {
+          "grade_id": 3,
+          "defect_id": 4,
+          "pieces_count": 1
+        },
+        {
+          "grade_id": 4,
+          "defect_id": 1,
+          "pieces_count": 1
+        },
+        {
+          "grade_id": 4,
+          "defect_id": 3,
+          "pieces_count": 1
+        },
+        {
+          "grade_id": 4,
+          "defect_id": 4,
+          "pieces_count": 1
+        }
+      ],
+      "isSynced": true
+    },
+    {
+      "id": 31,
+      "date": "2026-01-08",
+      "production_date": "2026-01-08",
+      "shift": "Turno 1",
+      "journey": "D\u00eda",
+      "supervisor": "Jorge Barros",
+      "responsible": "Admin System",
+      "area": "Cepillado",
+      "machine": "Sorter",
+      "origin": "Nueva Aldea",
+      "lot": "54544521",
+      "market_id": 1,
+      "product_name": "China",
+      "state": "Seco",
+      "termination": "RGH",
+      "thickness": "22",
+      "width": "95",
+      "length": "3658",
+      "pieces_inspected": 100,
+      "type": "line_grading",
+      "results": [
+        {
+          "grade_id": 2,
+          "defect_id": 1,
+          "pieces_count": 2
+        },
+        {
+          "grade_id": 2,
+          "defect_id": 2,
+          "pieces_count": 1
+        },
+        {
+          "grade_id": 2,
+          "defect_id": 4,
+          "pieces_count": 3
+        },
+        {
+          "grade_id": 3,
+          "defect_id": 5,
+          "pieces_count": 2
+        },
+        {
+          "grade_id": 4,
+          "defect_id": 2,
+          "pieces_count": 5
+        },
+        {
+          "grade_id": 4,
+          "defect_id": 4,
+          "pieces_count": 2
+        },
+        {
+          "grade_id": 1,
+          "defect_id": null,
+          "pieces_count": 85
+        }
+      ],
+      "isSynced": true
+    }
+  ]
+}

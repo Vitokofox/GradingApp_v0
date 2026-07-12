@@ -129,5 +129,42 @@
             "id": 3,
             "name": "Mancha"
         }
+    ],
+    "grades_1": [
+        {
+            "id": 1,
+            "name": "Grado A",
+            "grade_rank": 1,
+            "product_id": 1,
+            "defects": []
+        },
+        {
+            "id": 2,
+            "name": "Grado B",
+            "grade_rank": 2,
+            "product_id": 1,
+            "defects": [
+                {
+                    "id": 1,
+                    "name": "Nudo"
+                },
+                {
+                    "id": 2,
+                    "name": "Grieta"
+                }
+            ]
+        },
+        {
+            "id": 3,
+            "name": "Rechazo",
+            "grade_rank": 3,
+            "product_id": 1,
+            "defects": [
+                {
+                    "id": 3,
+                    "name": "Mancha"
+                }
+            ]
+        }
     ]
 }

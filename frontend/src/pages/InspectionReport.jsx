@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getInspection, getInspectionResults } from '../api';
 import { ArrowLeft, Printer } from 'lucide-react';
+import { formatSpanishDate, getLocalISODate } from '../utils/dataUtils';
 
 // Componente Principal: Reporte de Inspección
 // Muestra el detalle completo de una inspección, incluyendo metadatos, tablas y gráficos.
@@ -104,14 +105,14 @@ export default function InspectionReport() {
                 {/* Contenido del Reporte (Report Content) */}
                 <div className="ga-card" style={{ background: 'white', color: '#1e293b', padding: 0, overflow: 'hidden', boxShadow: 'none' }}>
 
-                    {/* Cabecera del Reporte (Report Header - Green) */}
-                    <div style={{ background: '#84cc16', padding: '1.5rem', printColorAdjust: 'exact', WebkitPrintColorAdjust: 'exact' }}>
+                    {/* Cabecera del Reporte (Report Header - Corporate Gray) */}
+                    <div style={{ background: 'var(--ga-primary)', padding: '1.5rem', printColorAdjust: 'exact', WebkitPrintColorAdjust: 'exact' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                             <h1 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'white', textTransform: 'uppercase', margin: 0 }}>
                                 Resumen de Inspección N° {inspection.id}
                             </h1>
-                            <div style={{ textAlign: 'right', color: '#365314', fontFamily: 'monospace', fontSize: '0.875rem' }}>
-                                {new Date().toLocaleDateString()} {new Date().toLocaleTimeString()}
+                            <div style={{ textAlign: 'right', color: 'white', fontFamily: 'monospace', fontSize: '0.875rem' }}>
+                                {formatSpanishDate(getLocalISODate())} {new Date().toLocaleTimeString()}
                             </div>
                         </div>
                     </div>
@@ -121,7 +122,7 @@ export default function InspectionReport() {
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem 2rem' }}>
                             <div className="space-y-1">
                                 <div style={{ fontWeight: 'bold', color: '#64748b', fontSize: '0.75rem', textTransform: 'uppercase' }}>Fecha Inspección</div>
-                                <div style={{ fontWeight: 600 }}>{inspection.date}</div>
+                                <div style={{ fontWeight: 600 }}>{formatSpanishDate(inspection.date)}</div>
                             </div>
                             <div className="space-y-1">
                                 <div style={{ fontWeight: 'bold', color: '#64748b', fontSize: '0.75rem', textTransform: 'uppercase' }}>Piezas Insp.</div>
@@ -155,7 +156,7 @@ export default function InspectionReport() {
 
                             <div className="space-y-1">
                                 <div style={{ fontWeight: 'bold', color: '#64748b', fontSize: '0.75rem', textTransform: 'uppercase' }}>Producto</div>
-                                <div style={{ fontWeight: 'bold', color: '#7e22ce' }}>{inspection.product_name}</div>
+                                <div style={{ fontWeight: 'bold', color: 'var(--ga-primary)' }}>{inspection.product_name}</div>
                             </div>
                             <div className="space-y-1">
                                 <div style={{ fontWeight: 'bold', color: '#64748b', fontSize: '0.75rem', textTransform: 'uppercase' }}>Mercado</div>
@@ -192,8 +193,8 @@ export default function InspectionReport() {
 
                         {/* Columna Izquierda: Grados */}
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                            <div style={{ border: '1px solid #e2e8f0', borderRadius: '4px', overflow: 'hidden' }}>
-                                <div style={{ background: '#0284c7', color: 'white', fontWeight: 'bold', padding: '0.5rem 1rem', textAlign: 'center', textTransform: 'uppercase', fontSize: '0.875rem', printColorAdjust: 'exact', WebkitPrintColorAdjust: 'exact' }}>
+                            <div style={{ border: '1px solid var(--ga-border)', borderRadius: '4px', overflow: 'hidden' }}>
+                                <div style={{ background: 'var(--ga-primary)', color: 'white', fontWeight: 'bold', padding: '0.5rem 1rem', textAlign: 'center', textTransform: 'uppercase', fontSize: '0.875rem', printColorAdjust: 'exact', WebkitPrintColorAdjust: 'exact' }}>
                                     Resumen de Grado
                                 </div>
                                 <table style={{ width: '100%', fontSize: '0.875rem', borderCollapse: 'collapse' }}>
@@ -243,7 +244,7 @@ export default function InspectionReport() {
                                                         style={{
                                                             width: '100%',
                                                             borderRadius: '4px 4px 0 0',
-                                                            background: grade.name === 'RECHAZO' ? '#dc2626' : '#16a34a',
+                                                            background: grade.name === 'RECHAZO' ? 'var(--ga-danger)' : 'var(--ga-success)',
                                                             height: `${grade.percentage}%`,
                                                             transition: 'height 0.5s',
                                                             printColorAdjust: 'exact', WebkitPrintColorAdjust: 'exact'
@@ -260,8 +261,8 @@ export default function InspectionReport() {
 
                         {/* Columna Derecha: Defectos */}
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                            <div style={{ border: '1px solid #e2e8f0', borderRadius: '4px', overflow: 'hidden' }}>
-                                <div style={{ background: '#0284c7', color: 'white', fontWeight: 'bold', padding: '0.5rem 1rem', textAlign: 'center', textTransform: 'uppercase', fontSize: '0.875rem', printColorAdjust: 'exact', WebkitPrintColorAdjust: 'exact' }}>
+                            <div style={{ border: '1px solid var(--ga-border)', borderRadius: '4px', overflow: 'hidden' }}>
+                                <div style={{ background: 'var(--ga-primary)', color: 'white', fontWeight: 'bold', padding: '0.5rem 1rem', textAlign: 'center', textTransform: 'uppercase', fontSize: '0.875rem', printColorAdjust: 'exact', WebkitPrintColorAdjust: 'exact' }}>
                                     Tipificación de Defectos
                                 </div>
                                 <table style={{ width: '100%', fontSize: '0.875rem', borderCollapse: 'collapse' }}>
@@ -313,7 +314,7 @@ export default function InspectionReport() {
                                                     <div
                                                         style={{
                                                             height: '100%',
-                                                            background: '#dc2626',
+                                                            background: 'var(--ga-danger)',
                                                             width: `${Math.max(defect.percentage, 1)}%`,
                                                             printColorAdjust: 'exact', WebkitPrintColorAdjust: 'exact'
                                                         }}

@@ -8,6 +8,7 @@ export default function EditInspectionModal({ isOpen, onClose, inspection, onUpd
     const [formData, setFormData] = useState({
         product_name: '',
         date: '',
+        production_date: '',
         lot: '',
         supervisor: '',
         responsible: '',
@@ -29,6 +30,7 @@ export default function EditInspectionModal({ isOpen, onClose, inspection, onUpd
             setFormData({
                 product_name: inspection.product_name || '',
                 date: inspection.date || '',
+                production_date: inspection.production_date || '',
                 lot: inspection.lot || '',
                 supervisor: inspection.supervisor || '',
                 responsible: inspection.responsible || '',
@@ -55,8 +57,34 @@ export default function EditInspectionModal({ isOpen, onClose, inspection, onUpd
         }
     };
 
-    const handleResultChange = (id, newCount) => {
-        setResults(prev => prev.map(r => r.id === id ? { ...r, pieces_count: newCount, isDirty: true } : r));
+    const handleResultChange = (id, newCountVal) => {
+        const newCount = parseInt(newCountVal) || 0;
+        
+        setResults(prev => {
+            const targetResult = prev.find(r => r.id === id);
+            if (!targetResult) return prev;
+            
+            const diff = newCount - (targetResult.pieces_count || 0);
+            
+            // Si el que estamos editando es el "Sin Defecto (Base)", solo actualizamos ese
+            if (!targetResult.defect) {
+                return prev.map(r => r.id === id ? { ...r, pieces_count: newCount, isDirty: true } : r);
+            }
+            
+            // Si estamos editando un defecto, buscamos el "Base" para compensar
+            const baseResult = prev.find(r => !r.defect);
+            
+            if (baseResult && baseResult.id !== id) {
+                return prev.map(r => {
+                    if (r.id === id) return { ...r, pieces_count: newCount, isDirty: true };
+                    if (r.id === baseResult.id) return { ...r, pieces_count: Math.max(0, r.pieces_count - diff), isDirty: true };
+                    return r;
+                });
+            }
+            
+            // Fallback (no hay base o es el mismo)
+            return prev.map(r => r.id === id ? { ...r, pieces_count: newCount, isDirty: true } : r);
+        });
     };
 
     const saveResult = async (result) => {
@@ -145,7 +173,8 @@ export default function EditInspectionModal({ isOpen, onClose, inspection, onUpd
 
                             <div className="ga-grid ga-grid--3">
                                 <InputField label="Producto" value={formData.product_name} onChange={v => setFormData({ ...formData, product_name: v })} required />
-                                <InputField label="Fecha" value={formData.date} onChange={v => setFormData({ ...formData, date: v })} type="date" required />
+                                <InputField label="Fecha Inspección" value={formData.date} onChange={v => setFormData({ ...formData, date: v })} type="date" required />
+                                <InputField label="Fecha Producción" value={formData.production_date} onChange={v => setFormData({ ...formData, production_date: v })} type="date" required />
                                 <InputField label="Lote" value={formData.lot} onChange={v => setFormData({ ...formData, lot: v })} />
                                 <InputField label="Responsable" value={formData.responsible} onChange={v => setFormData({ ...formData, responsible: v })} />
                                 <InputField label="Supervisor" value={formData.supervisor} onChange={v => setFormData({ ...formData, supervisor: v })} />

@@ -207,3 +207,105 @@ class ScannerStats(BaseModel):
     error: float
 
 
+
+# --- Broken Piece Study Schemas ---
+
+class BrokenPieceLotBase(BaseModel):
+    lot_code: str
+    thickness: float
+    width: float
+    length: float
+    pieces_theoretical: int
+    broken_mobile: int = 0
+    broken_sawmill: int = 0
+    broken_knot: int = 0
+    missing_pieces: int = 0
+    over_width: int = 0
+    under_width: int = 0
+    warped: int = 0
+    in_process: int = 0
+    image_path: Optional[str] = None
+
+class BrokenPieceLotCreate(BrokenPieceLotBase):
+    pass
+
+class BrokenPieceLotResponse(BrokenPieceLotBase):
+    id: int
+    study_id: int
+    m3_theoretical: float
+    pieces_physical: int
+    diff_pieces: int
+    loss_m3: float
+    loss_percentage: float
+    
+    class Config:
+        from_attributes = True
+
+class BrokenPieceStudyBase(BaseModel):
+    supervisor: str
+    responsible: str
+    date: Optional[datetime] = None
+
+class BrokenPieceStudyCreate(BrokenPieceStudyBase):
+    lots: List[BrokenPieceLotCreate]
+
+class BrokenPieceStudyResponse(BrokenPieceStudyBase):
+    id: int
+    date: datetime
+    total_pieces: int
+    total_m3: float
+    total_loss_m3: float
+    total_loss_percentage: float
+    lots: List[BrokenPieceLotResponse] = []
+    
+    class Config:
+        from_attributes = True
+
+# --- Log Quality Control Schemas ---
+
+class LogInspectionBase(BaseModel):
+    jas_diameter: Optional[float] = None
+    actual_length: Optional[float] = None
+    curvature: Optional[float] = None
+    double_curvature: Optional[float] = None
+    
+    freckles: bool = False
+    splintering: bool = False
+    fissures: bool = False
+    spores: bool = False
+    blue_stain: bool = False
+    bark: bool = False
+    rot: bool = False
+    bad_pruning: bool = False
+    other: Optional[str] = None
+
+class LogInspectionCreate(LogInspectionBase):
+    pass
+
+class LogInspectionResponse(LogInspectionBase):
+    id: int
+    control_id: int
+    
+    class Config:
+        from_attributes = True
+
+class LogQualityControlBase(BaseModel):
+    date: date
+    shift: str
+    responsible: str
+    target_diameter: str
+    target_length: str
+    wood_type: str
+    bin_number: str
+
+class LogQualityControlCreate(LogQualityControlBase):
+    logs: List[LogInspectionCreate] = []
+
+class LogQualityControlResponse(LogQualityControlBase):
+    id: int
+    timestamp: datetime
+    logs: List[LogInspectionResponse] = []
+    
+    class Config:
+        from_attributes = True
+

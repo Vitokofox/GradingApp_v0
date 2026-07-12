@@ -6,10 +6,11 @@ import os
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from database import models, database
-from routers import registry, auth, users, master_data, scanner, exports
+from routers import registry, auth, users, master_data, scanner, exports, broken_pieces, log_inspections, data_sync, reports, truck_studies, siniestrada_studies, ia_documental
 from config import settings
 from loguru import logger
 import sys
+from services.rag_service import rag_service
 
 # Configure Logging
 logger.remove()
@@ -18,7 +19,27 @@ logger.add(settings.LOG_FILE, rotation=settings.LOG_ROTATION, level=settings.LOG
 
 models.Base.metadata.create_all(bind=database.engine)
 
+# Migración simple: agregar columna 'process' a la tabla 'inspections' si no existe
+from sqlalchemy import text
+db_session = database.SessionLocal()
+try:
+    db_session.execute(text("ALTER TABLE inspections ADD COLUMN process VARCHAR"))
+    db_session.commit()
+    logger.info("Migración: Columna 'process' agregada exitosamente a la tabla 'inspections'.")
+except Exception:
+    db_session.rollback()
+finally:
+    db_session.close()
+
 app = FastAPI(title="Grading App Backend")
+
+
+@app.on_event("startup")
+def warmup_ia_documental() -> None:
+    try:
+        rag_service.warmup()
+    except Exception as exc:
+        logger.warning(f"IA documental: startup parcial ({exc})")
 
 # Configuración CORS
 app.add_middleware(
@@ -30,11 +51,19 @@ app.add_middleware(
 )
 
 app.include_router(auth.router)
+app.include_router(master_data.router)
 app.include_router(users.router)
 app.include_router(registry.router)
-app.include_router(master_data.router)
 app.include_router(scanner.router)
+app.include_router(log_inspections.router)
+app.include_router(broken_pieces.router)
 app.include_router(exports.router)
+app.include_router(data_sync.router)
+app.include_router(reports.router)
+app.include_router(truck_studies.router)
+app.include_router(siniestrada_studies.router)
+app.include_router(ia_documental.router)
+
 
 
 import sys

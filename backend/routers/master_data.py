@@ -115,6 +115,10 @@ class GradeCreate(BaseModel):
     name: str
     grade_rank: int
 
+class GradeUpdate(BaseModel):
+    name: Optional[str] = None
+    grade_rank: Optional[int] = None
+
 class GradeResponse(BaseModel):
     id: int
     name: str
@@ -168,6 +172,25 @@ def create_grade(grade: GradeCreate, db: Session = Depends(database.get_db), cur
         return db_grade
     except Exception as e:
         print(f"ERROR creating grade: {e}")
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.put("/grades/{id}", response_model=GradeResponse)
+def update_grade(id: int, grade: GradeUpdate, db: Session = Depends(database.get_db), current_user = Depends(get_current_admin_user)):
+
+    db_grade = db.query(models.Grade).filter(models.Grade.id == id).first()
+    if not db_grade:
+        raise HTTPException(status_code=404, detail="Grade not found")
+    
+    update_data = grade.model_dump(exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(db_grade, key, value)
+        
+    try:
+        db.commit()
+        db.refresh(db_grade)
+        return db_grade
+    except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 

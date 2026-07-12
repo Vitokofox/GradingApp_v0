@@ -1,0 +1,53 @@
+# Databases
+*.db
+*.sqlite
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Python cache / compile
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Built packages / distribution / PyInstaller
+dist/
+build/
+*.spec
+*.zip
+*.apk
+
+# IDEs / Editor cache
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Node modules
+node_modules/
+
+# Local env files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+backend/.env
+
+# Uploads and temporary tests
+backend/uploads/
+_sharedtest/
+scratch/
+test_output.txt
+
+# Logs
+*.log
+logs/
+build_log.txt
+sync_log.txt

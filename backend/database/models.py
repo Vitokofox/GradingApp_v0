@@ -82,6 +82,7 @@ class Inspection(Base):
     pieces_inspected = Column(Integer, default=0) # Cantidad planificada
     
     type = Column(String) # Discriminador
+    process = Column(String, nullable=True) # Proceso: Verde, Seco, General, Admin
     
     market = relationship("Market", back_populates="inspections")
     
@@ -185,3 +186,148 @@ class User(Base):
     level = Column(String) # usuario, asistente, admin
     process_type = Column(String) # Verde, Seco
     is_active = Column(Boolean, default=True)
+
+class BrokenPieceStudy(Base):
+    __tablename__ = "broken_piece_studies"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    date = Column(DateTime, default=datetime.now)
+    supervisor = Column(String)
+    responsible = Column(String) # Usuario que ingresa
+    
+    # Totales para resumen rápido
+    total_pieces = Column(Integer, default=0)
+    total_m3 = Column(Float, default=0.0)
+    total_loss_m3 = Column(Float, default=0.0)
+    total_loss_percentage = Column(Float, default=0.0)
+    
+    lots = relationship("BrokenPieceLot", back_populates="study", cascade="all, delete-orphan")
+
+class BrokenPieceLot(Base):
+    __tablename__ = "broken_piece_lots"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    study_id = Column(Integer, ForeignKey("broken_piece_studies.id"))
+    
+    lot_code = Column(String) # Código Lote
+    
+    # Dimensiones
+    thickness = Column(Float) # E (mm)
+    width = Column(Float)     # A (mm)
+    length = Column(Float)    # L (m)
+    
+    pieces_theoretical = Column(Integer) # Pza. SAP / Teóricas
+    m3_theoretical = Column(Float)       # M3 Calculado
+    
+    pieces_physical = Column(Integer)    # Pza. Físicas
+    diff_pieces = Column(Integer)        # Dif SAP v/s Fís
+    
+    # Defectos (Conteos)
+    broken_mobile = Column(Integer, default=0)    # Quebrada por móvil
+    broken_sawmill = Column(Integer, default=0)   # Q. desde Aserradero
+    broken_knot = Column(Integer, default=0)      # Q. por nudo
+    missing_pieces = Column(Integer, default=0)   # Piezas Faltantes
+    over_width = Column(Integer, default=0)       # Sobre Ancho
+    under_width = Column(Integer, default=0)      # Bajo Ancho
+    warped = Column(Integer, default=0)           # Alabeo
+    in_process = Column(Integer, default=0)       # Q en proceso
+    
+    # Cálculos de Pérdida
+    loss_m3 = Column(Float, default=0.0)          # Vol. De perdida por móvil
+    loss_percentage = Column(Float, default=0.0)  # % total Perdida
+    
+    # Evidencia
+    image_path = Column(String, nullable=True)
+    
+    
+    study = relationship("BrokenPieceStudy", back_populates="lots")
+
+class LogQualityControl(Base):
+    __tablename__ = "log_quality_controls"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    date = Column(Date, default=datetime.now)
+    shift = Column(String)
+    responsible = Column(String)
+    
+    target_diameter = Column(String)
+    target_length = Column(String)
+    wood_type = Column(String)
+    bin_number = Column(String) # Buzón
+    
+    timestamp = Column(DateTime, default=datetime.now)
+    
+    logs = relationship("LogInspection", back_populates="control", cascade="all, delete-orphan")
+
+class LogInspection(Base):
+    __tablename__ = "log_inspections"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    control_id = Column(Integer, ForeignKey("log_quality_controls.id"))
+    
+    jas_diameter = Column(Float, nullable=True) # Diam JAS (cm)
+    actual_length = Column(Float, nullable=True) # Largo (mm)
+    curvature = Column(Float, nullable=True)     # Curvatura (mm)
+    double_curvature = Column(Float, nullable=True) # Doble Curv. (mm)
+    
+    # Defects - Boolean flags
+    freckles = Column(Boolean, default=False)      # Pecas
+    splintering = Column(Boolean, default=False)   # Astillamiento
+    fissures = Column(Boolean, default=False)      # Fisuras
+    spores = Column(Boolean, default=False)        # Esporas
+    blue_stain = Column(Boolean, default=False)    # M. Azul
+    bark = Column(Boolean, default=False)          # Corteza
+    rot = Column(Boolean, default=False)           # Pudrición
+    bad_pruning = Column(Boolean, default=False)   # Mal Desrame
+    
+    other = Column(String, nullable=True)          # Otro
+    
+    control = relationship("LogQualityControl", back_populates="logs")
+
+class TruckStudy(Base):
+    __tablename__ = "truck_studies"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    reception_date = Column(Date, default=datetime.now)
+    cutting_date = Column(Date)
+    guide_number = Column(String)
+    estate = Column(String) 
+    logging_team = Column(String)
+    total_logs = Column(Integer, default=0)
+    
+    timestamp = Column(DateTime, default=datetime.now)
+    responsible = Column(String)
+    
+    defects = relationship("TruckStudyDefect", back_populates="study", cascade="all, delete-orphan")
+
+class TruckStudyDefect(Base):
+    __tablename__ = "truck_study_defects"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    study_id = Column(Integer, ForeignKey("truck_studies.id"))
+    defect_name = Column(String)
+    count = Column(Integer)
+    
+    study = relationship("TruckStudy", back_populates="defects")
+
+class SiniestradaStudy(Base):
+    __tablename__ = "siniestrada_studies"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    date = Column(Date, default=datetime.now)
+    time = Column(String)
+    area = Column(String, default="Aserradero")
+    shift = Column(String)
+    journey = Column(String)
+    screen = Column(String) # Harnero 60, Harnero 110
+    
+    total_weight = Column(Float)
+    burnt_bark_weight = Column(Float)
+    burnt_cambium_weight = Column(Float)
+    burnt_wood_weight = Column(Float)
+    soot_chip_weight = Column(Float)
+    pulpable_chip_weight = Column(Float)
+    
+    timestamp = Column(DateTime, default=datetime.now)
+    responsible = Column(String)
+

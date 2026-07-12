@@ -307,6 +307,8 @@ const AdminDashboard = () => {
                                                 name="process_type" value={formData.process_type} onChange={handleChange} disabled={!canChangePermissions}>
                                                 <option value="Verde">Verde</option>
                                                 <option value="Seco">Seco</option>
+                                                <option value="General">General</option>
+                                                <option value="Admin">Admin</option>
                                             </select>
                                         </div>
                                     </div>

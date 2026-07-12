@@ -29,7 +29,7 @@ def create_scanner_step(step: schemas.ScannerStepCreate, db: Session = Depends(d
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/steps", response_model=List[schemas.ScannerStepResponse])
-def read_scanner_steps(skip: int = 0, limit: int = 100, db: Session = Depends(database.get_db)):
+def read_scanner_steps(skip: int = 0, limit: int = 5000, db: Session = Depends(database.get_db)):
     steps = db.query(models.ScannerStep).order_by(models.ScannerStep.date.desc()).offset(skip).limit(limit).all()
     return steps
 

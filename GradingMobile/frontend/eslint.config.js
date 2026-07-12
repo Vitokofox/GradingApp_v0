@@ -23,7 +23,9 @@ export default defineConfig([
       },
     },
     rules: {
-      'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
+      'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]', argsIgnorePattern: '^_' }],
+      // react-hooks v7 flags standard async data-loading patterns from useEffect; downgrade to warn
+      'react-hooks/set-state-in-effect': 'warn',
     },
   },
 ])

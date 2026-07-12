@@ -3,8 +3,10 @@ import axios from 'axios';
 // Asegurar que axios use la misma configuración definida en la lógica de AuthContext si se importa allí,
 // pero dado que AuthContext establece valores por defecto globales, importar axios aquí comparte esa configuración.
 
+// Configure axios base URL
+// In production, we leave baseURL empty so it automatically uses the current host and port smoothly.
 const api = axios.create({
-    baseURL: 'http://localhost:8000',
+    baseURL: import.meta.env.MODE === 'development' ? 'http://127.0.0.1:8000' : '',
 });
 
 // Interceptor para asegurar que usamos el último token si está en localStorage (redundante si AuthContext establece globales, pero seguro)
@@ -15,6 +17,27 @@ api.interceptors.request.use((config) => {
     }
     return config;
 });
+
+// --- Sincronización ---
+
+export const syncDownload = async () => {
+    const response = await api.get('/api/sync/full-dump');
+    return response.data;
+};
+
+export const importInspections = async (data) => {
+    const response = await api.post('/api/sync/upload', data);
+    return response.data;
+};
+
+export const importMobileFile = async (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await api.post('/api/sync/import-file', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+    });
+    return response.data;
+};
 
 // API de Registro
 export const getMarkets = async () => {
@@ -128,6 +151,11 @@ export const createGrade = async (data) => {
     return response.data;
 };
 
+export const updateGrade = async (id, data) => {
+    const response = await api.put(`/master-data/grades/${id}`, data);
+    return response.data;
+};
+
 export const deleteGrade = async (id) => {
     const response = await api.delete(`/master-data/grades/${id}`);
     return response.data;
@@ -179,7 +207,7 @@ export const deleteInspection = async (id) => {
 
 export const updateInspection = async (id, data) => {
     try {
-        const response = await api.put(`/inspections/${id}`, data);
+        const response = await api.put(`/api/inspections/${id}`, data);
         return response.data;
     } catch (error) {
         console.error("Error updating inspection", error);
@@ -189,12 +217,18 @@ export const updateInspection = async (id, data) => {
 
 export const updateInspectionResult = async (resultId, piecesCount) => {
     try {
-        const response = await api.put(`/inspection-results/${resultId}`, { pieces_count: parseInt(piecesCount) });
+        const response = await api.put(`/api/inspection-results/${resultId}`, { pieces_count: parseInt(piecesCount) });
         return response.data;
     } catch (error) {
         console.error("Error updating inspection result", error);
         throw error;
     }
+};
+
+// --- API de Estudio de Piezas Quebradas ---
+export const getBrokenPieceStudies = async () => {
+    const response = await api.get('/broken-pieces/');
+    return response.data;
 };
 
 // --- API de Estudio de Escáner ---
@@ -245,6 +279,63 @@ export const downloadInspectionsCsv = async (filters) => {
     }
 };
 
+export const downloadInspectionDetailsCsv = async (filters) => {
+    try {
+        const response = await api.get('/api/exports/inspections/details/csv', {
+            params: filters,
+            responseType: 'blob',
+        });
+
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        const filename = response.headers['content-disposition']?.split('filename=')[1] || 'detalle_inspecciones.csv';
+        link.setAttribute('download', filename);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+    } catch (error) {
+        console.error("Detailed export error", error);
+    }
+};
+
+export const downloadMasterDataCsv = async (category) => {
+    try {
+        const response = await api.get(`/api/exports/master-data/${category}/csv`, {
+            responseType: 'blob',
+        });
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        const filename = response.headers['content-disposition']?.split('filename=')[1] || `maestro_${category}.csv`;
+        link.setAttribute('download', filename);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+    } catch (error) {
+        console.error("Master data export error", error);
+    }
+};
+
+export const downloadTruckStudiesCsv = async (filters) => {
+    try {
+        const response = await api.get('/api/exports/truck-studies/csv', {
+            params: filters,
+            responseType: 'blob',
+        });
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        const filename = response.headers['content-disposition']?.split('filename=')[1] || 'estudios_camion.csv';
+        link.setAttribute('download', filename);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+    } catch (error) {
+        console.error("Truck studies export error", error);
+    }
+};
+
 export const downloadTemplate = async () => {
     try {
         const response = await api.get('/api/exports/template/csv', {
@@ -270,6 +361,56 @@ export const syncInspectionResults = async (inspectionId, results) => {
         console.error("Error syncing inspection results", error);
         throw error;
     }
+};
+
+// --- Truck Studies API ---
+export const getTruckStudies = async () => {
+    const response = await api.get('/api/truck-studies/');
+    return response.data;
+};
+
+export const getTruckStudy = async (id) => {
+    const response = await api.get(`/api/truck-studies/${id}`);
+    return response.data;
+};
+
+export const createTruckStudy = async (data) => {
+    const response = await api.post('/api/truck-studies/', data);
+    return response.data;
+};
+
+export const deleteTruckStudy = async (id) => {
+    const response = await api.delete(`/api/truck-studies/${id}`);
+    return response.data;
+};
+
+export const getTruckStudyReport = async (startDate, endDate) => {
+    const params = {};
+    if (startDate) params.start_date = startDate;
+    if (endDate) params.end_date = endDate;
+    const response = await api.get('/api/reports/truck-studies', { params });
+    return response.data;
+};
+
+// --- Siniestrada Woodchip Study API ---
+export const getSiniestradaStudies = async () => {
+    const response = await api.get('/api/siniestrada-studies/');
+    return response.data;
+};
+
+export const getSiniestradaStudy = async (id) => {
+    const response = await api.get(`/api/siniestrada-studies/${id}`);
+    return response.data;
+};
+
+export const createSiniestradaStudy = async (data) => {
+    const response = await api.post('/api/siniestrada-studies/', data);
+    return response.data;
+};
+
+export const deleteSiniestradaStudy = async (id) => {
+    const response = await api.delete(`/api/siniestrada-studies/${id}`);
+    return response.data;
 };
 
 export default api;

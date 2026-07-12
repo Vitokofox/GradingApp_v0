@@ -31,6 +31,12 @@ const Layout = ({ children }) => {
                                     <Link to="/inspections" className="u-text-sm u-bold" style={{ color: 'rgba(255,255,255,0.8)' }}>
                                         Historial
                                     </Link>
+                                    <Link to="/global-report" className="u-text-sm u-bold" style={{ color: 'rgba(255,255,255,0.8)' }}>
+                                        Reporte
+                                    </Link>
+                                    <Link to="/ia-normas-estudios" className="u-text-sm u-bold" style={{ color: 'rgba(255,255,255,0.8)' }}>
+                                        IA Normas y Estudios
+                                    </Link>
                                     {user?.level === 'admin' && (
                                         <Link to="/admin" className="u-text-sm u-bold" style={{ color: 'rgba(255,255,255,0.8)' }}>
                                             Panel Admin

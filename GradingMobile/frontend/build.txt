@@ -1,0 +1,9 @@
+﻿
+> frontend@0.0.0 build
+> node scripts/copy-wasm.js && vite build
+
+Copying WASM from E:\GradingWepApp\GradingMobile\frontend\node_modules\sql.js\dist\sql-wasm.wasm to E:\GradingWepApp\GradingMobile\frontend\public\assets\sql-wasm.wasm
+sql-wasm.wasm copied successfully!
+[36mvite v7.2.7 [32mbuilding client environment for production...[36m[39m
+transforming...
+[32mÔ£ô[39m 2825 modules transformed.

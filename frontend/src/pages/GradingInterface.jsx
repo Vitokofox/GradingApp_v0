@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getInspection, getGradesByProduct, addInspectionResult, getProducts, getInspectionResults, syncInspectionResults } from '../api'; // Asegurar que getInspectionResults esté importado
+import { getInspection, getGradesByProduct, addInspectionResult, getProducts, getInspectionResults, syncInspectionResults, getDefects } from '../api';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle, AlertTriangle, Activity, Database, ChevronRight, X, RotateCcw, Home, Search, Save } from 'lucide-react';
+import { CheckCircle, ChevronRight, ChevronDown, Save, Search, PlayCircle, PlusCircle, Trash2 } from 'lucide-react';
 
 export default function GradingInterface() {
     const { id } = useParams();
@@ -11,14 +11,20 @@ export default function GradingInterface() {
     const [inspection, setInspection] = useState(null);
     const [grades, setGrades] = useState([]);
     const [stats, setStats] = useState({});
-    const [countLog, setCountLog] = useState([]);
     const [showFinishModal, setShowFinishModal] = useState(false);
-    const [autoFill, setAutoFill] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
-    const [selectedGrade, setSelectedGrade] = useState(null);
 
-    // Estado derivado
-    const totalInspected = Object.values(stats).reduce((acc, curr) => acc + curr.total, 0);
+    // View state
+    const [activeGradeId, setActiveGradeId] = useState(null);
+    const [visibleDefects, setVisibleDefects] = useState({}); // { gradeId: [defectId1, defectId2] }
+    const [addingDefectFor, setAddingDefectFor] = useState(null);
+
+    // Global Defect Catalog
+    const [allSystemDefects, setAllSystemDefects] = useState([]);
+    const [showAllDefectsFor, setShowAllDefectsFor] = useState(null); // gradeId where we are showing full catalog
+
+    // Estado derivado para calculos
+    const baseGrade = grades.find(g => g.grade_rank === 1) || (grades.length > 0 ? grades[0] : null);
 
     useEffect(() => {
         loadContext();
@@ -29,10 +35,16 @@ export default function GradingInterface() {
             const insp = await getInspection(id);
             setInspection(insp);
 
-            // Obtener grados para el producto
-            let productGrades = [];
+            // Fetch Global Defects map
+            let systemDefects = [];
+            try {
+                systemDefects = await getDefects();
+                setAllSystemDefects(systemDefects);
+            } catch (e) {
+                console.error("Error loading system defects", e);
+            }
 
-            // Intentar product_id explícito si está disponible, de lo contrario buscar por nombre
+            let productGrades = [];
             let targetProductId = insp.product_id;
 
             if (!targetProductId && insp.product_name) {
@@ -49,129 +61,251 @@ export default function GradingInterface() {
 
             if (targetProductId) {
                 productGrades = await getGradesByProduct(targetProductId);
-            } else {
-                console.warn("No product_id found for inspection", insp);
             }
             setGrades(productGrades);
 
-            // Inicializar Estadísticas
+            // Inicializar Estadísticas y Defectos Visibles
             const initialStats = {};
+            const initialVisible = {};
+
             productGrades.forEach(g => {
                 initialStats[g.id] = {
                     name: g.name,
                     total: 0,
                     defects: {}
                 };
+                initialVisible[g.id] = [];
             });
 
             // Cargar resultados existentes
             const results = await getInspectionResults(id);
+
             results.forEach(r => {
                 if (initialStats[r.grade_id]) {
-                    // Si r tiene pieces_count, usarlo. Si no, asumir 1? 
-                    // La nueva lógica de sincronización usa pieces_count.
-                    // Pero si es granular (una fila por pieza)...
-                    // El esquema tiene pieces_count.
-
                     initialStats[r.grade_id].total += r.pieces_count;
-
                     if (r.defect_id) {
                         initialStats[r.grade_id].defects[r.defect_id] = (initialStats[r.grade_id].defects[r.defect_id] || 0) + r.pieces_count;
+                        if (!initialVisible[r.grade_id].includes(r.defect_id)) {
+                            initialVisible[r.grade_id].push(r.defect_id);
+                        }
+                    }
+
+                    // Inject defect if missing from grade
+                    const grade = productGrades.find(g => g.id === r.grade_id);
+                    if (grade && r.defect_id) {
+                        const defectExists = grade.defects && grade.defects.find(d => d.id === r.defect_id);
+                        if (!defectExists) {
+                            const fullDefect = systemDefects.find(sd => sd.id === r.defect_id) || { id: r.defect_id, name: `Defecto #${r.defect_id}` };
+                            if (!grade.defects) grade.defects = [];
+                            grade.defects.push(fullDefect);
+                        }
                     }
                 }
             });
 
+            // Recalcular base grade
+            if (insp && productGrades.length > 0) {
+                const base = productGrades.find(g => g.grade_rank === 1) || productGrades[0];
+                if (base) {
+                    let othersCount = 0;
+                    Object.keys(initialStats).forEach(key => {
+                        if (parseInt(key) !== base.id) {
+                            othersCount += initialStats[key].total;
+                        }
+                    });
+
+                    initialStats[base.id].total = Math.max(0, insp.pieces_inspected - othersCount);
+                }
+            }
+
             setStats(initialStats);
+            setVisibleDefects(initialVisible);
 
         } catch (error) {
             console.error("Error loading context", error);
         }
     };
 
-    const handleGrading = async (grade, defect = null) => {
-        if (showFinishModal) return;
+    const handleAddDefect = (gradeId, defectIdStr) => {
+        if (!defectIdStr) return;
+        const defectId = parseInt(defectIdStr);
 
-        // Actualización optimista de UI
-        const newStats = { ...stats };
-        newStats[grade.id].total += 1;
-        if (defect) {
-            newStats[grade.id].defects[defect.id] = (newStats[grade.id].defects[defect.id] || 0) + 1;
+        setVisibleDefects(prev => ({
+            ...prev,
+            [gradeId]: [...(prev[gradeId] || []), defectId]
+        }));
+        setAddingDefectFor(null);
+        setShowAllDefectsFor(null);
+    };
+
+    // Ayudante para ajustar conteos con lógica de "Sin Defecto" automática
+    const adjustCount = (gradeId, defectId, delta) => {
+        if (!inspection || !baseGrade) return;
+
+        const newStats = JSON.parse(JSON.stringify(stats));
+        const isBase = gradeId === baseGrade.id;
+
+        if (isBase) {
+            // En el grado base, cualquier incremento de defecto resta del total "sin defecto" global
+            // Pero en este sistema el grado base no suele tener defectos visibles.
+            // Si los tuviera, la lógica sería similar.
+            handleManualChange(gradeId, defectId, (newStats[gradeId].defects?.[defectId] || 0) + delta);
+            return;
         }
+
+        const stat = newStats[gradeId];
+        const currentDefectsSum = Object.values(stat.defects || {}).reduce((a, b) => a + b, 0);
+        const currentSinDefecto = Math.max(0, stat.total - currentDefectsSum);
+
+        if (defectId) {
+            // Ajustando un defecto específico
+            const currentVal = stat.defects[defectId] || 0;
+            const newVal = Math.max(0, currentVal + delta);
+            const diff = newVal - currentVal;
+
+            if (diff > 0) {
+                // Agregar pieza a defecto
+                if (currentSinDefecto > 0) {
+                    // Tomar del "Sin Defecto" de este mismo grado
+                    // El total del grado NO cambia, solo se redistribuye
+                    stat.defects[defectId] = newVal;
+                } else {
+                    // Si no hay "Sin Defecto" en este grado, tomar del Grado Base (aumenta total del grado)
+                    handleManualChange(gradeId, defectId, newVal);
+                    return;
+                }
+            } else if (diff < 0) {
+                // Quitar pieza de defecto -> Vuelve al "Sin Defecto" de este grado
+                stat.defects[defectId] = newVal;
+                // El total no cambia, se queda en este grado pero como "Sin Defecto"
+            }
+        } else {
+            // Ajustando el total del grado (vía el virtual "Sin Defecto")
+            const newValTotal = Math.max(currentDefectsSum, stat.total + delta);
+            handleManualChange(gradeId, null, newValTotal);
+            return;
+        }
+
+        setStats(newStats);
+    };
+
+
+    const handleRemoveDefect = (gradeId, defectId) => {
+        const confirmDelete = window.confirm("¿Estás seguro de que deseas eliminar este defecto?");
+        if (!confirmDelete) return;
+
+        // 1. Calculate reduction
+        const newStats = JSON.parse(JSON.stringify(stats));
+        const currentDefectCount = newStats[gradeId].defects?.[defectId] || 0;
+
+        // Remove defect entry
+        if (newStats[gradeId].defects) {
+            delete newStats[gradeId].defects[defectId];
+        }
+
+        // Reduce grade total
+        newStats[gradeId].total = Math.max(0, newStats[gradeId].total - currentDefectCount);
+
+        // 2. Recalculate Base Grade (if needed)
+        if (inspection && baseGrade) {
+            let othersCount = 0;
+            // Sum all other grades' totals
+            Object.keys(newStats).forEach(key => {
+                if (parseInt(key) !== baseGrade.id) {
+                    othersCount += newStats[key].total;
+                }
+            });
+            // Update base grade remainder
+            newStats[baseGrade.id].total = Math.max(0, inspection.pieces_inspected - othersCount);
+        }
+
         setStats(newStats);
 
-        const currentTotal = Object.values(newStats).reduce((acc, curr) => acc + curr.total, 0);
+        // 3. Remove from visible list UI
+        setVisibleDefects(prev => ({
+            ...prev,
+            [gradeId]: (prev[gradeId] || []).filter(id => id !== defectId)
+        }));
+    };
 
-        setCountLog(prev => [{
-            time: new Date(),
-            gradeName: grade.name,
-            gradeId: grade.id,
-            defectName: defect?.name || 'Clean',
-            defectId: defect?.id || null,
-            id: Date.now()
-        }, ...prev].slice(0, 50));
+    const handleManualChange = (gradeId, defectId, valueStr) => {
+        const value = valueStr === '' ? 0 : parseInt(valueStr);
+        if (isNaN(value) || value < 0) return;
 
-        // Llamada API ELIMINADA por requerimiento de guardado por lotes
-        /*
-        try {
-            await addInspectionResult(id, grade.id, defect ? defect.id : null, 1);
-        } catch (error) {
-            console.error("Sync error", error);
-        }
-        */
+        // Clone stats to simulate calculation
+        const newStats = JSON.parse(JSON.stringify(stats));
 
-        // Restablecer selección si se eligió defecto (aunque el modo en línea no lo usa mucho ahora)
-
-        // Restablecer selección si se eligió defecto (aunque el modo en línea no lo usa mucho ahora)
-        if (defect) {
-            setSelectedGrade(null);
-            setSearchTerm(''); // Clear search after selection
+        if (defectId) {
+            if (!newStats[gradeId].defects) newStats[gradeId].defects = {};
+            const currentDefectCount = newStats[gradeId].defects[defectId] || 0;
+            const diff = value - currentDefectCount;
+            newStats[gradeId].defects[defectId] = value;
+            newStats[gradeId].total = Math.max(0, newStats[gradeId].total + diff);
+        } else {
+            if (baseGrade && gradeId === baseGrade.id) return;
+            newStats[gradeId].total = value;
         }
 
-        // Verificar finalización
-        if (inspection && currentTotal >= inspection.pieces_inspected) {
-            setShowFinishModal(true);
+        // VALIDATION: Check total limit
+        if (inspection && baseGrade) {
+            let othersCount = 0;
+
+            Object.keys(newStats).forEach(key => {
+                if (parseInt(key) !== baseGrade.id) {
+                    othersCount += newStats[key].total;
+                }
+            });
+
+            if (othersCount > inspection.pieces_inspected) {
+                alert(`Límite excedido. El total de inspeciones no puede ser mayor a ${inspection.pieces_inspected}.`);
+                return; // ⛔ REJECT UPDATE
+            }
+
+            // Recalculate Base Grade
+            newStats[baseGrade.id].total = Math.max(0, inspection.pieces_inspected - othersCount);
         }
+
+        setStats(newStats);
     };
 
     const handleSaveInspection = async () => {
         const resultsToSync = [];
 
-        // Iterar a través de estadísticas para construir carga útil
         Object.keys(stats).forEach(gradeIdStr => {
             const gradeId = parseInt(gradeIdStr);
             const stat = stats[gradeId];
 
-            // Total incluye defectos + limpio.
-            // Pero API necesita granular: grado + defecto + conteo.
-            // Si defecto es nulo, significa "Grado base" (limpio).
-            // Calcular conteo limpio: Total - Suma(Defectos)
-            const totalDefects = Object.values(stat.defects).reduce((a, b) => a + b, 0);
-            const cleanCount = Math.max(0, stat.total - totalDefects);
-
-            if (cleanCount > 0) {
-                resultsToSync.push({
-                    grade_id: gradeId,
-                    defect_id: null,
-                    pieces_count: cleanCount
+            // 1. Guardar defectos específicos
+            let sumDefects = 0;
+            if (stat.defects && Object.keys(stat.defects).length > 0) {
+                Object.keys(stat.defects).forEach(defectIdStr => {
+                    const defectId = parseInt(defectIdStr);
+                    const count = stat.defects[defectId];
+                    if (count > 0) {
+                        sumDefects += count;
+                        resultsToSync.push({
+                            grade_id: gradeId,
+                            defect_id: defectId,
+                            pieces_count: count
+                        });
+                    }
                 });
             }
 
-            Object.keys(stat.defects).forEach(defectIdStr => {
-                const defectId = parseInt(defectIdStr);
-                const count = stat.defects[defectId];
-                if (count > 0) {
-                    resultsToSync.push({
-                        grade_id: gradeId,
-                        defect_id: defectId,
-                        pieces_count: count
-                    });
-                }
-            });
+            // 2. Guardar el remanente "Sin Defecto" para este grado
+            const sinDefecto = stat.total - sumDefects;
+            if (sinDefecto > 0) {
+                resultsToSync.push({
+                    grade_id: gradeId,
+                    defect_id: null,
+                    pieces_count: sinDefecto
+                });
+            }
         });
+
 
         try {
             await syncInspectionResults(id, resultsToSync);
-            // Opcional: Mostrar notificación
             alert("Inspección guardada correctamente.");
         } catch (error) {
             console.error("Save error", error);
@@ -180,113 +314,24 @@ export default function GradingInterface() {
     };
 
     const handleFinish = async () => {
-        // Lógica de autocompletado impacta estadísticas, así que ejecutar primero si se necesita localmente? 
-        // O mejor: actualizar estadísticas locales basadas en autocompletado y luego guardar.
-
-        if (autoFill && baseGrade) {
-            const remaining = Math.max(0, inspection.pieces_inspected - totalInspected);
-            if (remaining > 0) {
-                // Actualizar estadísticas locales para grado base limpio
-                const newStats = { ...stats };
-                newStats[baseGrade.id].total += remaining;
-                setStats(newStats);
-
-                // Necesitamos esperar actualización de estado o empujar manualmente a lista de sincronización.
-                // Dado que setState es asíncrono, agreguemos manualmente a lista de sincronización en handleSave si movimos la lógica allí,
-                // pero es más simple llamar a sync con números ajustados manualmente o asumir que el usuario hizo clic en la casilla 
-                // y forzamos el guardado ahora.
-
-                // Solo actualicemos el backend 
-                try {
-                    await addInspectionResult(id, baseGrade.id, null, remaining);
-                } catch (e) {
-                    console.error("Autofill error", e);
-                }
-            }
-        }
-
-        // Activar guardado completo por si acaso (aunque autocompletado usa addInspectionResult directo)
-        // Idealmente deberíamos confiar en UN método.
-        // Si usamos guardado por lotes, autocompletado debería solo modificar estado local y luego guardamos por lotes.
-        // Por ahora, mantengamos simple: Guardar todo.
         await handleSaveInspection();
         navigate('/');
     };
 
-    const remainingPieces = inspection ? Math.max(0, inspection.pieces_inspected - totalInspected) : 0;
-
-    const handleUndo = async () => {
-        if (showFinishModal) setShowFinishModal(false); // Permitir deshacer el estado finalizado
-
-        const lastAction = countLog[0];
-        if (!lastAction) return;
-
-        // 1. Revertir Estadísticas UI
-        const newStats = { ...stats };
-        if (newStats[lastAction.gradeId]) {
-            newStats[lastAction.gradeId].total = Math.max(0, newStats[lastAction.gradeId].total - 1);
-            if (lastAction.defectId) {
-                newStats[lastAction.gradeId].defects[lastAction.defectId] = Math.max(0, (newStats[lastAction.gradeId].defects[lastAction.defectId] || 0) - 1);
-            }
-        }
-        setStats(newStats);
-
-        // 2. Actualizar Registro
-        setCountLog(prev => prev.slice(1));
-
-        // 3. Revertir API - ELIMINADO ya que no sincronizamos en acción más
-        /*
-        try {
-            await addInspectionResult(id, lastAction.gradeId, lastAction.defectId, -1);
-        } catch (error) {
-            console.error("Undo error", error);
-        }
-        */
-    };
-
-    // El "Grado Base" (Rango 1 - usualmente mejor) a menudo no necesita selección de defecto, es solo "Bueno"
-    // MEJORADO: Tomar primer ítem como base, sin importar valor de rango explícito
-    const baseGrade = grades.length > 0 ? grades[0] : null;
-
-    // Lógica de filtro
-    // MEJORADO: Tomar todos los grados restantes como degradaciones
-    const downgradeGrades = grades
-        .slice(1)
-        .map(grade => {
-            // Si búsqueda está vacía, retornar grado original
-            if (!searchTerm) return grade;
-
-            // Verificar si nombre de grado coincide
-            const gradeMatches = grade.name.toLowerCase().includes(searchTerm.toLowerCase());
-
-            // Verificar defectos coincidentes
-            const matchingDefects = grade.defects?.filter(d =>
-                d.name.toLowerCase().includes(searchTerm.toLowerCase())
-            ) || [];
-
-            // Si grado coincide, mostrar todos los defectos (o quizás solo coincidentes? mostremos todos si grado coincide, sino solo defectos coincidentes)
-            // Mejor UX: Mostrar solo ítems coincidentes a menos que el contenedor (grado) sea explícitamente buscado?
-            // Vamos con: Filtrar lista de defectos. Si lista de defectos está vacía Y grado no coincide, retornar nulo.
-
-            if (gradeMatches) {
-                return grade; // Mostrar todo
-            }
-
-            if (matchingDefects.length > 0) {
-                return { ...grade, defects: matchingDefects }; // Mostrar defectos filtrados
-            }
-
-            return null; // Ocultar grado completamente
-        })
-        .filter(Boolean); // Eliminar nulos
-
+    // Filter Logic
+    const displayedGrades = grades
+        .filter(grade => activeGradeId === null || grade.id === activeGradeId)
+        .filter(grade => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return grade.name.toLowerCase().includes(term);
+        });
 
     if (!inspection) return <div className="ga-page u-center u-muted">Cargando contexto de inspección...</div>;
 
     return (
         <div className="ga-app" style={{ height: '100vh', overflow: 'hidden', flexDirection: 'row' }}>
 
-            {/* Modal de Finalización */}
             <AnimatePresence>
                 {showFinishModal && (
                     <div className="ga-modal-backdrop">
@@ -304,52 +349,33 @@ export default function GradingInterface() {
                                 }}>
                                     <CheckCircle size={48} />
                                 </div>
-                                <h2 className="ga-card__title" style={{ fontSize: '2rem' }}>¡Completado!</h2>
+                                <h2 className="ga-card__title" style={{ fontSize: '2rem' }}>Resumen Final</h2>
                             </div>
 
                             <div className="ga-modal__content u-center">
                                 <p className="u-muted u-mb-4" style={{ fontSize: '1.25rem' }}>
-                                    Objetivo alcanzado: <span className="u-bold" style={{ color: 'var(--ga-success)' }}>{inspection.pieces_inspected}</span> piezas.
+                                    Total Piezas: <span className="u-bold">{inspection.pieces_inspected}</span>
                                 </p>
 
-                                <div className="ga-card" style={{ textAlign: 'left', maxHeight: '200px', overflowY: 'auto' }}>
-                                    <div className="ga-card__header u-bold u-muted" style={{ fontSize: '0.875rem' }}>RESUMEN</div>
+                                <div className="ga-card" style={{ textAlign: 'left', maxHeight: '300px', overflowY: 'auto' }}>
+                                    <div className="ga-card__header u-bold u-muted" style={{ fontSize: '0.875rem' }}>DETALLE CLASIFICACIÓN</div>
                                     <div className="ga-card__body">
                                         {Object.values(stats).filter(s => s.total > 0).map((s, idx) => (
-                                            <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.25rem 0' }}>
+                                            <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', borderBottom: '1px solid var(--ga-border)' }}>
                                                 <span>{s.name}</span>
                                                 <span className="u-bold">{s.total}</span>
                                             </div>
                                         ))}
                                     </div>
                                 </div>
-
-                                {remainingPieces > 0 && baseGrade && (
-                                    <div className="ga-alert ga-alert--info u-mt-4" style={{ textAlign: 'left' }}>
-                                        <label style={{ display: 'flex', gap: '0.75rem', cursor: 'pointer' }}>
-                                            <input
-                                                type="checkbox"
-                                                checked={autoFill}
-                                                onChange={e => setAutoFill(e.target.checked)}
-                                                style={{ width: '20px', height: '20px' }}
-                                            />
-                                            <div>
-                                                <div className="u-bold">Completar Automáticamente</div>
-                                                <div style={{ fontSize: '0.875rem', opacity: 0.8 }}>
-                                                    Asignar {remainingPieces} restantes a {baseGrade.name}
-                                                </div>
-                                            </div>
-                                        </label>
-                                    </div>
-                                )}
                             </div>
 
                             <div className="ga-modal__footer" style={{ flexDirection: 'column', gap: '0.5rem' }}>
                                 <button onClick={handleFinish} className="ga-btn ga-btn--primary ga-btn--lg" style={{ width: '100%', justifyContent: 'center' }}>
-                                    Confirmar y Finalizar
+                                    Confirmar y Salir
                                 </button>
                                 <button onClick={() => setShowFinishModal(false)} className="ga-btn ga-btn--outline" style={{ width: '100%', justifyContent: 'center' }}>
-                                    Volver / Corregir
+                                    Volver
                                 </button>
                             </div>
                         </motion.div>
@@ -357,186 +383,285 @@ export default function GradingInterface() {
                 )}
             </AnimatePresence>
 
-            {/* Sidebar (Ahora usa ga-sidebar) */}
-            <div className="ga-sidebar" style={{ width: '320px', borderRight: '1px solid var(--ga-border)', background: 'var(--ga-surface)' }}>
-                <div style={{ paddingBottom: '1rem', borderBottom: '1px solid var(--ga-border)' }}>
-                    <h2 className="ga-card__title u-truncate" title={inspection.product_name} style={{ color: 'var(--ga-primary)' }}>
+            {/* SIDEBAR */}
+            <div className="ga-sidebar" style={{ width: '320px', borderRight: '1px solid var(--ga-border)', background: 'var(--ga-surface)', display: 'flex', flexDirection: 'column' }}>
+                <div style={{ padding: '1.5rem', borderBottom: '1px solid var(--ga-border)' }}>
+                    <h2 className="ga-card__title u-truncate" title={inspection.product_name} style={{ color: 'var(--ga-primary)', marginBottom: '0.25rem' }}>
                         {inspection.product_name}
                     </h2>
                     <p className="u-muted" style={{ fontSize: '0.875rem' }}>Lote: {inspection.lot || 'N/A'}</p>
 
-                    <div className="ga-card u-mt-4" style={{ background: 'var(--ga-bg)', border: 'none' }}>
-                        <div className="ga-card__body" style={{ padding: '0.75rem' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '0.5rem' }}>
-                                <span className="u-bold u-muted" style={{ fontSize: '0.75rem' }}>AVANCE</span>
-                                <span className="u-bold" style={{ fontSize: '1.25rem' }}>
-                                    {totalInspected} <span className="u-muted" style={{ fontSize: '0.875rem' }}>/ {inspection.pieces_inspected}</span>
-                                </span>
-                            </div>
-                            <div style={{ width: '100%', height: '8px', background: 'rgba(0,0,0,0.1)', borderRadius: '4px', overflow: 'hidden' }}>
-                                <div style={{
-                                    width: `${Math.min(100, (totalInspected / inspection.pieces_inspected) * 100)}%`,
-                                    height: '100%',
-                                    background: 'var(--ga-success)',
-                                    transition: 'width 0.5s'
-                                }} />
-                            </div>
-                        </div>
+                    <div className="u-mt-4" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span className="u-bold u-muted" style={{ fontSize: '0.75rem' }}>OBJETIVO</span>
+                        <span className="u-bold" style={{ fontSize: '1.5rem' }}>{inspection.pieces_inspected}</span>
                     </div>
                 </div>
 
-                <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '1rem', paddingTop: '1rem' }}>
-                    <div>
-                        <h3 className="u-bold u-muted u-mb-2" style={{ fontSize: '0.75rem' }}>RESUMEN TIEMPO REAL</h3>
-                        <div className="ga-stack">
-                            {grades.map(g => (
-                                <div key={g.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem', background: 'var(--ga-bg)', borderRadius: '4px' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                        <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: g.grade_rank === 1 ? 'var(--ga-success)' : g.grade_rank === 2 ? 'var(--ga-warning)' : 'var(--ga-danger)' }} />
-                                        <span style={{ fontSize: '0.875rem' }}>{g.name}</span>
-                                    </div>
-                                    <span className="u-bold">{stats[g.id]?.total || 0}</span>
-                                </div>
-                            ))}
-                        </div>
+                <div style={{ flex: 1, overflowY: 'auto', padding: '1rem' }}>
+                    <div
+                        onClick={() => setActiveGradeId(null)}
+                        style={{
+                            padding: '0.75rem',
+                            marginBottom: '1rem',
+                            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                            cursor: 'pointer',
+                            background: activeGradeId === null ? 'var(--ga-primary)' : 'var(--ga-bg)',
+                            color: activeGradeId === null ? 'white' : 'inherit',
+                            borderRadius: '6px',
+                            border: activeGradeId === null ? 'none' : '1px solid var(--ga-border)',
+                            fontWeight: 'bold'
+                        }}
+                    >
+                        <span>Ver Resumen / Todo</span>
                     </div>
 
-                    <div>
-                        <h3 className="u-bold u-muted u-mb-2" style={{ fontSize: '0.75rem' }}>ÚLTIMOS EVENTOS</h3>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                            <AnimatePresence>
-                                {countLog.map((log, i) => (
-                                    <motion.div
-                                        key={i}
-                                        initial={{ opacity: 0, x: -10 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        style={{ fontSize: '0.75rem', padding: '4px 8px', borderLeft: '2px solid var(--ga-border)' }}
+                    <h3 className="u-bold u-muted u-mb-4" style={{ fontSize: '0.75rem' }}>CASCADA DE CLASIFICACIÓN</h3>
+
+                    <div className="ga-stack">
+                        {grades.map(g => {
+                            const stat = stats[g.id] || { total: 0 };
+                            const isBase = baseGrade && g.id === baseGrade.id;
+                            const isActive = activeGradeId === g.id;
+
+                            return (
+                                <div key={g.id}
+                                    onClick={() => setActiveGradeId(g.id)}
+                                    style={{
+                                        background: isActive ? 'var(--ga-blue-50)' : 'var(--ga-bg)',
+                                        borderRadius: '6px', overflow: 'hidden',
+                                        border: isActive ? '2px solid var(--ga-primary)' : '1px solid var(--ga-border)',
+                                        cursor: 'pointer',
+                                        transition: 'all 0.2s'
+                                    }}>
+                                    <div
+                                        style={{
+                                            padding: '0.75rem',
+                                            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                                        }}
                                     >
-                                        <span className="u-bold">{log.gradeName}</span>
-                                        {log.defectName !== 'Clean' && <span style={{ color: 'var(--ga-danger)', marginLeft: '4px' }}>({log.defectName})</span>}
-                                        <span style={{ float: 'right', opacity: 0.5 }}>{log.time.toLocaleTimeString()}</span>
-                                    </motion.div>
-                                ))}
-                            </AnimatePresence>
-                        </div>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                            <div style={{
+                                                width: '10px', height: '10px', borderRadius: '50%',
+                                                background: isBase ? 'var(--ga-success)' : g.grade_rank === 2 ? 'var(--ga-warning)' : 'var(--ga-danger)'
+                                            }} />
+                                            <span style={{ fontSize: '0.875rem', fontWeight: isActive ? 'bold' : 'normal' }}>{g.name}</span>
+                                        </div>
+                                        <span className={`u-bold ${isBase ? 'u-text-success' : ''}`}>{stat.total}</span>
+                                    </div>
+                                </div>
+                            );
+                        })}
                     </div>
                 </div>
             </div>
 
             {/* Main Content */}
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'var(--ga-bg)' }}>
-                {/* Topbar Personalizada */}
-                <div className="ga-topbar" style={{ background: 'var(--ga-surface)', color: 'var(--ga-text)', borderBottom: '1px solid var(--ga-border)', padding: '0.5rem 1.5rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                        <Activity className="u-muted" />
-                        <h1 className="ga-topbar-title" style={{ fontSize: '1.125rem' }}>Interfaz de Clasificación</h1>
-                    </div>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'var(--ga-soft-bg)' }}>
+                <div className="ga-topbar" style={{ background: 'var(--ga-surface)', borderBottom: '1px solid var(--ga-border)', padding: '0.75rem 2rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <h1 className="ga-topbar-title" style={{ fontSize: '1.25rem' }}>
+                        {activeGradeId ? grades.find(g => g.id === activeGradeId)?.name : 'Resumen de Clasificación'}
+                    </h1>
 
-                    <div style={{ flex: 1, maxWidth: '400px', margin: '0 2rem', position: 'relative' }}>
-                        <Search style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--ga-muted)' }} size={16} />
-                        <input
-                            type="text"
-                            placeholder="Buscar defecto..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="ga-control"
-                            style={{ paddingLeft: '2.5rem', borderRadius: '99px' }}
-                            autoFocus
-                        />
-                    </div>
-
-                    <div className="u-flex u-gap-2">
-                        {countLog.length > 0 && (
-                            <button onClick={handleUndo} className="ga-btn ga-btn--outline ga-btn--sm" title="Deshacer último">
-                                <RotateCcw size={16} /> <span style={{ marginLeft: '4px' }}>Deshacer</span>
-                            </button>
-                        )}
-                        <button onClick={handleSaveInspection} className="ga-btn ga-btn--primary ga-btn--sm">
-                            <Save size={16} /> <span style={{ marginLeft: '4px' }}>Guardar</span>
+                    <div style={{ display: 'flex', gap: '1rem' }}>
+                        <button onClick={handleSaveInspection} className="ga-btn ga-btn--primary">
+                            <Save size={18} /> <span style={{ marginLeft: '0.5rem' }}>Guardar Progreso</span>
                         </button>
-                        <button onClick={() => setShowFinishModal(true)} className="ga-btn ga-btn--outline ga-btn--sm">
-                            Pausar / Finalizar
+                        <button onClick={() => setShowFinishModal(true)} className="ga-btn ga-btn--outline">
+                            <PlayCircle size={18} /> <span style={{ marginLeft: '0.5rem' }}>Finalizar</span>
                         </button>
                     </div>
                 </div>
 
-                {/* Grid de Clasificación */}
                 <div style={{ flex: 1, padding: '2rem', overflowY: 'auto' }}>
-                    <div className="ga-grid" style={{ gridTemplateColumns: 'minmax(300px, 1fr) 2fr', gap: '2rem', height: '100%' }}>
+                    <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
 
-                        {/* Columna 1: Principal (OK) */}
-                        {baseGrade && !selectedGrade && (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', height: '100%' }}>
-                                <motion.button
-                                    whileHover={{ scale: 1.02 }}
-                                    whileTap={{ scale: 0.98 }}
-                                    onClick={() => handleGrading(baseGrade)}
-                                    className="ga-card"
-                                    style={{
-                                        flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                                        background: 'linear-gradient(135deg, var(--ga-success) 0%, #1B5E20 100%)',
-                                        color: 'white', border: 'none', cursor: 'pointer'
-                                    }}
-                                >
-                                    <CheckCircle size={80} style={{ marginBottom: '1rem', opacity: 0.9 }} />
-                                    <span style={{ fontSize: '2.5rem', fontWeight: 'bold' }}>{baseGrade.name}</span>
-                                    <span style={{ fontSize: '1.25rem', opacity: 0.9 }}>Sin Defectos</span>
-                                </motion.button>
-                            </div>
-                        )}
+                        {displayedGrades.map(grade => {
+                            const isBase = baseGrade && grade.id === baseGrade.id;
 
-                        {/* Columna 2: Defectos */}
-                        <div className="ga-stack" style={{ height: '100%', overflowY: 'auto', paddingRight: '0.5rem' }}>
-                            {downgradeGrades.map(grade => (
-                                <div key={grade.id} className="ga-card">
-                                    <div className="ga-card__header" style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: 'rgba(0,0,0,0.02)' }}>
-                                        <div className="ga-badge" style={{
-                                            background: grade.grade_rank === 2 ? 'var(--ga-warning)' : 'var(--ga-danger)',
-                                            color: 'white', border: 'none', width: '32px', height: '32px', fontSize: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center'
-                                        }}>
-                                            {grade.grade_rank}
+                            // Check active defects
+                            const visibleDefectIds = visibleDefects[grade.id] || [];
+                            // Ensure valid defects list
+                            const allDefects = grade.defects || [];
+
+                            // Determine which defects to show in dropdown
+                            // If showing all, use allSystemDefects, else use mapped grade defects
+                            const sourceList = (showAllDefectsFor === grade.id) ? allSystemDefects : allDefects;
+                            const availableDefects = sourceList.filter(d => !visibleDefectIds.includes(d.id));
+
+                            if (isBase) {
+                                return (
+                                    <div key={grade.id} className="ga-card" style={{ borderLeft: '4px solid var(--ga-success)' }}>
+                                        <div className="ga-card__body" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                            <div>
+                                                <h3 className="u-bold u-text-success" style={{ fontSize: '1.25rem' }}>{grade.name} (Sin Defecto)</h3>
+                                                <p className="u-muted">Piezas en grado óptimo (Calculado automáticamente)</p>
+                                            </div>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+                                                <div style={{ fontSize: '3rem', fontWeight: 900, color: 'var(--ga-success)', lineHeight: 1 }}>
+                                                    {stats[grade.id]?.total || 0}
+                                                </div>
+                                            </div>
                                         </div>
-                                        <h3 className="ga-card__title">{grade.name}</h3>
+                                    </div>
+                                );
+                            }
+
+
+                            return (
+                                <div key={grade.id} className="ga-card">
+                                    <div className="ga-card__header" style={{ background: 'var(--ga-surface)', borderBottom: '1px solid var(--ga-border)' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                            <div className="ga-badge" style={{
+                                                background: grade.grade_rank === 2 ? 'var(--ga-warning)' : 'var(--ga-danger)',
+                                                color: 'white', width: '28px', height: '28px', borderRadius: '50%',
+                                                display: 'flex', alignItems: 'center', justifyContent: 'center'
+                                            }}>
+                                                {grade.grade_rank}
+                                            </div>
+                                            <h3 className="ga-card__title">{grade.name}</h3>
+                                        </div>
                                     </div>
 
-                                    <div className="ga-card__body">
-                                        {grade.defects && grade.defects.length > 0 ? (
-                                            <div className="ga-grid ga-grid--3" style={{ gap: '0.75rem' }}>
-                                                {grade.defects.map(defect => (
-                                                    <motion.button
-                                                        key={defect.id}
-                                                        whileHover={{ scale: 1.02 }}
-                                                        whileTap={{ scale: 0.95 }}
-                                                        onClick={() => handleGrading(grade, defect)}
-                                                        className="ga-btn ga-btn--outline"
-                                                        style={{
-                                                            height: 'auto', minHeight: '60px', whiteSpace: 'normal',
-                                                            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center',
-                                                            background: 'var(--ga-surface)', color: 'var(--ga-text)', borderColor: 'var(--ga-border)'
-                                                        }}
-                                                    >
-                                                        {defect.name}
-                                                    </motion.button>
-                                                ))}
+                                    <div className="ga-stack" style={{ gap: 0 }}>
+                                        {/* Row virtual: Sin Defecto (En Grado) */}
+                                        <div style={{
+                                            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                            padding: '0.75rem 1.5rem',
+                                            borderBottom: '2px solid var(--ga-border-light)',
+                                            background: 'rgba(34, 197, 94, 0.05)'
+                                        }}>
+                                            <div>
+                                                <span style={{ fontWeight: '800', color: 'var(--ga-success)', fontSize: '0.875rem' }}>SIN DEFECTO / EN GRADO</span>
+                                                <div style={{ fontSize: '0.7rem', color: '#94a3b8' }}>Piezas aceptables en {grade.name}</div>
                                             </div>
-                                        ) : (
-                                            <motion.button
-                                                whileHover={{ scale: 1.02 }}
-                                                whileTap={{ scale: 0.98 }}
-                                                onClick={() => handleGrading(grade)}
-                                                className="ga-btn ga-btn--outline"
-                                                style={{ width: '100%', padding: '1.5rem', justifyContent: 'center', fontWeight: 'bold' }}
-                                            >
-                                                Confirmar {grade.name}
-                                            </motion.button>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                                <div className="ga-tally">
+                                                    <button onClick={() => adjustCount(grade.id, null, -1)} className="ga-tally-btn">-</button>
+                                                    <div className="ga-tally-value">
+                                                        {Math.max(0, (stats[grade.id]?.total || 0) - Object.values(stats[grade.id]?.defects || {}).reduce((a, b) => a + b, 0))}
+                                                    </div>
+                                                    <button onClick={() => adjustCount(grade.id, null, 1)} className="ga-tally-btn">+</button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Render Visible Defects */}
+                                        {visibleDefectIds.map(defectId => {
+                                            const defect = allDefects.find(d => d.id === defectId) || allSystemDefects.find(d => d.id === defectId);
+                                            if (!defect) return null;
+
+                                            const count = stats[grade.id]?.defects?.[defect.id] || 0;
+
+                                            return (
+                                                <div key={defect.id} style={{
+                                                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                                    padding: '1rem 1.5rem',
+                                                    borderBottom: '1px solid var(--ga-border-light)'
+                                                }}>
+                                                    <span style={{ fontWeight: '500' }}>{defect.name}</span>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                                        <div className="ga-tally">
+                                                            <button onClick={() => adjustCount(grade.id, defect.id, -1)} className="ga-tally-btn">-</button>
+                                                            <input
+                                                                type="number"
+                                                                className="ga-tally-input"
+                                                                value={count === 0 ? '' : count}
+                                                                placeholder="0"
+                                                                onChange={(e) => handleManualChange(grade.id, defect.id, e.target.value)}
+                                                                onFocus={(e) => e.target.select()}
+                                                            />
+                                                            <button onClick={() => adjustCount(grade.id, defect.id, 1)} className="ga-tally-btn">+</button>
+                                                        </div>
+                                                        <button
+                                                            onClick={() => handleRemoveDefect(grade.id, defect.id)}
+                                                            className="ga-btn ga-btn--icon ga-btn--sm"
+                                                            style={{ color: 'var(--ga-danger)', background: 'transparent', border: 'none', cursor: 'pointer', opacity: 0.5 }}
+                                                            title="Eliminar defecto de la vista"
+                                                        >
+                                                            <Trash2 size={16} />
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+
+
+                                        {/* Fallback if no defects defined for grade (e.g. pure downgrade without defect types) */}
+                                        {allDefects.length === 0 && visibleDefectIds.length === 0 && (
+                                            <div style={{ padding: '1rem 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                                <span className="u-muted">Cantidad Total</span>
+                                                <input
+                                                    type="number"
+                                                    min="0"
+                                                    className="ga-control"
+                                                    style={{ width: '100px', textAlign: 'center', fontSize: '1.125rem', fontWeight: 'bold' }}
+                                                    value={stats[grade.id]?.total === undefined || stats[grade.id]?.total === 0 ? '' : stats[grade.id]?.total}
+                                                    placeholder="0"
+                                                    onChange={(e) => handleManualChange(grade.id, null, e.target.value)}
+                                                    onFocus={(e) => e.target.select()}
+                                                />
+                                            </div>
                                         )}
+
+                                        {/* Add Defect Button Area */}
+                                        <div style={{ padding: '1rem 1.5rem', background: 'var(--ga-bg)', display: 'flex', justifyContent: 'center' }}>
+                                            {addingDefectFor === grade.id ? (
+                                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', width: '100%' }}>
+                                                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                                        <select
+                                                            className="ga-control"
+                                                            autoFocus
+                                                            style={{ flex: 1 }}
+                                                            value=""
+                                                            onChange={(e) => handleAddDefect(grade.id, e.target.value)}
+                                                            onBlur={() => setTimeout(() => {
+                                                                if (!showAllDefectsFor) setAddingDefectFor(null);
+                                                            }, 300)}
+                                                        >
+                                                            <option value="">
+                                                                {showAllDefectsFor === grade.id ? 'Seleccionar cualquier defecto...' : 'Seleccionar defecto estándar...'}
+                                                            </option>
+                                                            {availableDefects.map(d => (
+                                                                <option key={d.id} value={d.id}>{d.name}</option>
+                                                            ))}
+                                                        </select>
+                                                        <button
+                                                            className="ga-btn ga-btn--outline"
+                                                            onClick={(e) => { e.preventDefault(); setAddingDefectFor(null); setShowAllDefectsFor(null); }}
+                                                        >
+                                                            Cancelar
+                                                        </button>
+                                                    </div>
+
+                                                    {showAllDefectsFor !== grade.id && (
+                                                        <button
+                                                            className="ga-btn ga-btn--text ga-btn--sm"
+                                                            style={{ alignSelf: 'start', fontSize: '0.75rem' }}
+                                                            // e.preventDefault to keep focus within container if possible
+                                                            onMouseDown={(e) => { e.preventDefault(); setShowAllDefectsFor(grade.id); }}
+                                                        >
+                                                            + Buscar en todos los defectos
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            ) : (
+                                                <button
+                                                    className="ga-btn ga-btn--outline ga-btn--sm"
+                                                    onClick={() => setAddingDefectFor(grade.id)}
+                                                    style={{ color: 'var(--ga-primary)', borderStyle: 'dashed' }}
+                                                >
+                                                    + Agregar Defecto
+                                                </button>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
-                            ))}
-                        </div>
+                            );
+                        })}
                     </div>
                 </div>
             </div>
         </div>
     );
-};
+}
+

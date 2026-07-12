@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { QualityAssistantProvider } from './context/QualityAssistantContext';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import AdminDashboard from './pages/AdminDashboard';
@@ -15,14 +16,27 @@ import Layout from './components/layout/Layout';
 import FinscanStudy from './pages/FinscanStudy';
 import InlineGradeReport from './pages/InlineGradeReport';
 import FinishedGradeReport from './pages/FinishedGradeReport';
+import BrokenPiecesStudy from './pages/BrokenPiecesStudy';
+import BrokenPiecesReport from './pages/BrokenPiecesReport';
+import LogQualityControl from './pages/LogQualityControl';
+import LogQualityReport from './pages/LogQualityReport';
+import DataSync from './pages/DataSync';
+import GlobalReport from './pages/GlobalReport';
+import TruckStudy from './pages/TruckStudy';
+import TruckStudyReport from './pages/TruckStudyReport';
+import SiniestradaStudy from './pages/SiniestradaStudy';
+import SiniestradaReport from './pages/SiniestradaReport';
+import IANormasEstudios from './pages/IANormasEstudios';
+import QualityAssistantFloating from './components/QualityAssistantFloating';
 
 function App() {
   return (
     <Router>
       <AuthProvider>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
+        <QualityAssistantProvider>
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
 
           <Route path="/" element={
             <PrivateRoute>
@@ -55,10 +69,91 @@ function App() {
             </PrivateRoute>
           } />
 
+          <Route path="/process/broken-pieces" element={
+            <PrivateRoute>
+              <Layout>
+                <BrokenPiecesStudy />
+              </Layout>
+            </PrivateRoute>
+          } />
+
+          <Route path="/process/broken-pieces/report/:id" element={
+            <PrivateRoute>
+              <Layout>
+                <BrokenPiecesReport />
+              </Layout>
+            </PrivateRoute>
+          } />
+
+          <Route path="/process/log-quality" element={
+            <PrivateRoute>
+              <Layout>
+                <LogQualityControl />
+              </Layout>
+            </PrivateRoute>
+          } />
+
+          <Route path="/process/log-quality/report/:id" element={
+            <PrivateRoute>
+              <Layout>
+                <LogQualityReport />
+              </Layout>
+            </PrivateRoute>
+          } />
+
+          <Route path="/process/truck-study" element={
+            <PrivateRoute>
+              <Layout>
+                <TruckStudy />
+              </Layout>
+            </PrivateRoute>
+          } />
+
+          <Route path="/process/truck-study/report/:id" element={
+            <PrivateRoute>
+              <Layout>
+                <TruckStudyReport />
+              </Layout>
+            </PrivateRoute>
+          } />
+
+          <Route path="/process/siniestrada-study" element={
+            <PrivateRoute>
+              <Layout>
+                <SiniestradaStudy />
+              </Layout>
+            </PrivateRoute>
+          } />
+
+          <Route path="/process/siniestrada-study/report/:id" element={
+            <PrivateRoute>
+              <Layout>
+                <SiniestradaReport />
+              </Layout>
+            </PrivateRoute>
+          } />
+
+
           <Route path="/inspections" element={
             <PrivateRoute>
               <Layout>
                 <InspectionsList />
+              </Layout>
+            </PrivateRoute>
+          } />
+
+          <Route path="/global-report" element={
+            <PrivateRoute>
+              <Layout>
+                <GlobalReport />
+              </Layout>
+            </PrivateRoute>
+          } />
+
+          <Route path="/ia-normas-estudios" element={
+            <PrivateRoute>
+              <Layout>
+                <IANormasEstudios />
               </Layout>
             </PrivateRoute>
           } />
@@ -87,6 +182,20 @@ function App() {
             </PrivateRoute>
           } />
 
+          <Route path="/admin/users" element={
+            <PrivateRoute requiredRole="admin">
+              <Layout>
+                <AdminDashboard />
+              </Layout>
+            </PrivateRoute>
+          } />
+          <Route path="/admin/data-sync" element={
+            <PrivateRoute requiredRole="admin">
+              <Layout>
+                <DataSync />
+              </Layout>
+            </PrivateRoute>
+          } />
           <Route path="/admin" element={
             <PrivateRoute roles={['admin']}>
               <Layout>
@@ -94,14 +203,16 @@ function App() {
               </Layout>
             </PrivateRoute>
           } />
-          <Route path="/admin/config" element={
-            <PrivateRoute roles={['admin']}>
-              <Layout>
-                <MasterDataConfig />
-              </Layout>
-            </PrivateRoute>
-          } />
-        </Routes>
+            <Route path="/admin/config" element={
+              <PrivateRoute roles={['admin']}>
+                <Layout>
+                  <MasterDataConfig />
+                </Layout>
+              </PrivateRoute>
+            } />
+          </Routes>
+          <QualityAssistantFloating />
+        </QualityAssistantProvider>
       </AuthProvider>
     </Router>
   );

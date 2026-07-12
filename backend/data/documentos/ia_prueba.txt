@@ -1,0 +1,1 @@
+Norma de calidad: una pieza con nudo grande debe degradarse si supera tolerancia visual. Procedimiento: verificar tamaño, posicion y continuidad de fibra.

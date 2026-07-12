@@ -14,7 +14,7 @@ router = APIRouter(
 def create_scanner_step(step: schemas.ScannerStepCreate, db: Session = Depends(database.get_db)):
     try:
         data = step.model_dump()
-        # Ensure date is set preferably from client, else now
+        # Asegurar que la fecha esté establecida preferiblemente desde el cliente, si no, ahora
         if not data.get('date'):
             data['date'] = datetime.now()
             
@@ -29,7 +29,7 @@ def create_scanner_step(step: schemas.ScannerStepCreate, db: Session = Depends(d
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/steps", response_model=List[schemas.ScannerStepResponse])
-def read_scanner_steps(skip: int = 0, limit: int = 100, db: Session = Depends(database.get_db)):
+def read_scanner_steps(skip: int = 0, limit: int = 5000, db: Session = Depends(database.get_db)):
     steps = db.query(models.ScannerStep).order_by(models.ScannerStep.date.desc()).offset(skip).limit(limit).all()
     return steps
 
@@ -45,7 +45,7 @@ def read_scanner_step(step_id: int, db: Session = Depends(database.get_db)):
 @router.post("/steps/{step_id}/items", response_model=schemas.ScannerItemResponse)
 def add_scanner_item(step_id: int, item: schemas.ScannerItemCreate, db: Session = Depends(database.get_db)):
     try:
-        # Determine Winner and Over/Under Grade
+        # Determinar Ganador y Sobre/Bajo Grado
         inspector_grade = db.query(models.Grade).filter(models.Grade.id == item.inspector_grade_id).first()
         scanner_grade = db.query(models.Grade).filter(models.Grade.id == item.scanner_grade_id).first()
         
@@ -53,34 +53,34 @@ def add_scanner_item(step_id: int, item: schemas.ScannerItemCreate, db: Session 
              raise HTTPException(status_code=400, detail="Invalid Grade IDs")
              
         winner = "Tie"
-        # Logic: 1 is best. 
-        # If Inspector=1 (Best), Scanner=2 (Worse). Scanner Rank > Inspector Rank. 
-        # This means Scanner gave a worse grade than reality. Undergraded (Bajo Grado)?
-        # Wait, if I have a clear board (1) and scanner says it's knotty (2). It downgraded it. "Bajo Grado".
-        # If I have a knotty board (2) and scanner says it's clear (1). Scanner Rank < Inspector Rank.
-        # It Overgraded it (Sobre Grado).
+        # Lógica: 1 es mejor. 
+        # Si Inspector=1 (Mejor), Escáner=2 (Peor). Rango Escáner > Rango Inspector. 
+        # Esto significa que el Escáner dio un grado peor que la realidad. Bajo Grado?
+        # Espera, si tengo una tabla limpia (1) y el escáner dice que tiene nudos (2). Lo degradó. "Bajo Grado".
+        # Si tengo una tabla con nudos (2) y el escáner dice que está limpia (1). Rango Escáner < Rango Inspector.
+        # Lo Sobregraduó (Sobre Grado).
         
-        # Let's verify standard industry terms.
-        # Sobre Grado / Overgrade: Giving a piece a higher value than it has.
-        # Bajo Grado / Undergrade: Giving a piece a lower value than it has.
+        # Verifiquemos términos estándar de la industria.
+        # Sobre Grado / Overgrade: Dar a una pieza un valor mayor al que tiene.
+        # Bajo Grado / Undergrade: Dar a una pieza un valor menor al que tiene.
         
         if scanner_grade.grade_rank < inspector_grade.grade_rank:
-            winner = "Scanner" # Scanner says it's better. Overgraded.
-            # But usually winner means who is right?
-            # In Models.py: winner = Column(String) # "Inspector", "Scanner", "Tie"
-            # If they differ, usually Inspector is Truth. So Scanner is WRONG.
-            # Maybe the column "winner" meant who "won" in a different context.
-            # Let's simple check if they match.
+            winner = "Scanner" # Escáner dice que es mejor. Sobregraduado.
+            # Pero usualmente ganador significa quién tiene la razón?
+            # En Models.py: winner = Column(String) # "Inspector", "Escáner", "Empate"
+            # Si difieren, usualmente el Inspector es la Verdad. Así que el Escáner está EQUIVOCADO.
+            # Quizás la columna "winner" significaba quién "ganó" en un contexto diferente.
+            # Revisemos simplemente si coinciden.
             pass
         elif scanner_grade.grade_rank > inspector_grade.grade_rank:
-            winner = "Scanner" # Scanner says it's worse. Undergraded.
+            winner = "Scanner" # Escáner dice que es peor. Subgraduado.
             pass
         else:
             winner = "Tie"
         
-        # Actually, let's just store the item. We calculate stats on aggregate.
-        # But we can store "winner" as a classification of the error if needed.
-        # Models has 'winner' column. Let's use it to store "Match", "Overgrade", "Undergrade".
+        # De hecho, solo guardemos el ítem. Calculamos estadísticas en agregado.
+        # Pero podemos guardar "winner" como una clasificación del error si es necesario.
+        # Models tiene columna 'winner'. Usémosla para guardar "Coincidencia", "Sobregrado", "Subgrado".
         
         status = "Match"
         if scanner_grade.grade_rank < inspector_grade.grade_rank:
@@ -93,7 +93,7 @@ def add_scanner_item(step_id: int, item: schemas.ScannerItemCreate, db: Session 
             item_number=item.item_number,
             inspector_grade_id=item.inspector_grade_id,
             scanner_grade_id=item.scanner_grade_id,
-            winner=status, # Reusing this column for status
+            winner=status, # Reutilizando esta columna para estado
             thickness=item.thickness,
             width=item.width,
             length=item.length
@@ -131,7 +131,7 @@ def get_scanner_stats(step_id: int, db: Session = Depends(database.get_db)):
     under_grade = 0
     
     for item in step.items:
-        # Calculate on the fly or rely on 'winner' column if populated correctly
+        # Calcular al vuelo o confiar en la columna 'winner' si está poblada correctamente
         if item.inspector_grade.grade_rank == item.scanner_grade.grade_rank:
             in_grade += 1
         elif item.scanner_grade.grade_rank < item.inspector_grade.grade_rank:

@@ -44,6 +44,7 @@ class InspectionBase(BaseModel):
     length: str
     pieces_inspected: int = 0
     type: str = 'inspection'
+    process: Optional[str] = None
 
 class InspectionCreate(InspectionBase):
     pass
@@ -68,6 +69,7 @@ class InspectionUpdate(BaseModel):
     length: Optional[str] = None
     pieces_inspected: Optional[int] = None
     type: Optional[str] = None
+    process: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -206,4 +208,169 @@ class ScannerStats(BaseModel):
     assertiveness: float
     error: float
 
+
+
+# --- Broken Piece Study Schemas ---
+
+class BrokenPieceLotBase(BaseModel):
+    lot_code: str
+    thickness: float
+    width: float
+    length: float
+    pieces_theoretical: int
+    broken_mobile: int = 0
+    broken_sawmill: int = 0
+    broken_knot: int = 0
+    missing_pieces: int = 0
+    over_width: int = 0
+    under_width: int = 0
+    warped: int = 0
+    in_process: int = 0
+    image_path: Optional[str] = None
+
+class BrokenPieceLotCreate(BrokenPieceLotBase):
+    pass
+
+class BrokenPieceLotResponse(BrokenPieceLotBase):
+    id: int
+    study_id: int
+    m3_theoretical: float
+    pieces_physical: int
+    diff_pieces: int
+    loss_m3: float
+    loss_percentage: float
+    
+    class Config:
+        from_attributes = True
+
+class BrokenPieceStudyBase(BaseModel):
+    supervisor: str
+    responsible: str
+    date: Optional[datetime] = None
+
+class BrokenPieceStudyCreate(BrokenPieceStudyBase):
+    lots: List[BrokenPieceLotCreate]
+
+class BrokenPieceStudyResponse(BrokenPieceStudyBase):
+    id: int
+    date: datetime
+    total_pieces: int
+    total_m3: float
+    total_loss_m3: float
+    total_loss_percentage: float
+    lots: List[BrokenPieceLotResponse] = []
+    
+    class Config:
+        from_attributes = True
+
+# --- Log Quality Control Schemas ---
+
+class LogInspectionBase(BaseModel):
+    jas_diameter: Optional[float] = None
+    actual_length: Optional[float] = None
+    curvature: Optional[float] = None
+    double_curvature: Optional[float] = None
+    
+    freckles: bool = False
+    splintering: bool = False
+    fissures: bool = False
+    spores: bool = False
+    blue_stain: bool = False
+    bark: bool = False
+    rot: bool = False
+    bad_pruning: bool = False
+    other: Optional[str] = None
+
+class LogInspectionCreate(LogInspectionBase):
+    pass
+
+class LogInspectionResponse(LogInspectionBase):
+    id: int
+    control_id: int
+    
+    class Config:
+        from_attributes = True
+
+class LogQualityControlBase(BaseModel):
+    date: date
+    shift: str
+    responsible: str
+    target_diameter: str
+    target_length: str
+    wood_type: str
+    bin_number: str
+
+class LogQualityControlCreate(LogQualityControlBase):
+    logs: List[LogInspectionCreate] = []
+
+class LogQualityControlResponse(LogQualityControlBase):
+    id: int
+    timestamp: datetime
+    logs: List[LogInspectionResponse] = []
+    
+    class Config:
+        from_attributes = True
+
+# --- Truck Study Schemas ---
+
+class TruckStudyDefectBase(BaseModel):
+    defect_name: str
+    count: int
+
+class TruckStudyDefectCreate(TruckStudyDefectBase):
+    pass
+
+class TruckStudyDefectResponse(TruckStudyDefectBase):
+    id: int
+    study_id: int
+    
+    class Config:
+        from_attributes = True
+
+class TruckStudyBase(BaseModel):
+    reception_date: date
+    cutting_date: date
+    guide_number: str
+    estate: str
+    logging_team: str
+    total_logs: int
+    responsible: str
+
+class TruckStudyCreate(TruckStudyBase):
+    defects: List[TruckStudyDefectCreate] = []
+
+class TruckStudyResponse(TruckStudyBase):
+    id: int
+    timestamp: datetime
+    defects: List[TruckStudyDefectResponse] = []
+    
+    class Config:
+        from_attributes = True
+
+# --- Siniestrada Study Schemas ---
+
+class SiniestradaStudyBase(BaseModel):
+    date: date
+    time: str
+    area: str
+    shift: str
+    journey: str
+    screen: str
+    total_weight: float
+    burnt_bark_weight: float
+    burnt_cambium_weight: float
+    burnt_wood_weight: float
+    soot_chip_weight: float
+    pulpable_chip_weight: float
+    responsible: str
+
+class SiniestradaStudyCreate(SiniestradaStudyBase):
+    pass
+
+class SiniestradaStudyResponse(SiniestradaStudyBase):
+    id: int
+    timestamp: datetime
+    
+    class Config:
+        from_attributes = True
 

@@ -1,13 +1,26 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>frontend</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+
+<meta charset="UTF-8" />
+<link rel="icon" type="image/svg+xml" href="/vite.svg" />
+<link rel="manifest" href="/manifest.json" />
+<meta name="viewport"
+  content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#5F5953" />
+<title>Grading App</title>
+</head>
+
+<body>
+  <div id="root"></div>
+  <script>
+    window.onerror = function (message, source, lineno, colno, error) {
+      alert('Error: ' + message + '\nSource: ' + source + '\nLine: ' + lineno);
+    };
+    window.addEventListener('unhandledrejection', function (event) {
+      alert('Unhandled Rejection: ' + event.reason);
+    });
+  </script>
+  <script type="module" src="/src/main.jsx"></script>
+</body>
+
 </html>

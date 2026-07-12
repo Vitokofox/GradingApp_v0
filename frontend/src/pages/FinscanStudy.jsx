@@ -10,6 +10,7 @@ import {
     ArrowRight, Save, Database, Activity, RefreshCw, Printer
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getLocalISODate, formatSpanishDate } from '../utils/dataUtils';
 
 export default function FinscanStudy() {
     const { user } = useAuth();
@@ -113,7 +114,7 @@ export default function FinscanStudy() {
         try {
             const newStudy = await createScannerStep({
                 ...formData,
-                date: new Date().toISOString()
+                date: getLocalISODate()
             });
             await loadStudies();
             setActiveStudy(newStudy);
@@ -196,7 +197,7 @@ export default function FinscanStudy() {
                                 <div>
                                     <h3 className="ga-card__title">{study.product_name}</h3>
                                     <div className="u-flex u-gap-4 u-muted u-mt-2" style={{ fontSize: '0.875rem' }}>
-                                        <span>📅 {new Date(study.date).toLocaleDateString()}</span>
+                                        <span>📅 {formatSpanishDate(study.date)}</span>
                                         <span>👤 {study.responsible}</span>
                                         <span>🏭 {study.shift}</span>
                                     </div>

@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { Layers, Activity, AlertTriangle, ArrowRight } from 'lucide-react';
+import { Layers, Activity, AlertTriangle, ArrowRight, Scissors, Truck, Cpu } from 'lucide-react';
 
 const Dashboard = () => {
     const { user } = useAuth();
@@ -40,7 +40,47 @@ const Dashboard = () => {
             icon: Activity, // Reusing Activity or import Scan from lucide-react if available. Activity is imported.
             color: 'from-purple-500 to-pink-500',
             path: '/process/finscan'
-        }
+        },
+        {
+            id: 'broken-pieces',
+            title: 'Estudio Piezas Quebradas',
+            description: 'Registro de pérdidas de rendimiento por piezas rotas',
+            icon: Scissors,
+            color: 'from-red-500 to-orange-500',
+            path: '/process/broken-pieces'
+        },
+        {
+            id: 'log-quality',
+            title: 'Control Calidad Trozos',
+            description: 'Inspección y registro de defectos en trozos',
+            icon: Activity,
+            color: 'from-cyan-500 to-blue-500',
+            path: '/process/log-quality'
+        },
+        {
+            id: 'truck-study',
+            title: 'Estudio Camión',
+            description: 'Control de recepción, guía y cantidad por camión',
+            icon: Truck,
+            color: 'from-orange-500 to-red-500',
+            path: '/process/truck-study'
+        },
+        {
+            id: 'siniestrada-study',
+            title: 'Estudio Astilla Siniestrada',
+            description: 'Análisis de calidad y recuperación de astilla quemada',
+            icon: Activity,
+            color: 'from-orange-600 to-red-600',
+            path: '/process/siniestrada-study'
+        },
+        {
+            id: 'ia-normas-estudios',
+            title: 'IA Normas y Estudios',
+            description: 'Consulta documental asistida para normas y criterios de calidad',
+            icon: Cpu,
+            color: 'from-slate-600 to-slate-800',
+            path: '/ia-normas-estudios'
+        },
     ];
 
     const processColor = user?.process_type === 'Seco' ? 'text-amber-400' : 'text-emerald-400';
@@ -81,7 +121,7 @@ const Dashboard = () => {
                         <div className="ga-card__body ga-stack">
                             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                                 <div style={{
-                                    width: '48px', height: '48px', borderRadius: '12px',
+                                    width: '48px', height: '48px', borderRadius: 'var(--ga-radius-sm)',
                                     background: 'var(--ga-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center'
                                 }}>
                                     <activity.icon size={24} color="var(--ga-accent)" />
