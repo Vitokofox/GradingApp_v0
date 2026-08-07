@@ -114,6 +114,35 @@ class InspectionResultResponse(InspectionResultBase):
     class Config:
         from_attributes = True
 
+
+class MoistureReadingResponse(BaseModel):
+    id: int
+    capture_id: int
+    inspection_id: int
+    device_record_number: int
+    moisture_percent: float
+    captured_at: datetime
+    raw_line: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
+
+class MoistureCaptureResponse(BaseModel):
+    id: int
+    inspection_id: int
+    started_at: datetime
+    completed_at: Optional[datetime] = None
+    status: str
+    serial_port: str
+    serial_settings: str
+    raw_payload: Optional[str] = None
+    error_message: Optional[str] = None
+    readings: List[MoistureReadingResponse] = []
+
+    class Config:
+        from_attributes = True
+
 # --- User Schemas ---
 
 class UserBase(BaseModel):
@@ -373,4 +402,3 @@ class SiniestradaStudyResponse(SiniestradaStudyBase):
     
     class Config:
         from_attributes = True
-

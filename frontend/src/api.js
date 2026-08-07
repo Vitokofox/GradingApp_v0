@@ -6,7 +6,7 @@ import axios from 'axios';
 // Configure axios base URL
 // In production, we leave baseURL empty so it automatically uses the current host and port smoothly.
 const api = axios.create({
-    baseURL: import.meta.env.MODE === 'development' ? 'http://127.0.0.1:8000' : '',
+    baseURL: import.meta.env.MODE === 'development' ? 'http://127.0.0.1:8001' : '',
 });
 
 // Interceptor para asegurar que usamos el último token si está en localStorage (redundante si AuthContext establece globales, pero seguro)
@@ -225,6 +225,22 @@ export const updateInspectionResult = async (resultId, piecesCount) => {
     }
 };
 
+// --- Wagner L622 ---
+export const startMoistureCapture = async (inspectionId) => {
+    const response = await api.post(`/api/inspections/${inspectionId}/moisture/captures`);
+    return response.data;
+};
+
+export const getMoistureCapture = async (captureId) => {
+    const response = await api.get(`/api/moisture/captures/${captureId}`);
+    return response.data;
+};
+
+export const getInspectionMoistureReadings = async (inspectionId) => {
+    const response = await api.get(`/api/inspections/${inspectionId}/moisture/readings`);
+    return response.data;
+};
+
 // --- API de Estudio de Piezas Quebradas ---
 export const getBrokenPieceStudies = async () => {
     const response = await api.get('/broken-pieces/');
@@ -414,5 +430,3 @@ export const deleteSiniestradaStudy = async (id) => {
 };
 
 export default api;
-
-

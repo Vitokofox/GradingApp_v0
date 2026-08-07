@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getInspection, getGradesByProduct, addInspectionResult, getProducts, getInspectionResults, syncInspectionResults, getDefects } from '../api';
+import { getInspection, getGradesByProduct, addInspectionResult, getProducts, getInspectionResults, syncInspectionResults, getDefects, startMoistureCapture, getMoistureCapture, getInspectionMoistureReadings } from '../api';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle, ChevronRight, ChevronDown, Save, Search, PlayCircle, PlusCircle, Trash2 } from 'lucide-react';
+import { CheckCircle, ChevronRight, ChevronDown, Save, Search, PlayCircle, PlusCircle, Trash2, Droplets, Radio } from 'lucide-react';
 
 export default function GradingInterface() {
     const { id } = useParams();
@@ -13,6 +13,9 @@ export default function GradingInterface() {
     const [stats, setStats] = useState({});
     const [showFinishModal, setShowFinishModal] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
+    const [moistureReadings, setMoistureReadings] = useState([]);
+    const [moistureCapture, setMoistureCapture] = useState(null);
+    const [moistureBusy, setMoistureBusy] = useState(false);
 
     // View state
     const [activeGradeId, setActiveGradeId] = useState(null);
@@ -80,6 +83,12 @@ export default function GradingInterface() {
             // Cargar resultados existentes
             const results = await getInspectionResults(id);
 
+            try {
+                setMoistureReadings(await getInspectionMoistureReadings(id));
+            } catch (e) {
+                console.error("Error loading moisture readings", e);
+            }
+
             results.forEach(r => {
                 if (initialStats[r.grade_id]) {
                     initialStats[r.grade_id].total += r.pieces_count;
@@ -123,6 +132,37 @@ export default function GradingInterface() {
 
         } catch (error) {
             console.error("Error loading context", error);
+        }
+    };
+
+    useEffect(() => {
+        if (!moistureCapture || ['completed', 'no_data', 'error'].includes(moistureCapture.status)) return undefined;
+        const timer = window.setInterval(async () => {
+            try {
+                const current = await getMoistureCapture(moistureCapture.id);
+                setMoistureCapture(current);
+                if (['completed', 'no_data', 'error'].includes(current.status)) {
+                    setMoistureReadings(await getInspectionMoistureReadings(id));
+                    setMoistureBusy(false);
+                }
+            } catch (error) {
+                console.error("Error checking moisture capture", error);
+                setMoistureBusy(false);
+            }
+        }, 1000);
+        return () => window.clearInterval(timer);
+    }, [moistureCapture, id]);
+
+    const handleMoistureCapture = async () => {
+        if (moistureBusy) return;
+        setMoistureBusy(true);
+        try {
+            const capture = await startMoistureCapture(id);
+            setMoistureCapture(capture);
+        } catch (error) {
+            setMoistureBusy(false);
+            const detail = error.response?.data?.detail || error.message;
+            alert(`No se pudo iniciar la captura L622: ${detail}`);
         }
     };
 
@@ -475,6 +515,35 @@ export default function GradingInterface() {
                 <div style={{ flex: 1, padding: '2rem', overflowY: 'auto' }}>
                     <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
 
+                        <div className="ga-card" style={{ borderLeft: '4px solid var(--ga-primary)' }}>
+                            <div className="ga-card__header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                    <Droplets size={22} color="var(--ga-primary)" />
+                                    <div>
+                                        <h3 className="u-bold">Humedad Wagner L622</h3>
+                                        <p className="u-muted" style={{ fontSize: '0.8rem' }}>Puerto serial: /dev/ttyUSB0 · 9600 8N1</p>
+                                    </div>
+                                </div>
+                                <button onClick={handleMoistureCapture} disabled={moistureBusy} className="ga-btn ga-btn--primary">
+                                    <Radio size={17} /> {moistureBusy ? 'Capturando...' : 'Capturar L622'}
+                                </button>
+                            </div>
+                            <div className="ga-card__body">
+                                {moistureBusy && <p className="u-muted">Ahora seleccione <strong>MENU → Print → STORE</strong> en el L622. La captura permanece activa durante 8 segundos.</p>}
+                                {moistureCapture?.status === 'no_data' && <p style={{ color: 'var(--ga-warning)' }}>No se recibieron datos. Verifique el cable y vuelva a intentar.</p>}
+                                {moistureCapture?.status === 'error' && <p style={{ color: 'var(--ga-danger)' }}>{moistureCapture.error_message}</p>}
+                                {moistureReadings.length > 0 && (
+                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginTop: '0.75rem' }}>
+                                        {moistureReadings.map(reading => (
+                                            <div key={reading.id} className="ga-badge ga-badge--ok">
+                                                Registro {reading.device_record_number}: <strong>{reading.moisture_percent}%</strong>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
                         {displayedGrades.map(grade => {
                             const isBase = baseGrade && grade.id === baseGrade.id;
 
@@ -664,4 +733,3 @@ export default function GradingInterface() {
         </div>
     );
 }
-

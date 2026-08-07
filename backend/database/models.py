@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, Date, DateTime, Float, Table
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, Date, DateTime, Float, Table, UniqueConstraint
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from .database import Base
@@ -123,6 +123,40 @@ class InspectionResult(Base):
 
 # Extender Inspección para enlazar resultados
 Inspection.results = relationship("InspectionResult", back_populates="inspection")
+
+
+class MoistureCapture(Base):
+    __tablename__ = "moisture_captures"
+
+    id = Column(Integer, primary_key=True, index=True)
+    inspection_id = Column(Integer, ForeignKey("inspections.id"), nullable=False, index=True)
+    started_at = Column(DateTime, default=datetime.now)
+    completed_at = Column(DateTime, nullable=True)
+    status = Column(String, nullable=False, default="capturing")
+    serial_port = Column(String, nullable=False)
+    serial_settings = Column(String, nullable=False)
+    raw_payload = Column(String, nullable=True)
+    error_message = Column(String, nullable=True)
+    created_by = Column(Integer, ForeignKey("users.id"), nullable=True)
+
+    readings = relationship("MoistureReading", back_populates="capture", cascade="all, delete-orphan")
+
+
+class MoistureReading(Base):
+    __tablename__ = "moisture_readings"
+    __table_args__ = (UniqueConstraint("capture_id", "device_record_number", "moisture_percent", name="uq_moisture_capture_reading"),)
+
+    id = Column(Integer, primary_key=True, index=True)
+    capture_id = Column(Integer, ForeignKey("moisture_captures.id"), nullable=False, index=True)
+    inspection_id = Column(Integer, ForeignKey("inspections.id"), nullable=False, index=True)
+    device_record_number = Column(Integer, nullable=False)
+    moisture_percent = Column(Float, nullable=False)
+    captured_at = Column(DateTime, default=datetime.now)
+    raw_line = Column(String, nullable=True)
+
+    capture = relationship("MoistureCapture", back_populates="readings")
+
+
 class ScannerStep(Base):
     __tablename__ = "scanner_steps"
     
@@ -331,3 +365,48 @@ class SiniestradaStudy(Base):
     timestamp = Column(DateTime, default=datetime.now)
     responsible = Column(String)
 
+
+class RollizosImport(Base):
+    __tablename__ = "rollizos_imports"
+
+    id = Column(Integer, primary_key=True, index=True)
+    filename = Column(String, nullable=False)
+    file_hash = Column(String, nullable=False, index=True)
+    source_sheet = Column(String, nullable=False, default="Tablas de datos 2026")
+    status = Column(String, nullable=False, default="processing")
+    rows_read = Column(Integer, default=0)
+    rows_inserted = Column(Integer, default=0)
+    duplicates_skipped = Column(Integer, default=0)
+    invalid_rows = Column(Integer, default=0)
+    error_message = Column(String, nullable=True)
+    created_at = Column(DateTime, default=datetime.now)
+
+    records = relationship("DatosAntiguedad", back_populates="import_batch")
+
+
+class DatosAntiguedad(Base):
+    __tablename__ = "datos_antiguedad"
+    __table_args__ = (UniqueConstraint("business_key", name="uq_datos_antiguedad_business_key"),)
+
+    id = Column(Integer, primary_key=True, index=True)
+    import_id = Column(Integer, ForeignKey("rollizos_imports.id"), nullable=True, index=True)
+    business_key = Column(String, nullable=False, index=True)
+    folio = Column(String, nullable=False, index=True)
+    serie = Column(String, nullable=False, index=True)
+    secuencia = Column(String, nullable=True)
+    cod_producto = Column(String, nullable=True)
+    fecha_recepcion = Column(DateTime, nullable=True, index=True)
+    fecha_corta = Column(DateTime, nullable=True)
+    year = Column(Integer, nullable=True, index=True)
+    month = Column(String, nullable=True, index=True)
+    month_number = Column(Integer, nullable=True, index=True)
+    product_length = Column(Float, nullable=True, index=True)
+    age_days = Column(Float, nullable=True)
+    age_bucket = Column(String, nullable=True, index=True)
+    wood_state = Column(String, nullable=True, index=True)
+    zone = Column(String, nullable=True, index=True)
+    origin = Column(String, nullable=True, index=True)
+    destination = Column(String, nullable=True, index=True)
+    weight = Column(Float, nullable=True)
+
+    import_batch = relationship("RollizosImport", back_populates="records")

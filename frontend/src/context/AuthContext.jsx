@@ -9,7 +9,7 @@ export const AuthProvider = ({ children }) => {
 
     // Configure axios base URL
     // In production, we leave baseURL empty so it automatically uses the current host and port smoothly.
-    axios.defaults.baseURL = import.meta.env.MODE === 'development' ? 'http://127.0.0.1:8000' : '';
+    axios.defaults.baseURL = import.meta.env.MODE === 'development' ? 'http://127.0.0.1:8001' : '';
 
     useEffect(() => {
         const token = localStorage.getItem('token');

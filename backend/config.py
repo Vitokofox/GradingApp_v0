@@ -35,7 +35,11 @@ class Settings:
         elif self._configured_url:
             primary_url = self._configured_url
             
-        local_fallback = f"sqlite:///{os.path.join(BASE_DIR, 'grading.db')}"
+        local_db = os.path.join(BASE_DIR, "grading.db")
+        legacy_db = os.path.join(BASE_DIR, "database", "grading.db")
+        # Preserve the existing database location. Only the primary path is
+        # created later by SQLAlchemy when neither location exists.
+        local_fallback = f"sqlite:///{local_db if os.path.exists(local_db) or not os.path.exists(legacy_db) else legacy_db}"
         
         if primary_url:
             # Extract the raw file path from the sqlite URL

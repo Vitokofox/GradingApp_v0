@@ -28,6 +28,7 @@ import SiniestradaStudy from './pages/SiniestradaStudy';
 import SiniestradaReport from './pages/SiniestradaReport';
 import IANormasEstudios from './pages/IANormasEstudios';
 import QualityAssistantFloating from './components/QualityAssistantFloating';
+import RollizosReport from './pages/RollizosReport';
 
 function App() {
   return (
@@ -146,6 +147,14 @@ function App() {
             <PrivateRoute>
               <Layout>
                 <GlobalReport />
+              </Layout>
+            </PrivateRoute>
+          } />
+
+          <Route path="/rollizos-report" element={
+            <PrivateRoute>
+              <Layout>
+                <RollizosReport />
               </Layout>
             </PrivateRoute>
           } />

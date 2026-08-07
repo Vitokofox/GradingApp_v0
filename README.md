@@ -51,8 +51,8 @@ El proyecto incluye scripts automatizados para Windows.
     ```cmd
     run_app.bat
     ```
-    *   Frontend: [http://localhost:5173](http://localhost:5173)
-    *   Backend API Docs: [http://localhost:8000/docs](http://localhost:8000/docs)
+     *   Frontend: [http://localhost:5174](http://localhost:5174)
+     *   Backend API Docs: [http://localhost:8001/docs](http://localhost:8001/docs)
 
 3.  **Detener la Aplicación**:
     ```cmd
@@ -69,7 +69,7 @@ venv\Scripts\activate
 pip install -r requirements.txt
 python main.py
 ```
-El backend correrá en el puerto **8000**.
+El backend correrá en el puerto **8001**.
 
 ### Frontend
 ```bash
@@ -77,13 +77,13 @@ cd frontend
 npm install
 npm run dev
 ```
-El frontend correrá en el puerto **5173** por defecto.
+El frontend correrá en el puerto **5174**.
 
 ## Configuración
 
 *   **Variables de Entorno**:
     *   Backend: Revisar `backend/.env` para configuración de CORS, SECRET_KEY, y base de datos.
-    *   Frontend: Configurado para conectar a `http://127.0.0.1:8000` por defecto.
+     *   Frontend: Configurado para conectar a `http://127.0.0.1:8001` por defecto.
 *   **Despliegue compartido (recomendado en planta)**:
     *   Puede centralizar recursos en una carpeta de red compartida para todos los usuarios.
     *   En `backend/.env`:
@@ -102,3 +102,7 @@ El frontend correrá en el puerto **5173** por defecto.
 ## Soporte
 
 Para dudas técnicas o reporte de fallos, contactar al equipo de desarrollo del Departamento de Mejora Continua.
+
+## Wagner L622
+
+La aplicación puede capturar directamente los reportes del Wagner L622 mediante RS-232. Instala las dependencias del backend y conecta el adaptador USB; en Linux se usa `/dev/ttyUSB0` y en Windows puede configurarse `WAGNER_SERIAL_PORT=COM3`. Desde una inspección activa, pulsa `Capturar L622` y luego ejecuta `MENU -> Print -> STORE` en el equipo. Las lecturas quedan asociadas a la inspección y se conserva el reporte serial original.

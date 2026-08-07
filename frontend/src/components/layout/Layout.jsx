@@ -34,6 +34,9 @@ const Layout = ({ children }) => {
                                     <Link to="/global-report" className="u-text-sm u-bold" style={{ color: 'rgba(255,255,255,0.8)' }}>
                                         Reporte
                                     </Link>
+                                    <Link to="/rollizos-report" className="u-text-sm u-bold" style={{ color: 'rgba(255,255,255,0.8)' }}>
+                                        Antigüedad
+                                    </Link>
                                     <Link to="/ia-normas-estudios" className="u-text-sm u-bold" style={{ color: 'rgba(255,255,255,0.8)' }}>
                                         IA Normas y Estudios
                                     </Link>

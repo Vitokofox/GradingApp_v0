@@ -266,55 +266,6 @@ const GlobalReport = () => {
         downloadInspectionDetailsCsv(params);
     };
 
-    // Process Trend 12M Data
-    const rollingTrend12m = React.useMemo(() => {
-        if (!stats || !Array.isArray(stats.trend_12m)) return [];
-        return stats.trend_12m.map((row) => ({
-            ...row,
-            month: row.label || row.month_key,
-            quality_pct: row.total_pieces > 0 ? parseFloat((100 - row.defect_rate).toFixed(2)) : 0,
-        }));
-    }, [stats]);
-
-    // Executive Summary Processor
-    const executiveSummary = React.useMemo(() => {
-        if (!stats) return null;
-
-        const topGrade = (stats.gradeSummary || []).reduce((max, item) => {
-            const nameUpper = String(item.name || '').toUpperCase();
-            if (nameUpper.includes('RECH') || nameUpper.includes('REJ')) return max;
-            return (!max || item.count > max.count) ? item : max;
-        }, null) || (stats.gradeSummary || [])[0] || null;
-        const topDefect = (stats.defectSummary || [])[0] || null;
-        const topProduct = (stats.by_product || [])[0] || null;
-        const totalDefects = (stats.defectSummary || []).reduce((acc, item) => acc + (item.count || 0), 0);
-        const rejectionRate = stats.totalPieces > 0 ? (totalDefects / stats.totalPieces) * 100 : 0;
-
-        const trend = rollingTrend12m.filter((row) => row.total_pieces > 0);
-        let trendLabel = 'Sin tendencia suficiente';
-        if (trend.length >= 6) {
-            const recent = trend.slice(-3).reduce((acc, row) => acc + (row.defect_rate || 0), 0) / 3;
-            const previous = trend.slice(-6, -3).reduce((acc, row) => acc + (row.defect_rate || 0), 0) / 3;
-            const diff = recent - previous;
-            if (Math.abs(diff) < 0.2) {
-                trendLabel = 'Estable';
-            } else if (diff < 0) {
-                trendLabel = 'Mejorando';
-            } else {
-                trendLabel = 'Empeorando';
-            }
-        }
-
-        return {
-            topGrade,
-            topDefect,
-            topProduct,
-            totalDefects,
-            rejectionRate,
-            trendLabel,
-        };
-    }, [stats, rollingTrend12m]);
-
     // Sort and process product-month data for the vertical stacked chart
     const processedProductMonthData = React.useMemo(() => {
         if (!stats || !Array.isArray(stats.grades_by_product_month)) return [];
@@ -330,6 +281,8 @@ const GlobalReport = () => {
         if (!stats || !Array.isArray(stats.gradeSummary)) return [];
         return stats.gradeSummary.map((g) => g.name).filter(Boolean);
     }, [stats]);
+
+    const executiveSummary = null;
 
     // Filter active grades for cogeneration section (non-top quality, non-rejection, having defects)
     const cogenGrades = React.useMemo(() => {
@@ -367,7 +320,7 @@ const GlobalReport = () => {
         const gradeData = stats?.defectsByGrade?.[grade] || { total: 0, defects: {} };
         const chartData = Object.entries(gradeData.defects || {})
             .map(([name, count]) => {
-                const pct = gradeData.total > 0 ? ((count / gradeData.total) * 100).toFixed(1) : '0';
+                const pct = stats.totalPieces > 0 ? ((count / stats.totalPieces) * 100).toFixed(1) : '0';
                 return {
                     name,
                     count,
@@ -459,7 +412,7 @@ const GlobalReport = () => {
             {/* Header */}
             <header className="u-mb-6" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
                 <div>
-                    <h1 className="u-text-2xl u-bold u-mb-2" style={{ color: 'var(--ga-primary)' }}>Reporte Global</h1>
+                    <h1 className="u-text-2xl u-bold u-mb-2" style={{ color: 'var(--ga-primary)' }}>Reporte de Inspecciones Grading</h1>
                     <p className="u-text-gray-500">Resumen del universo total de inspecciones.</p>
                 </div>
                 <div className="u-flex u-gap-2">
@@ -483,8 +436,12 @@ const GlobalReport = () => {
             </header>
 
             {/* Filters Bar */}
-            <div className="ga-card u-mb-4 u-p-3">
-                <form onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '1rem', alignItems: 'end' }}>
+            <div className="ga-card u-mb-4" style={{ overflow: 'hidden' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.8rem 1.25rem', background: '#f8fafc', borderBottom: '1px solid #dbe3ee', color: '#1e3a5f' }}>
+                    <Filter size={16} color="#00968F" />
+                    <h2 style={{ margin: 0, fontSize: '0.8rem', fontWeight: 800, textTransform: 'uppercase' }}>Filtros de búsqueda</h2>
+                </div>
+                <form onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem 1.25rem', padding: '1.25rem 1.25rem 1.1rem', alignItems: 'end' }}>
                     {/* Date Range */}
                     <div className="u-flex u-flex-col u-gap-1">
                         <label className="u-text-2xs u-bold u-uppercase u-text-gray-500">Desde</label>
@@ -662,7 +619,8 @@ const GlobalReport = () => {
 
                     {/* Submit & Reset Buttons */}
                     <div className="u-flex u-gap-2">
-                        <button type="submit" className="ga-btn ga-btn--primary u-w-full u-text-xs u-py-2">
+                        <button type="submit" className="ga-btn ga-btn--primary u-text-xs u-py-2" style={{ minWidth: '118px' }}>
+                            <Filter size={14} />
                             Generar
                         </button>
                         <button
@@ -695,7 +653,7 @@ const GlobalReport = () => {
             {stats && !loading && (
                 <div className="ga-card" style={{ background: 'white', padding: 0, overflow: 'hidden' }}>
                     {/* Header Summary */}
-                    <div style={{ background: 'var(--ga-primary)', padding: '1.5rem', color: 'white' }}>
+                    <div style={{ display: 'none', background: 'var(--ga-primary)', padding: '1.5rem', color: 'white' }}>
                         <div className="u-text-white" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem' }}>
                             <div>
                                 <div className="u-text-2xs u-bold u-uppercase u-opacity-70">Total Inspecciones</div>
@@ -786,7 +744,7 @@ const GlobalReport = () => {
                                     Distribución de Grados
                                 </h3>
                             </div>
-                            <div style={{ padding: '1.5rem' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 320px', gap: '1.5rem', padding: '1.5rem', alignItems: 'start' }}>
                                 {processedProductMonthData.length === 0 ? (
                                     <div style={{ textAlign: 'center', padding: '3rem', color: '#94a3b8', fontStyle: 'italic' }}>
                                         No hay datos suficientes para graficar la distribución.
@@ -794,7 +752,7 @@ const GlobalReport = () => {
                                 ) : (
                                     <div style={{ width: '100%', overflowX: 'auto', paddingBottom: '1rem' }}>
                                         <BarChart 
-                                            width={1000}
+                                            width={920}
                                             height={350}
                                             data={processedProductMonthData} 
                                             stackOffset="expand"
@@ -847,6 +805,32 @@ const GlobalReport = () => {
                                         </BarChart>
                                     </div>
                                 )}
+                                <div style={{ border: '1px solid #dbe3ee', borderRadius: '8px', background: '#f8fafc', overflow: 'hidden' }}>
+                                    <div style={{ padding: '0.85rem 1rem', borderBottom: '1px solid #dbe3ee', color: '#1e3a5f', fontSize: '0.8rem', fontWeight: 800, textTransform: 'uppercase' }}>
+                                        Resumen de grados
+                                    </div>
+                                    <div style={{ maxHeight: '285px', overflowY: 'auto', padding: '0.5rem 0.75rem' }}>
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 70px 45px', gap: '0.5rem', padding: '0.55rem 0.25rem', borderBottom: '1px solid #dbe3ee', color: '#64748b', fontSize: '0.72rem', fontWeight: 700 }}>
+                                            <span>Grado</span>
+                                            <span style={{ textAlign: 'right' }}>Piezas</span>
+                                            <span style={{ textAlign: 'right' }}>%</span>
+                                        </div>
+                                        {stats.gradeSummary.map((grade, idx) => (
+                                            <div key={grade.name} style={{ display: 'grid', gridTemplateColumns: '1fr 70px 45px', gap: '0.5rem', alignItems: 'center', padding: '0.62rem 0.25rem', borderBottom: '1px solid #e8edf3', fontSize: '0.78rem', color: '#1e3a5f' }}>
+                                                <span style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', minWidth: 0 }}>
+                                                    <span style={{ width: '12px', height: '12px', flex: '0 0 12px', borderRadius: '50%', background: getGradeColor(grade.name, idx) }} />
+                                                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{grade.name}</span>
+                                                </span>
+                                                <strong style={{ textAlign: 'right' }}>{grade.count.toLocaleString()}</strong>
+                                                <span style={{ textAlign: 'right', color: '#475569' }}>{grade.percentage.toFixed(1)}%</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.8rem 1rem', borderTop: '1px solid #cbd5e1', color: '#1e3a5f', fontSize: '0.8rem', fontWeight: 800 }}>
+                                        <span>Total Piezas</span>
+                                        <span>{stats.totalPieces.toLocaleString()}</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 

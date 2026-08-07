@@ -6,7 +6,7 @@ import os
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from database import models, database
-from routers import registry, auth, users, master_data, scanner, exports, broken_pieces, log_inspections, data_sync, reports, truck_studies, siniestrada_studies, ia_documental
+from routers import registry, auth, users, master_data, scanner, exports, broken_pieces, log_inspections, data_sync, reports, truck_studies, siniestrada_studies, ia_documental, rollizos, moisture
 from config import settings
 from loguru import logger
 import sys
@@ -63,6 +63,8 @@ app.include_router(reports.router)
 app.include_router(truck_studies.router)
 app.include_router(siniestrada_studies.router)
 app.include_router(ia_documental.router)
+app.include_router(rollizos.router)
+app.include_router(moisture.router)
 
 
 
@@ -106,5 +108,3 @@ async def serve_react_app(full_path: str):
     if os.path.exists(index_path):
         return FileResponse(index_path)
     return {"error": "File not found"}
-
-
