@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getInspection, getGradesByProduct, addInspectionResult, getProducts, getInspectionResults, syncInspectionResults, getDefects, startMoistureCapture, getMoistureCapture, getInspectionMoistureReadings } from '../api';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle, ChevronRight, ChevronDown, Save, Search, PlayCircle, PlusCircle, Trash2, Droplets, Radio } from 'lucide-react';
+import { CheckCircle, ChevronRight, ChevronDown, Save, Search, PlayCircle, PlusCircle, Trash2, Droplets, Radio, AlertTriangle } from 'lucide-react';
+import QualityAlertModal from '../components/QualityAlertModal';
 
 export default function GradingInterface() {
     const { id } = useParams();
@@ -12,10 +13,14 @@ export default function GradingInterface() {
     const [grades, setGrades] = useState([]);
     const [stats, setStats] = useState({});
     const [showFinishModal, setShowFinishModal] = useState(false);
+    const [showQualityAlert, setShowQualityAlert] = useState(false);
+    const [finishAfterQualityAlert, setFinishAfterQualityAlert] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [moistureReadings, setMoistureReadings] = useState([]);
     const [moistureCapture, setMoistureCapture] = useState(null);
     const [moistureBusy, setMoistureBusy] = useState(false);
+    const [moistureCaptureResult, setMoistureCaptureResult] = useState(null);
+    const moistureCountBeforeCapture = useRef(0);
 
     // View state
     const [activeGradeId, setActiveGradeId] = useState(null);
@@ -142,7 +147,14 @@ export default function GradingInterface() {
                 const current = await getMoistureCapture(moistureCapture.id);
                 setMoistureCapture(current);
                 if (['completed', 'no_data', 'error'].includes(current.status)) {
-                    setMoistureReadings(await getInspectionMoistureReadings(id));
+                    const updatedReadings = await getInspectionMoistureReadings(id);
+                    setMoistureReadings(updatedReadings);
+                    if (current.status === 'completed') {
+                        setMoistureCaptureResult({
+                            total: updatedReadings.length,
+                            added: Math.max(0, updatedReadings.length - moistureCountBeforeCapture.current),
+                        });
+                    }
                     setMoistureBusy(false);
                 }
             } catch (error) {
@@ -155,6 +167,8 @@ export default function GradingInterface() {
 
     const handleMoistureCapture = async () => {
         if (moistureBusy) return;
+        moistureCountBeforeCapture.current = moistureReadings.length;
+        setMoistureCaptureResult(null);
         setMoistureBusy(true);
         try {
             const capture = await startMoistureCapture(id);
@@ -347,15 +361,35 @@ export default function GradingInterface() {
         try {
             await syncInspectionResults(id, resultsToSync);
             alert("Inspección guardada correctamente.");
+            return true;
         } catch (error) {
             console.error("Save error", error);
             alert("Error al guardar la inspección.");
+            return false;
         }
     };
 
     const handleFinish = async () => {
-        await handleSaveInspection();
-        navigate('/');
+        const saved = await handleSaveInspection();
+        if (saved) navigate('/');
+    };
+
+    const handleQualityAlertClose = () => {
+        setShowQualityAlert(false);
+        setFinishAfterQualityAlert(false);
+    };
+
+    const handleQualityAlertSaved = async (qualityAlert, updatedInspection) => {
+        if (updatedInspection) {
+            setInspection(updatedInspection);
+        } else {
+            setInspection(current => ({ ...current, quality_alert: qualityAlert }));
+        }
+        if (finishAfterQualityAlert) {
+            setShowQualityAlert(false);
+            setFinishAfterQualityAlert(false);
+            await handleFinish();
+        }
     };
 
     // Filter Logic
@@ -371,6 +405,15 @@ export default function GradingInterface() {
 
     return (
         <div className="ga-app" style={{ height: '100vh', overflow: 'hidden', flexDirection: 'row' }}>
+
+            {showQualityAlert && (
+                <QualityAlertModal
+                    inspection={inspection}
+                    editable
+                    onClose={handleQualityAlertClose}
+                    onSaved={handleQualityAlertSaved}
+                />
+            )}
 
             <AnimatePresence>
                 {showFinishModal && (
@@ -414,6 +457,18 @@ export default function GradingInterface() {
                                 <button onClick={handleFinish} className="ga-btn ga-btn--primary ga-btn--lg" style={{ width: '100%', justifyContent: 'center' }}>
                                     Confirmar y Salir
                                 </button>
+                                {(inspection.type === 'finished_product' || inspection.type === 'line_grading') && (
+                                    <button
+                                        onClick={() => {
+                                            setFinishAfterQualityAlert(true);
+                                            setShowQualityAlert(true);
+                                        }}
+                                        className="ga-btn ga-btn--secondary ga-btn--lg"
+                                        style={{ width: '100%', justifyContent: 'center' }}
+                                    >
+                                        <AlertTriangle size={18} /> Confirmar y Generar Alerta
+                                    </button>
+                                )}
                                 <button onClick={() => setShowFinishModal(false)} className="ga-btn ga-btn--outline" style={{ width: '100%', justifyContent: 'center' }}>
                                     Volver
                                 </button>
@@ -532,6 +587,11 @@ export default function GradingInterface() {
                                 {moistureBusy && <p className="u-muted">Ahora seleccione <strong>MENU → Print → STORE</strong> en el L622. La captura permanece activa durante 8 segundos.</p>}
                                 {moistureCapture?.status === 'no_data' && <p style={{ color: 'var(--ga-warning)' }}>No se recibieron datos. Verifique el cable y vuelva a intentar.</p>}
                                 {moistureCapture?.status === 'error' && <p style={{ color: 'var(--ga-danger)' }}>{moistureCapture.error_message}</p>}
+                                {moistureCapture?.status === 'completed' && moistureCaptureResult && (
+                                    <p style={{ color: 'var(--ga-success)', fontWeight: 700 }}>
+                                        Captura completada: {moistureCaptureResult.total} registros guardados en total ({moistureCaptureResult.added} nuevos).
+                                    </p>
+                                )}
                                 {moistureReadings.length > 0 && (
                                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginTop: '0.75rem' }}>
                                         {moistureReadings.map(reading => (

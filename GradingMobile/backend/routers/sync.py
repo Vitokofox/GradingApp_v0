@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from database import database, models
 from typing import List, Dict, Any
+from services.quality_alerts import quality_alert_dict, save_quality_alert, validate_inspection_subtype
 
 router = APIRouter()
 
@@ -20,7 +21,7 @@ def get_full_dump(db: Session = Depends(database.get_db)):
     catalog_items = db.query(models.CatalogItem).filter(models.CatalogItem.active == True).all()
     
     # Initialize lists
-    for cat in ['shifts', 'journeys', 'areas', 'machines', 'origins', 'states', 'terminations', 'supervisors', 'lengths']:
+    for cat in ['shifts', 'journeys', 'areas', 'machines', 'origins', 'states', 'terminations', 'supervisors', 'operators', 'lengths']:
         data[cat] = []
 
     # Map database categories to JSON keys (plural)
@@ -43,6 +44,7 @@ def get_full_dump(db: Session = Depends(database.get_db)):
         elif 'state' in cat_lower or 'estado' in cat_lower: target_key = 'states'
         elif 'term' in cat_lower: target_key = 'terminations' # termination / terminacion
         elif 'super' in cat_lower: target_key = 'supervisors'
+        elif 'operator' in cat_lower or 'operador' in cat_lower: target_key = 'operators'
         elif 'len' in cat_lower or 'largo' in cat_lower: target_key = 'lengths'
         
         if target_key:
@@ -153,7 +155,9 @@ def get_full_dump(db: Session = Depends(database.get_db)):
             "length": insp.length,
             "pieces_inspected": insp.pieces_inspected,
             "type": insp.type,
-            "results": results
+            "inspection_subtype": insp.inspection_subtype,
+            "results": results,
+            "quality_alert": quality_alert_dict(insp.quality_alert),
         })
 
     return data
@@ -166,6 +170,7 @@ def import_inspections(payload: Dict[str, Any], db: Session = Depends(database.g
     """
     inspections_data = payload.get("inspections", [])
     imported_count = 0
+    imported_alerts = []
     
     for data in inspections_data:
         try:
@@ -219,11 +224,19 @@ def import_inspections(payload: Dict[str, Any], db: Session = Depends(database.g
                 width=str(data.get('width', '')),
                 length=str(data.get('length', '')),
                 pieces_inspected=data.get('pieces_inspected', 0),
-                type=itype
+                type=itype,
+                inspection_subtype=validate_inspection_subtype(data.get('inspection_subtype')),
             )
             
             db.add(new_inspection)
             db.flush() # Generate ID
+            alert = save_quality_alert(db, new_inspection, data.get('quality_alert'))
+            if alert:
+                imported_alerts.append({
+                    'inspection_id': new_inspection.id,
+                    'alert_id': alert.id,
+                    'code': alert.code,
+                })
             
             # 4. Create Results
             results_data = data.get('results', [])
@@ -240,10 +253,8 @@ def import_inspections(payload: Dict[str, Any], db: Session = Depends(database.g
             
         except Exception as e:
             print(f"Error importing inspection: {e}")
-            # Continue with next one? or rollback? 
-            # For bulk, maybe best to try best effort or fail all. 
-            # Let's try best effort but log.
-            pass
+            db.rollback()
+            return {"status": "error", "message": str(e), "imported": 0}
 
     db.commit()
-    return {"status": "success", "imported": imported_count}
+    return {"status": "success", "imported": imported_count, "quality_alerts": imported_alerts}

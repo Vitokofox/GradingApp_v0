@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, Date, DateTime, Float, Table
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, Date, DateTime, Float, Table, Text
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from .database import Base
@@ -82,13 +82,45 @@ class Inspection(Base):
     pieces_inspected = Column(Integer, default=0) # Cantidad planificada
     
     type = Column(String) # Discriminador
+    inspection_subtype = Column(String, nullable=True)
     
     market = relationship("Market", back_populates="inspections")
+    quality_alert = relationship(
+        "QualityAlert", back_populates="inspection", uselist=False,
+        cascade="all, delete-orphan"
+    )
     
     __mapper_args__ = {
         "polymorphic_on": type,
         "polymorphic_identity": "inspection",
     }
+
+class QualityAlert(Base):
+    __tablename__ = "quality_alerts"
+
+    id = Column(Integer, primary_key=True, index=True)
+    inspection_id = Column(Integer, ForeignKey("inspections.id"), nullable=False, unique=True, index=True)
+    code = Column(String, nullable=False, unique=True, index=True)
+    created_at = Column(DateTime, nullable=False, default=datetime.now)
+    alert_type = Column(String, nullable=False, default="Defecto de procesos")
+    operator = Column(String, nullable=False)
+    reason = Column(Text, nullable=False)
+    observations = Column(Text, nullable=True)
+
+    inspection = relationship("Inspection", back_populates="quality_alert")
+    photos = relationship(
+        "QualityAlertPhoto", back_populates="quality_alert",
+        cascade="all, delete-orphan", order_by="QualityAlertPhoto.id"
+    )
+
+class QualityAlertPhoto(Base):
+    __tablename__ = "quality_alert_photos"
+
+    id = Column(Integer, primary_key=True, index=True)
+    quality_alert_id = Column(Integer, ForeignKey("quality_alerts.id"), nullable=False, index=True)
+    image_data = Column(Text, nullable=False)
+
+    quality_alert = relationship("QualityAlert", back_populates="photos")
 
 class FinishedProductInspection(Inspection):
     __mapper_args__ = {
@@ -282,4 +314,3 @@ class LogInspection(Base):
     other = Column(String, nullable=True)          # Otro
     
     control = relationship("LogQualityControl", back_populates="logs")
-

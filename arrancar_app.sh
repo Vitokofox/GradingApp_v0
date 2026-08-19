@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
+export PATH="$HOME/.local/bin:$PATH"
+
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BACKEND_DIR="$ROOT_DIR/backend"
 FRONTEND_DIR="$ROOT_DIR/frontend"
@@ -15,6 +17,11 @@ if [[ ! -x "$FRONTEND_DIR/node_modules/.bin/vite" ]]; then
     printf '%s\n' 'Faltan las dependencias del frontend. Ejecuta ./instalar_dependencias.sh primero.' >&2
     exit 1
 fi
+
+(
+    cd "$BACKEND_DIR"
+    "$PYTHON_BIN" -m alembic upgrade head
+)
 
 backend_pid=""
 frontend_pid=""

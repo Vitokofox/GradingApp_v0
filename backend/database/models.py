@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, Date, DateTime, Float, Table, UniqueConstraint
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, Date, DateTime, Float, Index, Table, Text, UniqueConstraint
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from .database import Base
@@ -83,13 +83,45 @@ class Inspection(Base):
     
     type = Column(String) # Discriminador
     process = Column(String, nullable=True) # Proceso: Verde, Seco, General, Admin
+    inspection_subtype = Column(String, nullable=True)
     
     market = relationship("Market", back_populates="inspections")
+    quality_alert = relationship(
+        "QualityAlert", back_populates="inspection", uselist=False,
+        cascade="all, delete-orphan"
+    )
     
     __mapper_args__ = {
         "polymorphic_on": type,
         "polymorphic_identity": "inspection",
     }
+
+class QualityAlert(Base):
+    __tablename__ = "quality_alerts"
+
+    id = Column(Integer, primary_key=True, index=True)
+    inspection_id = Column(Integer, ForeignKey("inspections.id"), nullable=False, unique=True, index=True)
+    code = Column(String, nullable=False, unique=True, index=True)
+    created_at = Column(DateTime, nullable=False, default=datetime.now)
+    alert_type = Column(String, nullable=False, default="Defecto de procesos")
+    operator = Column(String, nullable=False)
+    reason = Column(Text, nullable=False)
+    observations = Column(Text, nullable=True)
+
+    inspection = relationship("Inspection", back_populates="quality_alert")
+    photos = relationship(
+        "QualityAlertPhoto", back_populates="quality_alert",
+        cascade="all, delete-orphan", order_by="QualityAlertPhoto.id"
+    )
+
+class QualityAlertPhoto(Base):
+    __tablename__ = "quality_alert_photos"
+
+    id = Column(Integer, primary_key=True, index=True)
+    quality_alert_id = Column(Integer, ForeignKey("quality_alerts.id"), nullable=False, index=True)
+    image_data = Column(Text, nullable=False)
+
+    quality_alert = relationship("QualityAlert", back_populates="photos")
 
 class FinishedProductInspection(Inspection):
     __mapper_args__ = {
@@ -144,7 +176,15 @@ class MoistureCapture(Base):
 
 class MoistureReading(Base):
     __tablename__ = "moisture_readings"
-    __table_args__ = (UniqueConstraint("capture_id", "device_record_number", "moisture_percent", name="uq_moisture_capture_reading"),)
+    __table_args__ = (
+        Index(
+            "uq_moisture_inspection_reading",
+            "inspection_id",
+            "device_record_number",
+            "moisture_percent",
+            unique=True,
+        ),
+    )
 
     id = Column(Integer, primary_key=True, index=True)
     capture_id = Column(Integer, ForeignKey("moisture_captures.id"), nullable=False, index=True)

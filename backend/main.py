@@ -1,45 +1,37 @@
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
+from contextlib import asynccontextmanager
 import os
 
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy.orm import Session
-from database import models, database
 from routers import registry, auth, users, master_data, scanner, exports, broken_pieces, log_inspections, data_sync, reports, truck_studies, siniestrada_studies, ia_documental, rollizos, moisture
 from config import settings
 from loguru import logger
 import sys
 from services.rag_service import rag_service
+from app_paths import resource_path
 
 # Configure Logging
 logger.remove()
 logger.add(sys.stderr, level=settings.LOG_LEVEL)
 logger.add(settings.LOG_FILE, rotation=settings.LOG_ROTATION, level=settings.LOG_LEVEL, compression="zip")
 
-models.Base.metadata.create_all(bind=database.engine)
-
-# Migración simple: agregar columna 'process' a la tabla 'inspections' si no existe
-from sqlalchemy import text
-db_session = database.SessionLocal()
-try:
-    db_session.execute(text("ALTER TABLE inspections ADD COLUMN process VARCHAR"))
-    db_session.commit()
-    logger.info("Migración: Columna 'process' agregada exitosamente a la tabla 'inspections'.")
-except Exception:
-    db_session.rollback()
-finally:
-    db_session.close()
-
-app = FastAPI(title="Grading App Backend")
-
-
-@app.on_event("startup")
-def warmup_ia_documental() -> None:
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
     try:
         rag_service.warmup()
     except Exception as exc:
         logger.warning(f"IA documental: startup parcial ({exc})")
+    yield
+
+
+app = FastAPI(title="Grading App Backend", lifespan=lifespan)
+
+
+@app.get("/health", tags=["system"])
+async def health_check():
+    return {"status": "ok"}
 
 # Configuración CORS
 app.add_middleware(
@@ -71,9 +63,8 @@ app.include_router(moisture.router)
 import sys
 
 # Determinar ruta de archivos estáticos (Dev vs Congelado)
-if hasattr(sys, '_MEIPASS'):
-    # Directorio temporal de PyInstaller
-    static_dir = os.path.join(sys._MEIPASS, "frontend_dist")
+if getattr(sys, "frozen", False):
+    static_dir = str(resource_path("frontend_dist"))
 else:
     # Desarrollo local
     static_dir = os.path.join(os.path.dirname(__file__), "../frontend/dist")

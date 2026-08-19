@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from database import models, database
 from routers import registry, auth, users, master_data, scanner, sync
 
+database.migrate_sqlite_schema()
 models.Base.metadata.create_all(bind=database.engine)
 
 app = FastAPI(title="Grading App Backend")

@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 
 import { getInspectionsList, getBrokenPieceStudies, downloadInspectionDetailsCsv, deleteInspection, importInspections } from '../api';
-import { ClipboardList, Calendar, User, Search, Eye, Download, Filter, X, Trash2, Edit, ArrowUp, ArrowDown, Upload } from 'lucide-react';
+import { ClipboardList, Calendar, User, Search, Eye, Download, Filter, X, Trash2, Edit, ArrowUp, ArrowDown, Upload, AlertTriangle } from 'lucide-react';
 import { formatSpanishDate } from '../utils/dataUtils';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import EditInspectionModal from '../components/EditInspectionModal';
+import QualityAlertModal from '../components/QualityAlertModal';
 
 export default function InspectionsList() {
     const [inspections, setInspections] = useState([]);
@@ -17,6 +18,7 @@ export default function InspectionsList() {
     const [showFilters, setShowFilters] = useState(true);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [selectedInspection, setSelectedInspection] = useState(null);
+    const [alertInspection, setAlertInspection] = useState(null);
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
     const [typeFilter, setTypeFilter] = useState('all');
@@ -269,6 +271,7 @@ export default function InspectionsList() {
                                     <span className="ga-badge ga-badge--muted">{insp.id}</span>
                                     <h3 className="u-bold" style={{ fontSize: '1.125rem' }}>{insp.product_name || 'Item'}</h3>
                                     <span className="ga-badge">{getTypeLabel(insp.type)}</span>
+                                    {insp.quality_alert && <span className="ga-badge ga-badge--warn">Alerta de calidad</span>}
                                 </div>
                                 <div className="u-flex u-gap-4 u-muted" style={{ fontSize: '0.875rem' }}>
                                     <span><Calendar size={14} /> {safeDate(insp.date)}</span>
@@ -286,6 +289,11 @@ export default function InspectionsList() {
                                     )}
                                 </div>
                                 <div className="u-flex u-gap-2">
+                                    {insp.quality_alert && (
+                                        <button onClick={() => setAlertInspection(insp)} className="ga-btn ga-btn--outline ga-btn--sm" title="Ver alerta de calidad">
+                                            <AlertTriangle size={16} />
+                                        </button>
+                                    )}
                                     <button onClick={() => {
                                         const route = insp.type === 'broken_pieces_study' ? '/process/broken-pieces/report/' + insp.id :
                                             insp.type === 'line_grading' ? '/inspections/' + insp.id + '/inline-report' :
@@ -310,6 +318,7 @@ export default function InspectionsList() {
             </div>
 
             <EditInspectionModal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} inspection={selectedInspection} onUpdate={loadInspections} />
+            {alertInspection && <QualityAlertModal inspection={alertInspection} onClose={() => setAlertInspection(null)} />}
         </div>
     );
 }

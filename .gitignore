@@ -17,6 +17,7 @@ __pycache__/
 dist/
 build/
 *.spec
+!backend/GradingApp.spec
 *.zip
 *.apk
 

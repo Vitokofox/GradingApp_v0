@@ -1,16 +1,10 @@
 import os
-import sys
 from pathlib import Path
 
+from app_paths import APP_ROOT, FROZEN, RESOURCE_ROOT
+
 # Base del backend: .../backend
-if getattr(sys, 'frozen', False):
-    # In frozen mode: BASE_DIR is the temporary _MEIPASS folder
-    BASE_DIR = Path(sys._MEIPASS)
-    # APP_ROOT is the directory containing the executable
-    APP_ROOT = Path(sys.executable).parent
-else:
-    BASE_DIR = Path(__file__).resolve().parent.parent
-    APP_ROOT = BASE_DIR.parent
+BASE_DIR = RESOURCE_ROOT if FROZEN else Path(__file__).resolve().parent.parent
 
 def _path_from_env(env_name: str, default: Path) -> Path:
     raw = (os.getenv(env_name) or "").strip()

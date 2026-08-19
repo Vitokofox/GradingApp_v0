@@ -145,6 +145,8 @@ const KEY_CATALOG_MAPPING = {
     'state': 'states',
     'termination': 'terminations',
     'supervisor': 'supervisors',
+    'operator': 'operators',
+    'operators': 'operators',
     // ... add more if needed
 };
 
@@ -306,6 +308,13 @@ export const updateInspection = async (id, data) => {
         return await updateOfflineInspection(id, data);
     }
     throw new Error("No se pueden editar inspecciones históricas en modo offline.");
+};
+
+export const saveInspectionQualityAlert = async (inspectionId, qualityAlert) => {
+    if (!String(inspectionId).startsWith('TEMP_')) {
+        throw new Error("Las alertas históricas son de solo lectura.");
+    }
+    return updateOfflineInspection(inspectionId, { quality_alert: qualityAlert });
 };
 
 export const addInspectionResult = async (inspectionId, gradeId, defectId, count) => {

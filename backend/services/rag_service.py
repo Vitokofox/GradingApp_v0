@@ -183,7 +183,9 @@ class RAGService:
             return self._model
 
         if _SentenceTransformer is not None:
-            model_name = "sentence-transformers/all-MiniLM-L6-v2"
+            from services.ia_paths import MODEL_DIR
+
+            model_name = str(MODEL_DIR)
             try:
                 logger.info(f"IA documental: cargando modelo de embeddings '{model_name}'")
                 self._model = _SentenceTransformer(model_name)

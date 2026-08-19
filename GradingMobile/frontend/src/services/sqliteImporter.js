@@ -25,7 +25,7 @@ export async function importDatabaseFile(file) {
         const db = new SQL.Database(new Uint8Array(arrayBuffer));
 
         // 4. Extract Data & Map Correctly
-        const counts = { users: 0, products: 0, grades: 0, defects: 0, catalog: 0, markets: 0, inspections: 0, details: 0 };
+        const counts = { users: 0, products: 0, grades: 0, defects: 0, catalog: 0, markets: 0, inspections: 0, details: 0, qualityAlerts: 0 };
         const masterDataPayload = {};
 
         // Helper to get data from table and map to specific key
@@ -46,7 +46,7 @@ export async function importDatabaseFile(file) {
                     }
                     return items;
                 }
-            } catch (e) {
+            } catch {
                 console.warn(`Table ${tableName} not found or empty.`);
             }
             return [];
@@ -170,7 +170,11 @@ export async function importDatabaseFile(file) {
                     'termination': 'terminations',
                     'terminacion': 'terminations',
 
-                    'supervisor': 'supervisors'
+                    'supervisor': 'supervisors',
+
+                    'operator': 'operators',
+                    'operador': 'operators',
+                    'operadores': 'operators'
                 };
 
                 items.forEach(item => {
@@ -198,6 +202,8 @@ export async function importDatabaseFile(file) {
 
             // 2. Inspection Results (The details!)
             const results = extractTable('inspection_results', null);
+            const qualityAlerts = extractTable('quality_alerts', null);
+            const qualityAlertPhotos = extractTable('quality_alert_photos', null);
 
             if (inspections.length > 0) {
                 // Attach results to inspections to match app structure
@@ -233,16 +239,29 @@ export async function importDatabaseFile(file) {
                             defect: r.defect_id ? (defectMap[r.defect_id] || defectMap[String(r.defect_id)] || null) : null
                         }));
 
+                    const alertRow = qualityAlerts.find(alert => String(alert.inspection_id) === String(insp.id));
+                    const qualityAlert = alertRow ? {
+                        ...alertRow,
+                        alert_number: alertRow.id,
+                        inspection_number: insp.id,
+                        operator_name: alertRow.operator,
+                        photos: qualityAlertPhotos
+                            .filter(photo => String(photo.quality_alert_id) === String(alertRow.id))
+                            .map(photo => photo.image_data)
+                    } : null;
+
                     return {
                         ...insp,
                         market: marketObj, // Attach nested market
-                        results: myResults
+                        results: myResults,
+                        quality_alert: qualityAlert
                     };
                 });
 
                 await saveHistoricalInspections(inspectionsWithResults);
                 counts.inspections = inspections.length;
                 counts.details = results.length;
+                counts.qualityAlerts = qualityAlerts.length;
             }
         } catch (e) {
             console.warn("Could not import historical inspections", e);

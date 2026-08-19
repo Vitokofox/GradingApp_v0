@@ -2,9 +2,10 @@
 // Importacion de librerias y componentes necesarios
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getInspection, getInspectionResults } from '../api';
+import { getInspection, getInspectionMoistureReadings, getInspectionResults } from '../api';
 import { ArrowLeft, Printer } from 'lucide-react';
 import { formatSpanishDate, getLocalISODate } from '../utils/dataUtils';
+import MoistureHistogram from '../components/MoistureHistogram';
 
 // Componente Principal: Reporte de Producto Terminado
 // Estructura idéntica al reporte de línea, para mostrar inspecciones de 'finished_product'
@@ -15,6 +16,7 @@ export default function FinishedGradeReport() {
     // Estados del componente (State)
     const [inspection, setInspection] = useState(null); // Almacena los datos generales de la inspección
     const [stats, setStats] = useState({ gradeSummary: [], defectsByGrade: {}, totalPieces: 0 }); // Almacena estadísticas calculadas
+    const [moistureReadings, setMoistureReadings] = useState([]);
 
     // Efecto de carga inicial
     useEffect(() => {
@@ -24,9 +26,16 @@ export default function FinishedGradeReport() {
     // Función: loadData (Cargar Datos)
     const loadData = async () => {
         try {
-            const inspData = await getInspection(id);
-            const resData = await getInspectionResults(id);
+            const [inspData, resData, moistureData] = await Promise.all([
+                getInspection(id),
+                getInspectionResults(id),
+                getInspectionMoistureReadings(id).catch(error => {
+                    console.error("Error loading moisture readings", error);
+                    return [];
+                }),
+            ]);
             setInspection(inspData);
+            setMoistureReadings(moistureData);
             calculateStats(resData); // Procesa los datos una vez cargados
         } catch (error) {
             console.error("Error loading report data", error);
@@ -324,6 +333,8 @@ export default function FinishedGradeReport() {
                                 );
                             })}
                     </div>
+
+                    <MoistureHistogram readings={moistureReadings} />
 
                 </div>
             </div>

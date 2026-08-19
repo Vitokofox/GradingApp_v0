@@ -124,10 +124,6 @@ const LogQualityControl = () => {
         setLogs(newLogs);
     };
 
-    const handleCountChange = (field, value) => {
-        setCountData(prev => ({ ...prev, [field]: value }));
-    };
-
     const removeLogRow = (indexToRemove) => {
         setLogs(logs.filter((_, idx) => idx !== indexToRemove));
     };

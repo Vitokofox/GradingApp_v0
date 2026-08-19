@@ -5,6 +5,7 @@ from typing import List
 from database import database, models
 import schemas
 from routers.auth import get_current_active_user
+from services.quality_alerts import save_quality_alert
 
 router = APIRouter(
     prefix="/api",
@@ -19,7 +20,10 @@ def read_markets(db: Session = Depends(database.get_db)):
 
 @router.get("/inspections", response_model=List[schemas.InspectionResponse])
 def read_inspections(skip: int = 0, limit: int = 5000, db: Session = Depends(database.get_db)):
-    inspections = db.query(models.Inspection).options(joinedload(models.Inspection.market)).order_by(models.Inspection.id.desc()).offset(skip).limit(limit).all()
+    inspections = db.query(models.Inspection).options(
+        joinedload(models.Inspection.market),
+        joinedload(models.Inspection.quality_alert).joinedload(models.QualityAlert.photos),
+    ).order_by(models.Inspection.id.desc()).offset(skip).limit(limit).all()
     return inspections
 
 @router.get("/inspections/distinct/{field}", response_model=List[str])
@@ -56,6 +60,7 @@ def create_inspection(
 
     try:
         data = inspection.model_dump()
+        quality_alert = data.pop('quality_alert', None)
         
         # Analizar fechas si son cadenas
         if isinstance(data.get('date'), str):
@@ -66,10 +71,15 @@ def create_inspection(
         db_inspection = models.Inspection(**data)
         db_inspection.process = current_user.process_type
         db.add(db_inspection)
+        db.flush()
+        save_quality_alert(db, db_inspection, quality_alert)
         db.commit()
         db.refresh(db_inspection)
         print(f"DEBUG: Created inspection ID: {db_inspection.id}")
         return db_inspection
+    except ValueError as e:
+        db.rollback()
+        raise HTTPException(status_code=422, detail=str(e))
     except Exception as e:
         print(f"ERROR creating inspection: {e}")
         db.rollback()
@@ -77,7 +87,10 @@ def create_inspection(
 
 @router.get("/inspections/{inspection_id}", response_model=schemas.InspectionResponse)
 def get_inspection(inspection_id: int, db: Session = Depends(database.get_db)):
-    inspection = db.query(models.Inspection).options(joinedload(models.Inspection.market)).filter(models.Inspection.id == inspection_id).first()
+    inspection = db.query(models.Inspection).options(
+        joinedload(models.Inspection.market),
+        joinedload(models.Inspection.quality_alert).joinedload(models.QualityAlert.photos),
+    ).filter(models.Inspection.id == inspection_id).first()
     if not inspection:
          raise HTTPException(status_code=404, detail="Inspection not found")
     return inspection
@@ -102,6 +115,7 @@ def update_inspection(inspection_id: int, inspection_data: schemas.InspectionUpd
         raise HTTPException(status_code=404, detail="Inspection not found")
     
     data = inspection_data.model_dump(exclude_unset=True)
+    quality_alert = data.pop('quality_alert', None)
     
     # Analizar fechas si están presentes
     if 'date' in data and isinstance(data['date'], str):
@@ -111,6 +125,11 @@ def update_inspection(inspection_id: int, inspection_data: schemas.InspectionUpd
 
     for key, value in data.items():
         setattr(inspection, key, value)
+    try:
+        save_quality_alert(db, inspection, quality_alert)
+    except ValueError as exc:
+        db.rollback()
+        raise HTTPException(status_code=422, detail=str(exc))
     
     db.commit()
     db.refresh(inspection)

@@ -8,6 +8,7 @@ import shutil
 import os
 import uuid
 from config import settings
+from PIL import Image
 
 router = APIRouter(
     prefix="/broken-pieces",

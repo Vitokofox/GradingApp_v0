@@ -469,6 +469,7 @@ const MasterDataConfig = () => {
         { id: 'termination', title: 'Terminaciones' },
         { id: 'market', title: 'Mercado' },
         { id: 'supervisor', title: 'Supervisores' },
+        { id: 'operator', title: 'Operadores' },
         { id: 'length', title: 'Largos Configurados' },
     ];
 

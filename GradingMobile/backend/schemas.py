@@ -1,5 +1,5 @@
-from pydantic import BaseModel
-from typing import List, Optional
+from pydantic import BaseModel, Field, field_validator, model_validator
+from typing import List, Literal, Optional, Union
 from datetime import date, datetime
 
 # --- Base Models ---
@@ -21,6 +21,67 @@ class MarketBase(BaseModel):
 
 
 # --- Inspection Schemas ---
+
+class QualityAlertPhotoResponse(BaseModel):
+    id: int
+    image_data: str
+
+    class Config:
+        from_attributes = True
+
+
+class QualityAlertCreate(BaseModel):
+    alert_type: str = 'Defecto de procesos'
+    operator: Optional[str] = None
+    operator_name: Optional[str] = None
+    operator_id: Optional[Union[str, int]] = None
+    reason: str = Field(min_length=1)
+    observations: Optional[str] = None
+    created_at: Optional[datetime] = None
+    photos: List[str] = Field(default_factory=list, max_length=6)
+
+    @model_validator(mode='after')
+    def require_operator_and_reason(self):
+        if not str(self.operator or self.operator_name or self.operator_id or '').strip():
+            raise ValueError('Quality alert operator is required')
+        if not self.reason.strip():
+            raise ValueError('Quality alert reason is required')
+        return self
+
+    @field_validator('photos', mode='before')
+    @classmethod
+    def normalize_photos(cls, value):
+        normalized = []
+        for photo in value or []:
+            if isinstance(photo, str):
+                normalized.append(photo)
+            elif isinstance(photo, dict):
+                normalized.append(photo.get('image_data') or photo.get('imageData') or photo.get('data_url') or photo.get('data') or photo.get('url'))
+            else:
+                normalized.append(getattr(photo, 'image_data', None))
+        if any(not photo for photo in normalized):
+            raise ValueError('Each photo must contain image data')
+        return normalized
+
+
+class QualityAlertResponse(BaseModel):
+    id: int
+    inspection_id: int
+    code: str
+    created_at: datetime
+    alert_type: str
+    operator: str
+    reason: str
+    observations: Optional[str] = None
+    photos: List[str] = Field(default_factory=list)
+
+    @field_validator('photos', mode='before')
+    @classmethod
+    def photo_rows_to_data(cls, value):
+        return [getattr(photo, 'image_data', photo) for photo in (value or [])]
+
+    class Config:
+        from_attributes = True
 
 class InspectionBase(BaseModel):
     shift: str
@@ -44,9 +105,10 @@ class InspectionBase(BaseModel):
     length: str
     pieces_inspected: int = 0
     type: str = 'inspection'
+    inspection_subtype: Optional[Literal['finished_lot', 'finished_line', 'line_grading']] = None
 
 class InspectionCreate(InspectionBase):
-    pass
+    quality_alert: Optional[QualityAlertCreate] = None
 
 class InspectionUpdate(BaseModel):
     shift: Optional[str] = None
@@ -68,6 +130,8 @@ class InspectionUpdate(BaseModel):
     length: Optional[str] = None
     pieces_inspected: Optional[int] = None
     type: Optional[str] = None
+    inspection_subtype: Optional[Literal['finished_lot', 'finished_line', 'line_grading']] = None
+    quality_alert: Optional[QualityAlertCreate] = None
 
     class Config:
         from_attributes = True
@@ -77,6 +141,7 @@ class InspectionResponse(InspectionBase):
     date: date
     production_date: Optional[date] = None
     market: MarketBase # Adjust if MarketBase is not fully compatible or circular
+    quality_alert: Optional[QualityAlertResponse] = None
     
     class Config:
         from_attributes = True
@@ -308,4 +373,3 @@ class LogQualityControlResponse(LogQualityControlBase):
     
     class Config:
         from_attributes = True
-

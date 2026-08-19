@@ -33,7 +33,7 @@ Esta versión (0.1) introduce una **renovación visual completa**, migrando de T
 ## Requisitos Previos
 
 *   **Python 3.10+**
-*   **Node.js 18+**
+*   **Node.js 22+**
 *   **Git**
 
 ## Instalación y Ejecución Rápida
@@ -65,9 +65,11 @@ El proyecto incluye scripts automatizados para Windows.
 ```bash
 cd backend
 # Activar entorno virtual (crear si no existe: python -m venv venv)
-venv\Scripts\activate
+source venv/bin/activate  # Linux
+# En Windows: venv\Scripts\activate
 pip install -r requirements.txt
-python main.py
+python -m alembic upgrade head
+python -m uvicorn main:app --host 0.0.0.0 --port 8001
 ```
 El backend correrá en el puerto **8001**.
 
@@ -78,6 +80,16 @@ npm install
 npm run dev
 ```
 El frontend correrá en el puerto **5174**.
+
+### Verificación
+```bash
+cd backend
+venv/bin/python -m pytest
+
+cd ../frontend
+npm run lint
+npm run build
+```
 
 ## Configuración
 

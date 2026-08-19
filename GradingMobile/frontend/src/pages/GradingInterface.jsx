@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle, AlertTriangle, Activity, Database, ChevronRight, X, RotateCcw, Home, Search, Save, AlertCircle } from 'lucide-react';
 
 import { normalizeArray } from '../utils/dataUtils';
+import QualityAlertModal from '../components/QualityAlertModal';
 
 export default function GradingInterface() {
     const { id } = useParams();
@@ -21,6 +22,8 @@ export default function GradingInterface() {
     const [selectedGrade, setSelectedGrade] = useState(null);
     const [allSystemDefects, setAllSystemDefects] = useState([]);
     const [addingDefectFor, setAddingDefectFor] = useState(null);
+    const [showQualityAlert, setShowQualityAlert] = useState(false);
+    const [finishAfterQualityAlert, setFinishAfterQualityAlert] = useState(false);
 
     // Responsive State
     const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
@@ -293,6 +296,20 @@ export default function GradingInterface() {
         }
     };
 
+    const handleQualityAlertClose = () => {
+        setShowQualityAlert(false);
+        setFinishAfterQualityAlert(false);
+    };
+
+    const handleQualityAlertSaved = async (qualityAlert) => {
+        setInspection(current => ({ ...current, quality_alert: qualityAlert }));
+        if (finishAfterQualityAlert) {
+            setShowQualityAlert(false);
+            setFinishAfterQualityAlert(false);
+            await handleFinish();
+        }
+    };
+
     const remainingPieces = inspection ? Math.max(0, inspection.pieces_inspected - totalInspected) : 0;
 
     const handleUndo = async () => {
@@ -376,6 +393,15 @@ export default function GradingInterface() {
             overflow: 'hidden'
         }}>
 
+            {showQualityAlert && (
+                <QualityAlertModal
+                    inspection={inspection}
+                    editable={String(inspection.id).startsWith('TEMP_')}
+                    onClose={handleQualityAlertClose}
+                    onSaved={handleQualityAlertSaved}
+                />
+            )}
+
             <AnimatePresence>
                 {showFinishModal && (
                     <div className="ga-modal-backdrop" style={{ zIndex: 50 }}>
@@ -437,6 +463,18 @@ export default function GradingInterface() {
                                 <button onClick={handleFinish} className="ga-btn ga-btn--primary ga-btn--lg" style={{ width: '100%', justifyContent: 'center' }}>
                                     Confirmar y Finalizar
                                 </button>
+                                {(inspection.type === 'finished_product' || inspection.type === 'line_grading') && (
+                                    <button
+                                        onClick={() => {
+                                            setFinishAfterQualityAlert(true);
+                                            setShowQualityAlert(true);
+                                        }}
+                                        className="ga-btn ga-btn--secondary ga-btn--lg"
+                                        style={{ width: '100%', justifyContent: 'center' }}
+                                    >
+                                        <AlertTriangle size={18} /> Confirmar y Generar Alerta
+                                    </button>
+                                )}
                                 <button onClick={() => setShowFinishModal(false)} className="ga-btn ga-btn--outline" style={{ width: '100%', justifyContent: 'center' }}>
                                     Volver / Corregir
                                 </button>
@@ -524,6 +562,14 @@ export default function GradingInterface() {
                     </div>
 
                     <div className="u-flex u-gap-2" style={{ marginLeft: '0.5rem' }}>
+                        {(inspection.type === 'finished_product' || inspection.type === 'line_grading') && (
+                            <button onClick={() => {
+                                setFinishAfterQualityAlert(false);
+                                setShowQualityAlert(true);
+                            }} className="ga-btn ga-btn--secondary" style={{ padding: isMobile ? '0.5rem' : undefined }}>
+                                <AlertTriangle size={18} /> {isMobile ? (inspection.quality_alert ? 'Alerta' : 'Crear alerta') : (inspection.quality_alert ? 'Ver / Editar alerta' : 'Crear alerta de calidad')}
+                            </button>
+                        )}
                         {countLog.length > 0 && (
                             <button onClick={handleUndo} className="ga-btn ga-btn--outline" title="Deshacer" style={{ padding: isMobile ? '0.5rem' : undefined }}>
                                 <RotateCcw size={18} /> {isMobile ? '' : 'Deshacer'}

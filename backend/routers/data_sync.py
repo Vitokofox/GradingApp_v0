@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import text
 from database import database, models
 from routers.auth import get_current_admin_user, get_current_active_user
+from services.quality_alerts import quality_alert_dict, save_quality_alert, validate_inspection_subtype
 import io
 import json
 from datetime import datetime, date
@@ -121,7 +122,7 @@ def export_inspections_json(
     """
     query = db.query(models.Inspection).options(
         joinedload(models.Inspection.market),
-        joinedload(models.Inspection.product)
+        joinedload(models.Inspection.quality_alert).joinedload(models.QualityAlert.photos),
     )
     
     if start_date:
@@ -151,6 +152,7 @@ def export_inspections_json(
             "remote_id": insp.id, # Keep track of server ID
             "date": insp.date.isoformat() if insp.date else None,
             "type": insp.type,
+            "inspection_subtype": insp.inspection_subtype,
             "shift": insp.shift,
             "supervisor": insp.supervisor,
             "product_name": insp.product_name,
@@ -166,7 +168,8 @@ def export_inspections_json(
             "origin": insp.origin,
             "market_name": insp.market.name if insp.market else None,
             "termination": insp.termination,
-            "results": results_data
+            "results": results_data,
+            "quality_alert": quality_alert_dict(insp.quality_alert),
         }
         export_data.append(insp_dict)
         
@@ -203,6 +206,7 @@ async def _import_inspections_logic(items: list[dict], db: Session):
     try:
         imported_count = 0
         skipped_count = 0
+        imported_alerts = []
         
         for item in items:
             # Allow mobile payloads to force creation even if they match dedupe keys.
@@ -234,7 +238,7 @@ async def _import_inspections_logic(items: list[dict], db: Session):
                 p = db.query(models.Product).filter(models.Product.name == item['product_name']).first()
                 if p: product_id = p.id
             
-            market_id = None
+            market_id = item.get('market_id')
             if item.get('market_name'):
                 m = db.query(models.Market).filter(models.Market.name == item['market_name']).first()
                 if m: market_id = m.id
@@ -254,9 +258,9 @@ async def _import_inspections_logic(items: list[dict], db: Session):
                 date=insp_date,
                 production_date=insp_date, # Reusing for simplicity if missing
                 type=item.get('type', 'finished_product'),
+                inspection_subtype=validate_inspection_subtype(item.get('inspection_subtype')),
                 shift=item.get('shift'),
                 supervisor=item.get('supervisor'),
-                product_id=product_id,
                 product_name=item.get('product_name'),
                 lot=item.get('lot'),
                 pieces_inspected=item.get('pieces_inspected', 0),
@@ -275,6 +279,13 @@ async def _import_inspections_logic(items: list[dict], db: Session):
             
             db.add(new_insp)
             db.flush()
+            alert = save_quality_alert(db, new_insp, item.get('quality_alert'))
+            if alert:
+                imported_alerts.append({
+                    'inspection_id': new_insp.id,
+                    'alert_id': alert.id,
+                    'code': alert.code,
+                })
             
             # Process Results
             if 'results' in item:
@@ -304,7 +315,10 @@ async def _import_inspections_logic(items: list[dict], db: Session):
             imported_count += 1
             
         db.commit()
-        return {"status": "success", "imported": imported_count, "skipped": skipped_count}
+        return {
+            "status": "success", "imported": imported_count,
+            "skipped": skipped_count, "quality_alerts": imported_alerts,
+        }
         
     except Exception as e:
         db.rollback()
@@ -344,6 +358,7 @@ def get_full_master_data_dump(db: Session = Depends(database.get_db)):
         'states': ['state', 'estado'],
         'terminations': ['termination', 'terminacion'],
         'supervisors': ['supervisor'],
+        'operators': ['operator', 'operador', 'operators'],
         'lengths': ['length', 'largo'],
         'estates': ['estate', 'predio', 'estates'],
         'logging_teams': ['logging_team', 'equipo', 'logging_teams'],
@@ -438,7 +453,9 @@ def get_full_master_data_dump(db: Session = Depends(database.get_db)):
             "length": insp.length,
             "pieces_inspected": insp.pieces_inspected,
             "type": insp.type,
-            "results": results
+            "inspection_subtype": insp.inspection_subtype,
+            "results": results,
+            "quality_alert": quality_alert_dict(insp.quality_alert),
         })
     data['inspections'] = history
 

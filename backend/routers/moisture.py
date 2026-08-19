@@ -7,14 +7,16 @@ from sqlalchemy.orm import Session, joinedload
 
 from database import database, models
 from routers.auth import get_current_active_user
-from services.wagner_l622_service import WagnerL622Service
+from services.wagner_l622_service import WagnerL622Service, filter_new_readings
 import schemas
 
 
 router = APIRouter(prefix="/api", tags=["moisture"])
 _service = WagnerL622Service(
-    port=os.getenv("WAGNER_SERIAL_PORT", "/dev/ttyUSB0"),
+    port=os.getenv("WAGNER_SERIAL_PORT", "COM3" if os.name == "nt" else "/dev/ttyUSB0"),
     baudrate=int(os.getenv("WAGNER_SERIAL_BAUDRATE", "9600")),
+    timeout=float(os.getenv("WAGNER_SERIAL_TIMEOUT", "1")),
+    enabled=os.getenv("WAGNER_SERIAL_ENABLED", "true").strip().lower() in {"1", "true", "yes", "on"},
 )
 
 
@@ -42,7 +44,10 @@ def _run_capture(capture_id: int):
         try:
             result = _service.capture()
             capture.raw_payload = result["payload"]
-            for reading in result["readings"]:
+            new_readings = filter_new_readings(
+                db, capture.inspection_id, result["readings"]
+            )
+            for reading in new_readings:
                 capture.readings.append(models.MoistureReading(
                     inspection_id=capture.inspection_id,
                     device_record_number=reading["device_record_number"],
@@ -62,7 +67,7 @@ def _run_capture(capture_id: int):
 
 @router.get("/moisture/status")
 def moisture_status():
-    return {"port": _service.port, "serial_settings": _service.serial_settings}
+    return {"enabled": _service.enabled, "port": _service.port, "serial_settings": _service.serial_settings}
 
 
 @router.post("/inspections/{inspection_id}/moisture/captures", response_model=schemas.MoistureCaptureResponse)

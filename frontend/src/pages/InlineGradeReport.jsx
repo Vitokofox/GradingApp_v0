@@ -2,9 +2,10 @@
 // Importacion de librerias y componentes necesarios
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getInspection, getInspectionResults } from '../api';
+import { getInspection, getInspectionMoistureReadings, getInspectionResults } from '../api';
 import { ArrowLeft, Printer } from 'lucide-react';
 import { formatSpanishDate, getLocalISODate } from '../utils/dataUtils';
+import MoistureHistogram from '../components/MoistureHistogram';
 
 // Componente Principal: Reporte de Grado en Línea
 // Muestra el detalle completo de una inspección, con desglose de defectos por cada grado.
@@ -15,6 +16,7 @@ export default function InlineGradeReport() {
     // Estados del componente (State)
     const [inspection, setInspection] = useState(null); // Almacena los datos generales de la inspección
     const [stats, setStats] = useState({ gradeSummary: [], defectsByGrade: {}, totalPieces: 0 }); // Almacena estadísticas calculadas
+    const [moistureReadings, setMoistureReadings] = useState([]);
 
     // Efecto de carga inicial
     // Se ejecuta cuando cambia el 'id' de la inspección
@@ -26,9 +28,16 @@ export default function InlineGradeReport() {
     // Obtiene la información de la inspección y sus resultados desde el backend
     const loadData = async () => {
         try {
-            const inspData = await getInspection(id);
-            const resData = await getInspectionResults(id);
+            const [inspData, resData, moistureData] = await Promise.all([
+                getInspection(id),
+                getInspectionResults(id),
+                getInspectionMoistureReadings(id).catch(error => {
+                    console.error("Error loading moisture readings", error);
+                    return [];
+                }),
+            ]);
             setInspection(inspData);
+            setMoistureReadings(moistureData);
             calculateStats(resData); // Procesa los datos una vez cargados
         } catch (error) {
             console.error("Error loading report data", error);
@@ -324,6 +333,8 @@ export default function InlineGradeReport() {
                             );
                         })}
                     </div>
+
+                    <MoistureHistogram readings={moistureReadings} />
 
                 </div>
             </div>

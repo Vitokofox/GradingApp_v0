@@ -1,14 +1,13 @@
 import os
 import sys
 from dotenv import load_dotenv
+from app_paths import APP_ROOT, FROZEN
 
 # Detect Base Directory
 # If frozen (PyInstaller), use the directory of the executable.
 # If dev, use the directory of this file.
-if getattr(sys, 'frozen', False):
-    BASE_DIR = os.path.dirname(sys.executable)
-    # Load bundled .env
-    load_dotenv(os.path.join(sys._MEIPASS, ".env"))
+if FROZEN:
+    BASE_DIR = str(APP_ROOT)
     # Allow override with external .env
     load_dotenv(os.path.join(BASE_DIR, ".env"), override=True)
 else:
@@ -17,6 +16,8 @@ else:
     load_dotenv(os.path.join(BASE_DIR, ".env"))
 
 class Settings:
+    BASE_DIR: str = BASE_DIR
+
     # Security
     SECRET_KEY: str = os.getenv("SECRET_KEY", "changeme_in_production_please")
     ALGORITHM: str = os.getenv("ALGORITHM", "HS256")
@@ -31,7 +32,10 @@ class Settings:
     def _get_final_url(self):
         primary_url = None
         if self._db_path:
-            primary_url = f"sqlite:///{self._db_path}" if not self._db_path.startswith("sqlite:") else self._db_path
+            db_path = self._db_path
+            if not db_path.startswith(("sqlite:", "//")) and not os.path.isabs(db_path):
+                db_path = os.path.join(BASE_DIR, db_path)
+            primary_url = f"sqlite:///{db_path}" if not db_path.startswith("sqlite:") else db_path
         elif self._configured_url:
             primary_url = self._configured_url
             

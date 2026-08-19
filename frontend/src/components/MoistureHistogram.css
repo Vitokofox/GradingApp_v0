@@ -1,0 +1,117 @@
+.moisture-report {
+    margin: 0 1.5rem 1.5rem;
+    padding: 1.25rem;
+    color: #1e293b;
+    border: 1px solid #dbe4ee;
+    border-radius: 6px;
+    background: #fff;
+}
+
+.moisture-report--empty {
+    color: #64748b;
+    text-align: center;
+    font-style: italic;
+}
+
+.moisture-report__title {
+    margin: 0 0 1rem;
+    color: #334155;
+    font-size: 1rem;
+    text-align: center;
+    text-transform: uppercase;
+}
+
+.moisture-report__summary {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.moisture-report__stat {
+    padding: 0.65rem;
+    text-align: center;
+    border: 1px solid #dbe4ee;
+    border-radius: 4px;
+    background: #f8fafc;
+}
+
+.moisture-report__stat span,
+.moisture-report__stat strong {
+    display: block;
+}
+
+.moisture-report__stat span {
+    margin-bottom: 0.2rem;
+    color: #64748b;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.moisture-report__chart {
+    width: 100%;
+    height: 310px;
+    margin-bottom: 1rem;
+    page-break-inside: avoid;
+}
+
+.moisture-report__table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+
+.moisture-report__table th,
+.moisture-report__table td {
+    padding: 0.45rem 0.65rem;
+    border-bottom: 1px solid #e2e8f0;
+    text-align: left;
+}
+
+.moisture-report__table th {
+    color: #fff;
+    background: #2563a6;
+    text-transform: uppercase;
+}
+
+.moisture-report__table th:nth-child(2),
+.moisture-report__table td:nth-child(2) {
+    text-align: center;
+}
+
+@media (max-width: 700px) {
+    .moisture-report {
+        margin: 0 0.75rem 1rem;
+        padding: 0.75rem;
+    }
+
+    .moisture-report__summary {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .moisture-report__table-wrap {
+        overflow-x: auto;
+    }
+}
+
+@media print {
+    .moisture-report {
+        margin: 0 0 1rem;
+        padding: 0.75rem 0;
+        border-right: 0;
+        border-left: 0;
+    }
+
+    .moisture-report__chart {
+        height: 260px;
+    }
+
+    .moisture-report__table thead {
+        display: table-header-group;
+    }
+
+    .moisture-report__table tr {
+        page-break-inside: avoid;
+    }
+}

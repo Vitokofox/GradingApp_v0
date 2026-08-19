@@ -127,6 +127,9 @@ export default function InspectionForm({ type, title }) {
             const selectedProduct = products.find(p => p.name === formData.product_name);
             const submissionData = {
                 ...formData,
+                inspection_subtype: type === 'finished_product'
+                    ? (inspectionSubtype === 'lote' ? 'finished_lot' : 'finished_line')
+                    : type === 'line_grading' ? 'line_grading' : null,
                 product_id: selectedProduct ? selectedProduct.id : null,
                 market_id: parseInt(formData.market_id),
                 pieces_inspected: parseInt(formData.pieces_inspected)
