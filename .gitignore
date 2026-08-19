@@ -6,6 +6,8 @@
 .venv/
 venv/
 env/
+.tools/
+.build_venv/
 
 # Python cache / compile
 __pycache__/

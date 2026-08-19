@@ -2,16 +2,22 @@
 setlocal EnableExtensions EnableDelayedExpansion
 cd /d "%~dp0"
 
+set "PYTHON_EXE=python"
+set "PORTABLE_PYTHON=%~dp0.tools\python\cpython-3.12-windows-x86_64-none\python.exe"
+set "PORTABLE_NODE=%~dp0.tools\node-v22.18.0-win-x64"
+if exist "%PORTABLE_PYTHON%" set "PYTHON_EXE=%PORTABLE_PYTHON%"
+if exist "%PORTABLE_NODE%\node.exe" set "PATH=%PORTABLE_NODE%;%PATH%"
+
 echo [1/12] Validando Windows x64...
 if /I not "%PROCESSOR_ARCHITECTURE%"=="AMD64" if /I not "%PROCESSOR_ARCHITEW6432%"=="AMD64" (
   echo ERROR: este build requiere Windows x64.
   exit /b 1
 )
 
-where python >nul 2>&1 || (echo ERROR: Python Windows no esta disponible. & exit /b 1)
+"%PYTHON_EXE%" --version >nul 2>&1 || (echo ERROR: Python Windows no esta disponible. & exit /b 1)
 where node >nul 2>&1 || (echo ERROR: Node.js no esta disponible. & exit /b 1)
 where npm >nul 2>&1 || (echo ERROR: npm no esta disponible. & exit /b 1)
-python -c "import platform,struct,sys; sys.exit(0 if platform.system()=='Windows' and struct.calcsize('P')*8==64 else 1)" || (
+"%PYTHON_EXE%" -c "import platform,struct,sys; sys.exit(0 if platform.system()=='Windows' and struct.calcsize('P')*8==64 else 1)" || (
   echo ERROR: Python debe ser una instalacion Windows x64.
   exit /b 1
 )
@@ -28,14 +34,14 @@ if not exist "frontend\dist\index.html" (echo ERROR: no se genero frontend\dist\
 
 echo [5/12] Creando entorno virtual limpio de build...
 if exist ".build_venv" rmdir /s /q ".build_venv"
-python -m venv .build_venv || exit /b 1
+"%PYTHON_EXE%" -m venv .build_venv || exit /b 1
 call .build_venv\Scripts\python -m pip install --upgrade pip setuptools wheel || exit /b 1
 call .build_venv\Scripts\python -m pip install -r backend\requirements-dev.txt pyinstaller || exit /b 1
 call .build_venv\Scripts\python -m pip check || exit /b 1
 
 echo [6/12] Ejecutando pruebas backend...
 pushd backend
-call ..\.build_venv\Scripts\python -m pytest || (popd & exit /b 1)
+call ..\.build_venv\Scripts\python -m pytest -p no:cacheprovider --basetemp "%TEMP%\gradingapp_pytest" || (popd & exit /b 1)
 popd
 
 echo [7/12] Limpiando artefactos PyInstaller anteriores...
@@ -62,8 +68,9 @@ for /R "backend\dist\GradingApp\data\documentos" %%F in (*) do (echo ERROR: docu
 for /R "backend\dist\GradingApp\data\vectorstore" %%F in (*) do (echo ERROR: vectorstore productivo incluido: %%F & exit /b 1)
 
 echo [11/12] Ejecutando smoke test y health check del EXE...
-set "DATABASE_PATH=grading.db"
+set "DATABASE_PATH=%TEMP%\gradingapp_smoke.db"
 set "WAGNER_SERIAL_ENABLED=false"
+if exist "%DATABASE_PATH%" del /q "%DATABASE_PATH%"
 "backend\dist\GradingApp\GradingApp.exe" --smoke-test || exit /b 1
 powershell -NoProfile -ExecutionPolicy Bypass -Command ^
   "$p = Start-Process -FilePath 'backend\dist\GradingApp\GradingApp.exe' -WorkingDirectory 'backend\dist\GradingApp' -PassThru;" ^
@@ -71,6 +78,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command ^
   echo ERROR: fallo el health check del ejecutable.
   exit /b 1
 )
+if exist "%DATABASE_PATH%" del /q "%DATABASE_PATH%"
 
 echo [12/12] Generando ZIP...
 if exist "backend\dist\GradingApp_Windows_x64.zip" del /q "backend\dist\GradingApp_Windows_x64.zip"
