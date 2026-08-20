@@ -16,6 +16,13 @@ from app_paths import resource_path
 logger.remove()
 logger.add(sys.stderr, level=settings.LOG_LEVEL)
 logger.add(settings.LOG_FILE, rotation=settings.LOG_ROTATION, level=settings.LOG_LEVEL, compression="zip")
+logger.info(f"Database directory: {settings.DATABASE_DIR}")
+logger.info(f"Database path: {settings.DATABASE_PATH}")
+if settings.DATABASE_USING_FALLBACK:
+    logger.warning(
+        f"Corporate database unavailable: {settings.DATABASE_PRIMARY_DIR}; "
+        "using persistent local storage"
+    )
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):

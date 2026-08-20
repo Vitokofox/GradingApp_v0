@@ -11,7 +11,7 @@ BACKEND_DIR = Path(__file__).resolve().parents[1]
 def test_migrations_create_current_schema(tmp_path):
     database_path = tmp_path / "grading.db"
     env = os.environ.copy()
-    env["DATABASE_PATH"] = str(database_path)
+    env["GRADINGAPP_DATABASE_DIR"] = str(tmp_path)
 
     subprocess.run(
         [sys.executable, "-m", "alembic", "upgrade", "head"],
@@ -49,7 +49,7 @@ def test_migrations_create_current_schema(tmp_path):
 def test_moisture_migration_removes_duplicates_and_is_repeatable(tmp_path):
     database_path = tmp_path / "grading.db"
     env = os.environ.copy()
-    env["DATABASE_PATH"] = str(database_path)
+    env["GRADINGAPP_DATABASE_DIR"] = str(tmp_path)
 
     def alembic(*args):
         subprocess.run(

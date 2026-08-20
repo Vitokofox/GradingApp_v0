@@ -40,6 +40,9 @@ call .build_venv\Scripts\python -m pip install -r backend\requirements-dev.txt p
 call .build_venv\Scripts\python -m pip check || exit /b 1
 
 echo [6/12] Ejecutando pruebas backend...
+set "GRADINGAPP_DATABASE_DIR=%TEMP%\gradingapp_smoke"
+if not exist "%GRADINGAPP_DATABASE_DIR%" mkdir "%GRADINGAPP_DATABASE_DIR%"
+if exist "%GRADINGAPP_DATABASE_DIR%\grading.db" del /q "%GRADINGAPP_DATABASE_DIR%\grading.db"
 pushd backend
 call ..\.build_venv\Scripts\python -m pytest -p no:cacheprovider --basetemp "%TEMP%\gradingapp_pytest" || (popd & exit /b 1)
 popd
@@ -68,17 +71,14 @@ for /R "backend\dist\GradingApp\data\documentos" %%F in (*) do (echo ERROR: docu
 for /R "backend\dist\GradingApp\data\vectorstore" %%F in (*) do (echo ERROR: vectorstore productivo incluido: %%F & exit /b 1)
 
 echo [11/12] Ejecutando smoke test y health check del EXE...
-set "DATABASE_PATH=%TEMP%\gradingapp_smoke.db"
 set "WAGNER_SERIAL_ENABLED=false"
-if exist "%DATABASE_PATH%" del /q "%DATABASE_PATH%"
+if exist "%GRADINGAPP_DATABASE_DIR%\grading.db" del /q "%GRADINGAPP_DATABASE_DIR%\grading.db"
 "backend\dist\GradingApp\GradingApp.exe" --smoke-test || exit /b 1
-powershell -NoProfile -ExecutionPolicy Bypass -Command ^
-  "$p = Start-Process -FilePath 'backend\dist\GradingApp\GradingApp.exe' -WorkingDirectory 'backend\dist\GradingApp' -PassThru;" ^
-  "$ok = $false; try { for ($i=0; $i -lt 60; $i++) { Start-Sleep -Seconds 1; try { $r=Invoke-RestMethod -Uri 'http://127.0.0.1:8000/health' -TimeoutSec 2; if ($r.status -eq 'ok') { $ok=$true; break } } catch {} } } finally { if (!$p.HasExited) { Stop-Process -Id $p.Id -Force }; Wait-Process -Id $p.Id -ErrorAction SilentlyContinue }; if (!$ok) { exit 1 }" || (
+powershell -NoProfile -ExecutionPolicy Bypass -File "build_health_check.ps1" || (
   echo ERROR: fallo el health check del ejecutable.
   exit /b 1
 )
-if exist "%DATABASE_PATH%" del /q "%DATABASE_PATH%"
+if exist "%GRADINGAPP_DATABASE_DIR%\grading.db" del /q "%GRADINGAPP_DATABASE_DIR%\grading.db"
 
 echo [12/12] Generando ZIP...
 if exist "backend\dist\GradingApp_Windows_x64.zip" del /q "backend\dist\GradingApp_Windows_x64.zip"

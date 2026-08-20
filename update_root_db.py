@@ -11,10 +11,11 @@ import bcrypt
 # I will define the User model locally or use raw SQL to avoid dependency hell with the config I just changed.
 
 import sqlite3
+from backend.database_config import resolve_database_path
 
 def reset_admin_root_db():
-    db_path = "grading.db" # Root DB
-    if not os.path.exists(db_path):
+    db_path = resolve_database_path()
+    if not db_path.is_file():
         print(f"Root DB {db_path} not found.")
         return
 

@@ -1,8 +1,8 @@
 import sqlite3
-import os
+from backend.database_config import resolve_database_path
 
-db_path = 'backend/grading.db'
-if not os.path.exists(db_path):
+db_path = resolve_database_path()
+if not db_path.is_file():
     print(f"Database not found at {db_path}")
     exit(1)
 

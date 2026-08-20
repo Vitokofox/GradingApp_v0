@@ -1,5 +1,6 @@
 import sqlite3
 import os
+from backend.database_config import resolve_database_path
 
 def seed_truck_catalogs(db_path):
     if not os.path.exists(db_path):
@@ -50,9 +51,6 @@ def seed_truck_catalogs(db_path):
         conn.close()
 
 if __name__ == "__main__":
-    # Check both current folder and backend/database
-    paths = ["grading.db", "backend/database/grading.db"]
-    for p in paths:
-        if os.path.exists(p):
-            print(f"Found DB at {p}")
-            seed_truck_catalogs(p)
+    path = resolve_database_path()
+    print(f"Configured DB: {path}")
+    seed_truck_catalogs(path)

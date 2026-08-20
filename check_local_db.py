@@ -1,8 +1,8 @@
 import sqlite3
-import os
+from backend.database_config import resolve_database_path
 
-db_path = "grading.db"
-if os.path.exists(db_path):
+db_path = resolve_database_path()
+if db_path.is_file():
     conn = sqlite3.connect(db_path)
     c = conn.cursor()
     try:
@@ -14,4 +14,4 @@ if os.path.exists(db_path):
         print(f"Error querying table: {e}")
     conn.close()
 else:
-    print(f"Local {db_path} not found.")
+    print(f"Configured database {db_path} not found.")

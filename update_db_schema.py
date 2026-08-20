@@ -1,17 +1,11 @@
 
 import sqlite3
-import os
+from backend.database_config import resolve_database_path
 
-# Correct path relative to project root
-db_path = "backend/grading.db"
-
-if not os.path.exists(db_path):
-    print(f"WARNING: DB file not found at {db_path}. Checking current directory...")
-    if os.path.exists("grading.db"):
-        db_path = "grading.db"
-    else:
-        print("ERROR: Could not find grading.db")
-        exit(1)
+db_path = resolve_database_path()
+if not db_path.is_file():
+    print(f"ERROR: Could not find configured database: {db_path}")
+    raise SystemExit(1)
 
 print(f"Using database: {db_path}")
 

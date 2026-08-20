@@ -98,6 +98,12 @@ def main() -> int:
     args = parser.parse_args()
     os.chdir(APP_ROOT if FROZEN else Path(__file__).resolve().parent)
     try:
+        from config import settings
+        print(f"Database directory: {settings.DATABASE_DIR}")
+        print(f"Database path: {settings.DATABASE_PATH}")
+        if settings.DATABASE_USING_FALLBACK:
+            print(f"Corporate database unavailable: {settings.DATABASE_PRIMARY_DIR}")
+            print("Database mode: local fallback")
         run_migrations()
         ensure_initial_data()
         if args.smoke_test:

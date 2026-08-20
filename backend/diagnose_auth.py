@@ -13,11 +13,13 @@ def diagnose():
     print("--- DIAGNOSTIC START ---")
     
     # 1. Print Configured DB Path
+    print(f"Database directory: {settings.DATABASE_DIR}")
+    print(f"Database path: {settings.DATABASE_PATH}")
     print(f"Configured DATABASE_URL: {settings.DATABASE_URL}")
     
     # 2. Check if file exists
     if "sqlite:///" in settings.DATABASE_URL:
-        db_path = settings.DATABASE_URL.replace("sqlite:///", "")
+        db_path = settings.DATABASE_PATH
         if os.path.exists(db_path):
             print(f"Database file FOUND at: {db_path}")
             print(f"Size: {os.path.getsize(db_path)} bytes")
